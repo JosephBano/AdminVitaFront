@@ -43,43 +43,47 @@
     </p-table>
 </div>
 
-<p-dialog header="Crear Orden de Trabajo" [modal]="true" [(visible)]="visibleAdd" [style]="{ width: '25rem' }">
+<p-dialog header="Crear Orden de Trabajo" [modal]="true" [(visible)]="visibleAdd" [style]="{ width: '25rem' }"> <!--Dialog crear Orden de trabajo-->
     <span class="p-text-secondary block mb-4">Ingresa los siguientes campos para crear la Orden de Trabajo (OT):</span>
     <form [formGroup]="fb_addOt" >
         <div class="flex flex-col mb-4">
             <p-floatlabel variant="on" class="w-full mb-1">
                 <textarea pTextarea formControlName="detalle" rows="5" cols="34"></textarea>
-                <label>Detalle</label>
+                <label>Detalle*</label>
             </p-floatlabel>
             <div class="flex my-1">
                 <p-floatlabel variant="on" class="mr-2 w-full">
                     <input type="text" pInputText formControlName="num_documento" class="w-full"/>
-                    <label>Número de identificación</label>
+                    <label>Número de identificación*</label>
                 </p-floatlabel>
                 <p-button icon="pi pi-search" aria-label="Validar documento"></p-button>
             </div>
             <div class="flex my-1">
                 <p-floatlabel variant="on" class="mr-2 w-full">
                     <input type="text" pInputText formControlName="placa" class="w-full"/>
-                    <label>Placa del vehiculo</label>
+                    <label>Placa del vehiculo*</label>
                 </p-floatlabel>
                 <p-button icon="pi pi-search" aria-label="Validar documento"></p-button>
             </div>
             <p-floatlabel variant="on" class="my-1 w-full">
                 <p-select formControlName="estado" [options]="estado" optionLabel="name" class="w-full" />
-                <label>Estado</label>
+                <label>Estado*</label>
             </p-floatlabel>
             <p-floatlabel variant="on" class="my-1 w-full">
                 <p-select formControlName="prioridad" [options]="prioridad" optionLabel="name" class="w-full" />
-                <label>Nivel de prioridad</label>
+                <label>Nivel de prioridad*</label>
             </p-floatlabel>
             <p-floatlabel variant="on" class="my-1 w-full">
                 <p-select formControlName="supervisor" [options]="supervisor" optionLabel="name" class="w-full" />
-                <label>Supervisor</label>
+                <label>Supervisor*</label>
             </p-floatlabel>
             <p-floatlabel variant="on" class="my-1 w-full">
                 <p-datepicker formControlName="fechaProgramada" dateFormat="dd/mm/yy" [minDate]="minDate" [showButtonBar]="true" [showIcon]="true" class="w-full"/>
-                <label class="w-full">Fecha programa de inicio OT</label>
+                <label class="w-full">Fecha programa de inicio OT*</label>
+            </p-floatlabel>
+            <p-floatlabel variant="on" class="w-full mb-1">
+                <textarea pTextarea formControlName="observacion" rows="1" cols="34"></textarea>
+                <label>Observaciones</label>
             </p-floatlabel>
         </div>
             <div class="flex justify-end gap-2">
