@@ -1,9 +1,9 @@
 :root {
-    --primary-color: #1F295B;
-    --primary-contrast-color: #C4A857;
+    --primary-color: #1F295B !important;
+    --primary-contrast-color: #C4A857 !important;
     --text-color: var(--p-text-color);
     --text-color-secondary: var(--p-text-muted-color);
-    --surface-border: var(#1F295B);
+    --surface-border: var(--p-content-border-color);
     --surface-card: var(--p-content-background);
     --surface-hover: var(--p-content-hover-background);
     --surface-overlay: var(--p-overlay-popover-background);
@@ -14,7 +14,20 @@
     --element-transition-duration: var(--p-transition-duration);
     --focus-ring-width: var(--p-focus-ring-width);
     --focus-ring-style: var(--p-focus-ring-style);
-    --focus-ring-color: #1F295B
+    --focus-ring-color: var(--p-focus-ring-color);
     --focus-ring-offset: var(--p-focus-ring-offset);
     --focus-ring-shadow: var(--p-focus-ring-shadow);
+
+    //paleta de colores    
+    --p-primary-50: #d1d3eb !important;
+    --p-primary-100: #878fc7 !important;
+    --p-primary-200: #606baa !important;
+    --p-primary-300: #4a5590 !important;
+    --p-primary-400: #343f75 !important;
+    --p-primary-500: #1f295b !important;
+    --p-primary-600: #1b244f !important;
+    --p-primary-700: #161e42 !important;
+    --p-primary-800: #101936 !important;
+    --p-primary-900: #0b1329 !important;
+    --p-primary-950: #05080f !important;
 }
