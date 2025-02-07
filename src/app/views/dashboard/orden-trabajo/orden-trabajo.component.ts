@@ -107,8 +107,13 @@ export class OrdenTrabajoComponent implements OnInit {
       estado: new FormControl<selectT | null>(null),
       prioridad: new FormControl<selectT | null>(null),
       supervisor: new FormControl<selectT | null>(null),
-      fechaProgramada: new FormControl<selectT | null>(null),
+      fechaProgramada: new FormControl<Date | null>(null),
+      observacion: new FormControl<string | null>(null),
     }); 
+  }
+
+  createOT():void{
+    //Contenido validacion
   }
 
   formatDate(dateString: string): string {
