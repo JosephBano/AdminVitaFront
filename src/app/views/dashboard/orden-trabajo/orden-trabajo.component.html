@@ -10,11 +10,11 @@
     [rowsPerPageOptions]="[5, 10, 20]"
     >
     <ng-template #caption>
-        <div class="flex justify-between ">
+        <div class="flex flex-col-reverse sm:flex-row sm:justify-between gap-2">
             <p-button label="Limpiar" severity="secondary" icon="pi pi-filter-slash" (click)="clear(dt1)" />
-            <div class="d-flex">
-                <p-button class="btn_mod" severity="secondary" icon="pi pi-file-export" label="Exportar"></p-button>
-                <p-button (click)="showDialogAdd()" class="btn_mod_secondary ml-2" icon="pi pi-plus" label="Agregar OT"></p-button>
+            <div class="flex">
+                <p-button class="mr-1" severity="secondary" icon="pi pi-file-export" label="Exportar"></p-button>
+                <p-button (click)="showDialogAdd()" class="sm:ml-2" icon="pi pi-plus" label="Agregar OT"></p-button>
             </div>
         </div>
     </ng-template>
