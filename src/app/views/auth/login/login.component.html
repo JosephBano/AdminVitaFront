@@ -27,6 +27,7 @@
                   class="w-full placeholder:text-sm my-2 input-text"
                   [ngClass]="{'ng-invalid ng-dirty': flag , '':flag!}"
                   type="password" 
+                  (keyup.enter)="onLogin()"
                   placeholder="Contraseña" 
                   [(ngModel)]="password" />
   
@@ -38,8 +39,7 @@
                 </button>
               </div>
               <div class="flex flex-col items-center justify-center mt-4 mb-2">
-                <p class="text-sm text-slate-400 tracking-tight">¿Olvidaste tú constraseña?</p>
-                <p class="text-sm text-slate-400 tracking-tight">¿No tienes una cuenta? <a href="" class="text-secondary">Regístrate</a></p>	
+                <p class="text-sm text-slate-400 tracking-tight">¿Olvidaste tú constraseña?<a href="" class="text-secondary">Recuperala.</a></p>        
               </div>
       </div>
       <div class="self-center pb-4">
