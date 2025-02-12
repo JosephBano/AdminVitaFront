@@ -12,7 +12,7 @@
     transition:
         transform var(--layout-section-transition-duration),
         left var(--layout-section-transition-duration);
-    background-color: var(--surface-overlay);
+    background-color: var(--primary-color);
     border-radius: var(--content-border-radius);
     padding: 0.5rem 1.5rem;
 }
@@ -27,7 +27,7 @@
             font-size: 0.857rem;
             text-transform: uppercase;
             font-weight: 700;
-            color: var(--text-color);
+            color: var(--primary-contrast-color);
             margin: 0.75rem 0;
         }
 
@@ -64,7 +64,7 @@
             align-items: center;
             position: relative;
             outline: 0 none;
-            color: var(--text-color);
+            color: #ffffff;
             cursor: pointer;
             padding: 0.75rem 1rem;
             border-radius: var(--content-border-radius);
@@ -84,11 +84,13 @@
 
             &.active-route {
                 font-weight: 700;
-                color: var(--primary-color);
+                color: var(--primary-contrast-color);
+                background-color: var(--surface-hover);
             }
 
             &:hover {
                 background-color: var(--surface-hover);
+                color: black;
             }
 
             &:focus {
