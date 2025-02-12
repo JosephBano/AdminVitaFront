@@ -34,7 +34,8 @@ export class AuthService {
     const token = this.getToken();  
     return new HttpHeaders({
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     });
   }
 
