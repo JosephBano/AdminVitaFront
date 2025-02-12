@@ -140,21 +140,6 @@
                 <span *ngIf="fb_addOt.get('placa')?.errors?.['maxlength']">No puede tener más de 8 caracteres.</span>
             </div>
             <!-- Placa del vehículo input end -->
-            <!-- Estado input start -->
-            <p-floatlabel variant="on" class="my-1 w-full">
-                <p-select 
-                    formControlName="estado" 
-                    [options]="estado" 
-                    optionLabel="name" 
-                    class="w-full" 
-                    [ngClass]="{'ng-invalid ng-dirty': fb_addOt.get('estado')?.invalid && fb_addOt.get('estado')?.touched}">
-                </p-select>
-                <label>Estado*</label>
-            </p-floatlabel>
-            <div *ngIf="fb_addOt.get('estado')?.invalid && fb_addOt.get('estado')?.touched" class="text-red-500 text-sm">
-                <span>El estado es obligatorio.</span>
-            </div>
-            <!-- Estado input end -->
             <!-- Nivel de prioridad input start -->
             <p-floatlabel variant="on" class="my-1 w-full">
                 <p-select 
@@ -217,43 +202,53 @@
 <p-dialog header="Editar Orden de Trabajo" [modal]="true" [(visible)]="visibleEdit" [style]="{ width: '25rem' }"> <!--Dialog crear Orden de trabajo-->
     <span #EditHeader class="p-text-secondary block mb-4">Actualiza los campos disponibles de la Orden de Trabajo (OT):</span>
     <form [formGroup]="fb_editOt" >
-        <div class="flex flex-col mb-4">
-            <p-floatlabel variant="on" class="w-full mb-1">
-                <textarea pTextarea formControlName="detalle" rows="2" cols="34.5"></textarea>
-                <label>Detalle</label>
-            </p-floatlabel>
-            <p-floatlabel variant="on" class="my-1 w-full">
-                <input type="text" pInputText formControlName="nombreCliente" class="w-full"/>
-                <label>Nombre Cliente</label>
-            </p-floatlabel>
-            <p-floatlabel variant="on" class="my-1 w-full">
-                <input type="text" pInputText formControlName="placa" class="w-full"/>
-                <label>Placa del vehiculo</label>
-            </p-floatlabel>
-            <p-floatlabel variant="on" class="my-1 w-full">
-                <p-select formControlName="estado" [options]="estado" optionValue="code" optionLabel="name" class="w-full" />
-                <label>Estado</label>
-            </p-floatlabel>
-            <p-floatlabel variant="on" class="my-1 w-full">
-                <p-select formControlName="prioridad" [options]="prioridad" optionValue="name" optionLabel="name" class="w-full" /> <!--OptionValue no funciona bien en prioridad ni en supervisor-->
-                <label>Nivel de prioridad</label>
-            </p-floatlabel>
-            <p-floatlabel variant="on" class="my-1 w-full">
-                <p-select formControlName="supervisor" [options]="supervisor" optionValue="name" optionLabel="name" class="w-full" />
-                <label>Supervisor</label>
-            </p-floatlabel>
-            <p-floatlabel variant="on" class="my-1 w-full">
-                <p-datepicker formControlName="fechaProgramada" dateFormat="dd/mm/yy" [minDate]="minDate" [showButtonBar]="true" [showIcon]="true" class="w-full"/>
-                <label>Fecha programa de inicio OT</label>
-            </p-floatlabel>
-            <p-floatlabel variant="on" class="w-full my-1">
-                <textarea pTextarea formControlName="observacion" rows="1" cols="34.5"></textarea>
-                <label>Observaciones</label>
-            </p-floatlabel>
+        <div *ngIf="loadingEditDialog">
+            <p-skeleton height="3rem" styleClass="mb-4" />
+            <p-skeleton height="3rem" styleClass="mb-4" />
+            <p-skeleton height="3rem" styleClass="mb-4" />
+            <p-skeleton height="3rem" styleClass="mb-4" />
+            <p-skeleton height="3rem" styleClass="mb-4" />
+            <p-skeleton height="3rem" styleClass="mb-4" />
         </div>
-            <div class="flex justify-end gap-2">
+        <ng-container *ngIf="!loadingEditDialog">
+            <div class="flex flex-col mb-4">
+                <p-floatlabel variant="on" class="w-full mb-1">
+                    <textarea pTextarea formControlName="detalle" rows="2" cols="34.5"></textarea>
+                    <label>Detalle</label>
+                </p-floatlabel>
+                <p-floatlabel variant="on" class="my-1 w-full">
+                    <input type="text" pInputText formControlName="nombreCliente" class="w-full"/>
+                    <label>Nombre Cliente</label>
+                </p-floatlabel>
+                <p-floatlabel variant="on" class="my-1 w-full">
+                    <input type="text" pInputText formControlName="placa" class="w-full"/>
+                    <label>Placa del vehiculo</label>
+                </p-floatlabel>
+                <p-floatlabel variant="on" class="my-1 w-full">
+                    <p-select formControlName="estado" [options]="estado" optionValue="code" optionLabel="name" class="w-full" />
+                    <label>Estado</label>
+                </p-floatlabel>
+                <p-floatlabel variant="on" class="my-1 w-full">
+                    <p-select formControlName="prioridad" [options]="prioridad" optionValue="name" optionLabel="name" class="w-full" /> <!--OptionValue no funciona bien en prioridad ni en supervisor-->
+                    <label>Nivel de prioridad</label>
+                </p-floatlabel>
+                <p-floatlabel variant="on" class="my-1 w-full">
+                    <p-select formControlName="supervisor" [options]="supervisor" optionValue="name" optionLabel="name" class="w-full" />
+                    <label>Supervisor</label>
+                </p-floatlabel>
+                <p-floatlabel variant="on" class="my-1 w-full">
+                    <p-datepicker formControlName="fechaProgramada" dateFormat="dd/mm/yy" [minDate]="minDate" [showButtonBar]="true" [showIcon]="true" class="w-full"/>
+                    <label>Fecha programa de inicio OT</label>
+                </p-floatlabel>
+                <p-floatlabel variant="on" class="w-full my-1">
+                    <textarea pTextarea formControlName="observacion" rows="1" cols="34.5"></textarea>
+                    <label>Observaciones</label>
+                </p-floatlabel>
+            </div>
+        </ng-container>
+        <div class="flex justify-end gap-2">
             <p-button label="Cancel" severity="secondary" (click)="visibleEdit = false" />
-            <p-button label="Save" (click)="visibleAdd = false" />
+            <p-button label="Save" [disabled]="loadingEditDialog" (click)="visibleAdd = false" />
         </div>
     </form>
 </p-dialog>

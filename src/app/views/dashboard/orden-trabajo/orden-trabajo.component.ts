@@ -25,6 +25,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ValidacionService } from '../../services/validacion.service';
 import { ToastrService } from 'ngx-toastr';
+import { SkeletonModule } from 'primeng/skeleton';
 
 @Component({
   selector: 'app-orden-trabajo',
@@ -49,6 +50,7 @@ import { ToastrService } from 'ngx-toastr';
     BadgeModule,
     DropdownModule,
     ProgressSpinnerModule,
+    SkeletonModule,
   ],
   standalone: true,
   templateUrl: './orden-trabajo.component.html',
@@ -63,6 +65,7 @@ export class OrdenTrabajoComponent implements OnInit {
   cols!: Column[];
 
   loading: boolean = true;
+  loadingEditDialog: boolean = true;
 
   visibleAdd: boolean = false;   
   visibleEdit: boolean = false;   
@@ -107,8 +110,8 @@ export class OrdenTrabajoComponent implements OnInit {
     this.otService.getOrdenesTrabajoListado().subscribe({
       next: (response) => {
         this.ordenes = response.ordenes.map(x => ({
-          ...x, // Mantiene los otros atributos del objeto
-          fechaProgramada: this.formatDate(x.fechaProgramada) // Formatea solo la fecha
+          ...x,
+          fechaProgramada: this.formatDate(x.fechaProgramada)
         }));
         this.loading = false;
       },
@@ -135,12 +138,12 @@ export class OrdenTrabajoComponent implements OnInit {
       clienteId: new FormControl<number | null>(null, [Validators.required]),
       placa: new FormControl<string | null>(null, [Validators.required, Validators.minLength(7), Validators.maxLength(8)]),
       vehiculoId: new FormControl<number | null>(null, [Validators.requiredTrue]),
-      estado: new FormControl<genericT | null>(null, [Validators.required]),
       prioridad: new FormControl<genericT | null>(null, [Validators.required]),
       supervisor: new FormControl<genericT | null>(null, [Validators.required]),
       fechaProgramada: new FormControl<Date | null>(null, [Validators.required]),
       observacion: new FormControl<string | null>(null),
     }); 
+
     this.fb_editOt = new FormGroup({
       detalle: new FormControl<string | null>(null),
       nombreCliente: new FormControl<string | null>(null),
@@ -196,6 +199,7 @@ export class OrdenTrabajoComponent implements OnInit {
   }  
   showDialogEdit(code: string) {
     this.visibleEdit = true;
+    this.loadingEditDialog = true;
     this.codeEditDialog = code;
     this.otService.getOrdenTrabajoCodigo(code).subscribe({
       next: (response: OrdenTrabajo) => {
@@ -214,6 +218,11 @@ export class OrdenTrabajoComponent implements OnInit {
         this.fb_editOt.get('nombreCliente')?.disable();
         this.fb_editOt.get('placa')?.disable();
         this.fb_editOt.get('estado')?.disable();
+
+        this.loadingEditDialog = false;
+      },
+      error: (err) => {
+        console.log("Error al solicitar Orden de Trabajo: ", err);
       }
     }) 
   }
