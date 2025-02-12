@@ -1,6 +1,17 @@
 /* You can add global styles to this file, and also import other style files */
 @use "assets/layout/layout";
 @use "primeicons/primeicons.css";
+@use "../node_modules/ngx-toastr/toastr.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.toast-warning {
+    background-color: #ffc44d !important;
+    color: white !important;
+    box-shadow: none !important;
+    border-left: 8px solid #ff8c00;
+    border-radius: 10px;
+    font-size: 14px;
+    text-justify: center !important;
+  }
