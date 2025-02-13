@@ -26,6 +26,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ValidacionService } from '../../services/validacion.service';
 import { ToastrService } from 'ngx-toastr';
 import { SkeletonModule } from 'primeng/skeleton';
+import { ActualizarOrdenRequest, AgendarOrdenTrabajo } from '../../../../domain/request/OrdenTrabajoRequest.model';
 
 @Component({
   selector: 'app-orden-trabajo',
@@ -137,7 +138,7 @@ export class OrdenTrabajoComponent implements OnInit {
       num_documento: new FormControl<string | null>(null, [Validators.required, Validators.minLength(10), Validators.maxLength(16)]),
       clienteId: new FormControl<number | null>(null, [Validators.required]),
       placa: new FormControl<string | null>(null, [Validators.required, Validators.minLength(7), Validators.maxLength(8)]),
-      vehiculoId: new FormControl<number | null>(null, [Validators.requiredTrue]),
+      vehiculoId: new FormControl<number | null>(null, [Validators.required]),
       prioridad: new FormControl<genericT | null>(null, [Validators.required]),
       supervisor: new FormControl<genericT | null>(null, [Validators.required]),
       fechaProgramada: new FormControl<Date | null>(null, [Validators.required]),
@@ -158,9 +159,6 @@ export class OrdenTrabajoComponent implements OnInit {
     this.fb_addOt.get('num_documento')?.valueChanges.subscribe(() => {
       this.fb_addOt.patchValue({clienteId: null});;
       this.iconValidarDocumento = 'pi pi-search';
-      if (this.fb_addOt.get('num_documento')?.invalid){
-
-      }
     });
 
     this.fb_addOt.get('placa')?.valueChanges.subscribe(() => {
@@ -168,14 +166,6 @@ export class OrdenTrabajoComponent implements OnInit {
       this.iconValidarPlaca = 'pi pi-search';
     })
   }
-
-  createOT():void{
-    //Contenido validacion
-    this.fb_addOt.patchValue({
-      ValidarDoc: true,
-    })
-  }
-
   formatDate(dateString: string): string {
     const date = new Date(dateString);
     const day = date.getDate().toString().padStart(2, '0');
@@ -184,16 +174,13 @@ export class OrdenTrabajoComponent implements OnInit {
 
     return `${day}/${month}/${year}`;
   }
-
   filterGlobal(event: Event, dt: any) { //filtro para barra de busqueda
     const inputValue = (event.target as HTMLInputElement)?.value || '';
     dt.filterGlobal(inputValue, 'contains');
   }
-
   clear(table: Table) {
     table.clear();
   }
-
   showDialogAdd() {
     this.visibleAdd = true;
   }  
@@ -202,7 +189,7 @@ export class OrdenTrabajoComponent implements OnInit {
     this.loadingEditDialog = true;
     this.codeEditDialog = code;
     this.otService.getOrdenTrabajoCodigo(code).subscribe({
-      next: (response: OrdenTrabajo) => {
+      next: (response: OrdenTrabajo) => {        
         this.fb_editOt.patchValue({
           detalle: response.detalle,
           nombreCliente: response.nombreCliente,
@@ -213,11 +200,9 @@ export class OrdenTrabajoComponent implements OnInit {
           fechaProgramada: new Date(response.fechaProgramada),
           observacion: response.observacion,
         })
-
         this.fb_editOt.get('detalle')?.disable();
         this.fb_editOt.get('nombreCliente')?.disable();
         this.fb_editOt.get('placa')?.disable();
-        this.fb_editOt.get('estado')?.disable();
 
         this.loadingEditDialog = false;
       },
@@ -230,17 +215,64 @@ export class OrdenTrabajoComponent implements OnInit {
     this.visibleExpand = true;
     this.codeExpandDialog = code;
   }
-
+  createOT():void{
+    //Contenido validacion
+    const ot: AgendarOrdenTrabajo = {
+      codigoUsuario: this.auth.getUserCode(),
+      idCliente: this.fb_addOt.get('clienteId')?.value,
+      idVehiculo: this.fb_addOt.get('vehiculoId')?.value,
+      idMecanico: this.fb_addOt.get('supervisor')?.value,
+      detalle: this.fb_addOt.get('detalle')?.value,
+      prioridad: this.fb_addOt.get('prioridad')?.value,
+      estado: 0, //Por defecto se pone en estado 'Activo'
+      fechaProgramada: this.fb_addOt.get('fechaProgramada')?.value,
+      observacion: this.fb_addOt.get('observacion')?.value,
+    }
+    this.otService.createOrdenTrabajo(ot).subscribe({
+      next: (response) => {
+        this.toastr.success(response.message, "Orden de Trabajo agendada exitosamente!");
+        this.visibleAdd = false;
+        console.log(response);
+      },
+      error: (err) => {
+        this.toastr.error(err.error, "Orden de Trabajo no pudo ser agendada!");
+        console.log(err);'' 
+      }
+    });
+  }
+  updateOT():void{
+    const ot: ActualizarOrdenRequest = {
+      codigo: this.codeEditDialog,
+      estado: this.fb_editOt.get('estado')?.value,
+      prioridad: this.fb_editOt.get('prioridad')?.value,
+      idMecanico: this.fb_editOt.get('supervisor')?.value,
+      fechaProgramada: this.fb_editOt.get('fechaProgramada')?.value,
+      observacion: this.fb_editOt.get('observacion')?.value,
+    }
+    console.log(ot);
+    
+    this.otService.updateOrdenTrabajo(ot).subscribe({
+      next: (response) => {
+        this.toastr.success(response.message, "Actualización exitosa!");
+        this.visibleEdit = false;
+        console.log(response);
+        
+      },
+      error: (err) => {
+        this.toastr.error(err.error, "Actualización sin éxito!");
+        console.log(err);
+        
+      }
+    });
+  }
   GetEstado(id: number)  {
     const item = this.estado.find(x => x.code === id);  
     return item?.name;
   }
-
   GetPrioridad(id: number)  {
     const item = this.prioridad.find(x => x.code === id);  
     return item?.name;
   }
-
   getSeverityEstado(status: number) {
     switch (status) {
       case 0: return undefined;
@@ -251,7 +283,6 @@ export class OrdenTrabajoComponent implements OnInit {
         return 'secondary';
     }
   }
-
   getSeverityPrioridad(status: number) {
     switch (status) {
       case 4: return 'secondary';
@@ -263,7 +294,6 @@ export class OrdenTrabajoComponent implements OnInit {
         return undefined;
     }
   }
-
   OnExportButton() {
     this.otService.exportAllToExcel().subscribe(response => {
       const blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });

@@ -15,7 +15,7 @@ export interface ordenTrabajoList {
 export interface OrdenTrabajo {
     codigo: string;
     detalle: string;
-    prioridad: string;
+    prioridad: number;
     estado: number;
     fechaCreada: Date;
     fechaProgramada: Date;
@@ -32,6 +32,6 @@ export interface OrdenTrabajo {
     celular: string;
     correo: string;
     direccion: string;
-    supervisor: string;
+    supervisor: number;
 }
 

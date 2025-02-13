@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { AuthService } from '../auth/service/auth.service';
 import { environment } from '../../../environments/environment.development';
 import { OrdenTrabajo, ordenTrabajoListResponse } from '../../../domain/response/OrdenTrabajoResponse.model';
-import { ActualizarOrdenRequest } from '../../../domain/request/OrdenTrabajoRequest.model';
+import { ActualizarOrdenRequest, AgendarOrdenTrabajo } from '../../../domain/request/OrdenTrabajoRequest.model';
 
 @Injectable({
   providedIn: 'root'
@@ -29,6 +29,11 @@ export class OrdenTrabajoService {
   updateOrdenTrabajo(data: ActualizarOrdenRequest): Observable<any> {
     const headers = this.auth.getAuthHeaders();
     return this.http.put<any>(`${this.apiUrl}/ActualizarOrden`, data, { headers });
+  }
+
+  createOrdenTrabajo(data: AgendarOrdenTrabajo): Observable<any> {
+    const headers = this.auth.getAuthHeaders();
+    return this.http.post<any>(`${this.apiUrl}/AgendarOrden`, data, { headers });
   }
   exportAllToExcel(): Observable<Blob> {
     const headers = this.auth.getAuthHeaders();

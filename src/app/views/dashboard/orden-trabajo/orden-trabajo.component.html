@@ -146,6 +146,7 @@
                     formControlName="prioridad" 
                     [options]="prioridad" 
                     optionLabel="name" 
+                    optionValue="code"
                     class="w-full"
                     [ngClass]="{'ng-invalid ng-dirty': fb_addOt.get('prioridad')?.invalid && fb_addOt.get('prioridad')?.touched}">
                 </p-select>
@@ -161,6 +162,7 @@
                     formControlName="supervisor" 
                     [options]="supervisor" 
                     optionLabel="name" 
+                    optionValue="code"
                     class="w-full"
                     [ngClass]="{'ng-invalid ng-dirty': fb_addOt.get('supervisor')?.invalid && fb_addOt.get('supervisor')?.touched}">
                 </p-select>
@@ -229,11 +231,11 @@
                     <label>Estado</label>
                 </p-floatlabel>
                 <p-floatlabel variant="on" class="my-1 w-full">
-                    <p-select formControlName="prioridad" [options]="prioridad" optionValue="name" optionLabel="name" class="w-full" /> <!--OptionValue no funciona bien en prioridad ni en supervisor-->
+                    <p-select formControlName="prioridad" [options]="prioridad" optionValue="code" optionLabel="name" class="w-full" /> <!--OptionValue no funciona bien en prioridad ni en supervisor-->
                     <label>Nivel de prioridad</label>
                 </p-floatlabel>
                 <p-floatlabel variant="on" class="my-1 w-full">
-                    <p-select formControlName="supervisor" [options]="supervisor" optionValue="name" optionLabel="name" class="w-full" />
+                    <p-select formControlName="supervisor" [options]="supervisor" optionValue="code" optionLabel="name" class="w-full" />
                     <label>Supervisor</label>
                 </p-floatlabel>
                 <p-floatlabel variant="on" class="my-1 w-full">
@@ -248,7 +250,7 @@
         </ng-container>
         <div class="flex justify-end gap-2">
             <p-button label="Cancel" severity="secondary" (click)="visibleEdit = false" />
-            <p-button label="Save" [disabled]="loadingEditDialog" (click)="visibleAdd = false" />
+            <p-button label="Save" [disabled]="loadingEditDialog" (click)="updateOT()" />
         </div>
     </form>
 </p-dialog>

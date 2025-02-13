@@ -1,20 +1,20 @@
 export interface AgendarOrdenTrabajo {
-    idUsuario: string;
-    idCliente: string;
-    idVehiculo: string;
-    idMecanico: string;
+    codigoUsuario?: string;
+    idCliente: number;
+    idVehiculo: number;
+    idMecanico: number;
     detalle: string;
     prioridad: string;
-    estado: string;
+    estado: number;
     fechaProgramada: Date;
     observacion: string;
 }
 
 export interface ActualizarOrdenRequest {
     codigo: string;
-    estado: string;
-    prioridad: string;
-    idMecanico: string;
+    estado: number;
+    prioridad?: number;
+    idMecanico?: number;
     fechaProgramada: Date;
     observacion: string;
 }
