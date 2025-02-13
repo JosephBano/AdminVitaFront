@@ -51,13 +51,16 @@ export class AuthService {
     }
   }
 
-  getUserId(): string | null {
+  getUserCode(): string | undefined {
     const token = this.getToken();
-    if (!token) return null;
+    if (!token) return undefined;
   
-    const payloadBase64 = token.split('.')[1]; // Extraer la parte del payload
-    const payloadJson = JSON.parse(atob(payloadBase64)); // Decodificar base64
-  
-    return payloadJson["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] ?? null;
+    try {
+      const decoded: any = jwtDecode(token);
+      return decoded.codigo || null;
+    } catch (error) {
+      console.error('Error al decodificar el token:', error);
+      return undefined;
+    }
   }
 }
