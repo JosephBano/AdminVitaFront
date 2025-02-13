@@ -7,11 +7,29 @@
 @tailwind utilities;
 
 .toast-warning {
-    background-color: #ffc44d !important;
-    color: white !important;
-    box-shadow: none !important;
-    border-left: 8px solid #ff8c00;
-    border-radius: 10px;
-    font-size: 14px;
-    text-justify: center !important;
-  }
+  background-color: #ffc44d !important;
+  color: white !important;
+  box-shadow: none !important;
+  border-left: 8px solid #ff8c00;
+  border-radius: 10px;
+  font-size: 14px;
+  text-justify: center !important;
+}
+.toast-error {
+  background-color: #ff684d !important;
+  color: white !important;
+  box-shadow: none !important;
+  border-left: 8px solid #ff0000;
+  border-radius: 10px;
+  font-size: 14px;
+  text-justify: center !important;
+}
+.toast-success {
+  background-color: #bbff4d !important;
+  color: white !important;
+  box-shadow: none !important;
+  border-left: 8px solid #a2ff00;
+  border-radius: 10px;
+  font-size: 14px;
+  text-justify: center !important;
+}
