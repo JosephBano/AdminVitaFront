@@ -26,29 +26,25 @@ export class AppMenu {
             {
                 label: 'Orden de Trabajo',
                 items: [
-                    { label: 'Listado OT', icon: 'pi pi-fw pi-id-card', routerLink: ['/panel/OrdenTrabajo'] },
-                    { label: 'Crear OT', icon: 'pi pi-fw pi-check-square', routerLink: ['/uikit/input'] },
+                    { label: 'Listado Ordenes de Trabajo', icon: 'pi pi-fw pi-id-card', routerLink: ['/panel/OrdenTrabajo'] }
                 ]
             },
             {
                 label: 'Vehiculos',
                 items: [
-                    { label: 'Listado OT', icon: 'pi pi-fw pi-id-card', routerLink: ['/uikit/formlayout'] },
-                    { label: 'Crear OT', icon: 'pi pi-fw pi-check-square', routerLink: ['/uikit/input'] },
+                    { label: 'Inventario Vehicular', icon: 'pi pi-fw pi-id-card', routerLink: ['/panel/Vehiculos'] }
                 ]
             },
             {
                 label: 'Inventario',
                 items: [
-                    { label: 'Listado OT', icon: 'pi pi-fw pi-id-card', routerLink: ['/uikit/formlayout'] },
-                    { label: 'Crear OT', icon: 'pi pi-fw pi-check-square', routerLink: ['/uikit/input'] },
+                    { label: 'Inventario de Items', icon: 'pi pi-fw pi-id-card', routerLink: ['/panel/Inventario'] }
                 ]
             },
             {
                 label: 'Adquisiciones',
                 items: [
-                    { label: 'Listado OT', icon: 'pi pi-fw pi-id-card', routerLink: ['/uikit/formlayout'] },
-                    { label: 'Crear OT', icon: 'pi pi-fw pi-check-square', routerLink: ['/uikit/input'] },
+                    { label: 'Sistema de Adquisiciones', icon: 'pi pi-fw pi-id-card', routerLink: ['/panel/Adquisiciones'] },
                 ]
             }
         ];
