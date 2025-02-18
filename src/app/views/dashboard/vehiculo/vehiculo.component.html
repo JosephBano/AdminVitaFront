@@ -1,0 +1,319 @@
+<div class="card" style="margin-bottom: 0;"> <!--CONTENIDO PRINCIPAL-->
+    <p-table 
+    #dt2
+    [columns]="cols" 
+    [value]="vehiculos" 
+    [paginator]="true"
+    [rows]="5"
+    [loading]="loading"
+    [tableStyle]="{ 'min-width': '50rem' }"
+    [rowsPerPageOptions]="[5, 10, 20]"
+    >
+    <ng-template #caption>
+        <div class="flex flex-col-reverse sm:flex-row sm:justify-between gap-2 w-full">
+            <p-button label="Limpiar" severity="secondary" icon="pi pi-filter-slash" (click)="clear(dt2)" />
+            <p-iconfield iconPosition="left" class="mr-1">
+                <p-inputicon>
+                    <i class="pi pi-search"></i>
+                </p-inputicon>
+                <input pInputText type="text" class="w-full" (input)="filterGlobal($event, dt2)" placeholder="Busca por una palabra clave" />
+            </p-iconfield>
+            <div class="flex gap-2 justify-between">
+                <p-button (click)="OnExportButton()" severity="secondary" icon="pi pi-file-export" label="Exportar"></p-button>
+                <p-button (click)="showDialogAdd()" class="w-full sm:min-w-44" icon="pi pi-plus" label="Agregar Vehiculo"></p-button>
+            </div>
+        </div>
+    </ng-template>
+    <ng-template #header let-columns>
+        <tr>
+            <th [class]="{'min-width:15rem':col.sort}" [pSortableColumn]="col.field" *ngFor="let col of columns">
+                <div class="flex items-center w-full">
+                    {{ col.header }}
+                    <p-columnFilter [type]="col.type" *ngIf="col.sort === true" [field]="col.field" display="menu" />
+
+                    <p-columnFilter field="estado" *ngIf="col.field === 'estado'" matchMode="equals" display="menu">
+                        <ng-template #filter let-filter="filterCallback">
+                            <p-dropdown [(ngModel)]="selectedEstadoFilter" [options]="estado" (onChange)="filter(selectedEstadoFilter)" placeholder="Seleccione un estado" optionLabel="name" optionValue="code">
+                                <ng-template let-option pTemplate="item">
+                                    <p-tag [value]="option.name" [severity]="getSeverityEstado(option.code)"/>
+                                </ng-template>
+                            </p-dropdown>
+                        </ng-template>
+                    </p-columnFilter>
+                </div>
+            </th>
+        </tr>
+        
+    </ng-template>
+    <ng-template #body let-rowData let-columns="columns">
+        <tr class="text-center">
+            <td  *ngFor="let col of columns">
+
+                <ng-container 
+                *ngIf="col.field === 'estado' 
+                || col.field === 'licencia' 
+                || col.field === 'numeroVehiculo'
+                || col.field === 'ultimoAnioMatriculacion' 
+                || col.field === 'ultimoAnioRTV';
+                else normalData">
+                    <div class="flex justify-center">
+                        <p-tag *ngIf="col.field === 'estado'" [value]="GetEstado(rowData[col.field])" [severity]="getSeverityEstado(rowData[col.field])"></p-tag>
+                        <p-tag *ngIf="col.field === 'licencia'" severity="secondary">
+                            <ng-container *ngFor="let item of rowData[col.field]; let last = last">
+                              {{ item.detalle }}<span *ngIf="!last">, </span>
+                            </ng-container>
+                        </p-tag>  
+                        <p-tag *ngIf="col.field === 'numeroVehiculo'" value="#{{rowData[col.field]}}" severity="secondary"></p-tag>
+                        <p-tag *ngIf="col.field === 'ultimoAnioRTV'" value="{{rowData[col.field]}}" [severity]="GetSeverityYear(rowData[col.field])"></p-tag>
+                        <p-tag *ngIf="col.field === 'ultimoAnioMatriculacion'" value="{{rowData[col.field]}}" [severity]="GetSeverityYear(rowData[col.field])"></p-tag>
+                    </div>
+                </ng-container>
+
+                <ng-template #normalData>
+                    <p class="text-center">{{ rowData[col.field] }}</p>
+                </ng-template>
+
+                <div *ngIf="col.field =='actions'" class="flex justify-start w-full gap-2"> 
+                    <p-button icon="pi pi-users" [rounded]="true" [text]="true" [raised]="true" severity="secondary" />
+                    <p-button icon="pi pi-pen-to-square" [rounded]="true" [text]="true" [raised]="true" severity="secondary" />
+                    <p-button icon="pi pi-expand" [rounded]="true" [text]="true" [raised]="true" severity="secondary" />
+                </div>
+            </td>
+        </tr>
+    </ng-template>
+    </p-table>
+</div>
+
+<p-dialog header="Agregar Vehiculo a la flota Institucional" [modal]="true" [(visible)]="visibleAdd" [style]="{ width: '50rem' }" [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }"> <!--Dialog crear Orden de trabajo-->
+    <span class="p-text-secondary block mb-4">Ingresa los siguientes campos para crear la Orden de Trabajo (OT):</span>
+    <form [formGroup]="fb_addVehiculo" >
+        <div class="card">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!--CI/RUC propietario input start-->
+                <div>
+                    <div class="flex">
+                        <p-floatlabel variant="on" class="mr-2 w-full">
+                            <input 
+                            pInputText 
+                            formControlName="num_documento" 
+                            class="w-full" 
+                            [ngClass]="{'ng-invalid ng-dirty': fb_addVehiculo.get('num_documento')?.invalid && fb_addVehiculo.get('num_documento')?.touched}">
+                            <label>CI/RUC Propietario*</label>
+                        </p-floatlabel>
+                        <p-button [icon]="iconValidarDocumento" aria-label="Validar documento" [disabled]="fb_addVehiculo.get('num_documento')?.invalid" (onClick)="validarDocumento()">
+                            <p-progress-spinner *ngIf="iconValidarDocumento === ''" ariaLabel="loading" [style]="{ width: '15px', height: '15px' }"/>
+                        </p-button>
+                    </div>
+                    <div *ngIf="fb_addVehiculo.get('num_documento')?.invalid && fb_addVehiculo.get('num_documento')?.touched" class="text-red-500 text-sm">
+                        <span *ngIf="fb_addVehiculo.get('num_documento')?.errors?.['required']">El CI/RUC es obligatorio.</span>
+                        <span *ngIf="fb_addVehiculo.get('num_documento')?.errors?.['minlength']">Debe tener al menos 10 caracteres.</span>
+                        <span *ngIf="fb_addVehiculo.get('num_documento')?.errors?.['maxlength']">No puede tener más de 16 caracteres.</span>
+                    </div>
+                </div>            
+                <!--CI/TUC client input end-->
+            </div>
+            <p-divider type="dotted" />
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Placa del vehículo input start -->
+                <div>
+                    <p-floatlabel variant="on" class="w-full">
+                        <input 
+                        pInputText 
+                        formControlName="placa" 
+                        class="w-full" 
+                        [ngClass]="{'ng-invalid ng-dirty': fb_addVehiculo.get('placa')?.invalid && fb_addVehiculo.get('placa')?.touched}">
+                        <label>Placa del vehículo*</label>
+                    </p-floatlabel>
+                    <div *ngIf="fb_addVehiculo.get('placa')?.invalid && fb_addVehiculo.get('placa')?.touched" class="text-red-500 text-sm">
+                        <span *ngIf="fb_addVehiculo.get('placa')?.errors?.['required']">La placa es obligatoria.</span>
+                        <span *ngIf="fb_addVehiculo.get('placa')?.errors?.['minlength']">Debe tener al menos 7 caracteres.</span>
+                        <span *ngIf="fb_addVehiculo.get('placa')?.errors?.['maxlength']">No puede tener más de 8 caracteres.</span>
+                    </div>
+                </div>
+                <!-- Placa del vehículo input end -->
+                <!-- num_chasis del vehículo input start -->
+                <div>
+                    <p-floatlabel variant="on" class="w-full">
+                        <input 
+                        pInputText 
+                        formControlName="num_chasis" 
+                        class="w-full">
+                        <label>Número de Chasis</label>
+                    </p-floatlabel>
+                </div>
+                <!-- Placa del vehículo input end -->
+                <!-- Tipo de vehiculo input start -->
+                <div>
+                    <p-floatlabel variant="on" class="w-full">
+                        <p-select 
+                        formControlName="tipoVehiculo" 
+                        [options]="tiposVehiculo" 
+                        optionLabel="name" 
+                        optionValue="code"
+                        class="w-full"
+                        [ngClass]="{'ng-invalid ng-dirty': fb_addVehiculo.get('tipoVehiculo')?.invalid && fb_addVehiculo.get('tipoVehiculo')?.touched}">
+                    </p-select>
+                    <label>Tipo de vehiculo*</label>
+                    </p-floatlabel>
+                    <div *ngIf="fb_addVehiculo.get('tipoVehiculo')?.invalid && fb_addVehiculo.get('tipoVehiculo')?.touched" class="text-red-500 text-sm">
+                        <span>El tipo de vehiculo es obligatorio.</span>
+                    </div>
+                </div>
+                <!-- Tipo Vehiculo input end -->
+                <!-- Licencia input start -->
+                <div>
+                    <p-floatlabel variant="on" class="w-full">
+                        <p-multiselect 
+                        formControlName="licencia" 
+                        [options]="licencia"  
+                        optionLabel="detalle" 
+                        optionValue="idLicencia"
+                        display="chip" 
+                        styleClass="w-full"
+                        [ngClass]="{'ng-invalid ng-dirty': fb_addVehiculo.get('licencia')?.invalid && fb_addVehiculo.get('licencia')?.touched}">
+                        ></p-multiselect>
+                        <label>Licencias*</label>
+                    </p-floatlabel>
+                    <div *ngIf="fb_addVehiculo.get('licencia')?.invalid && fb_addVehiculo.get('licencia')?.touched" class="text-red-500 text-sm">
+                        <span>La licencia es obligatoria.</span>
+                    </div>
+                </div>
+                <!-- Licencia input end -->
+                <!-- num_vehiculo input start -->
+                <div>
+                    <p-floatlabel variant="on" class="w-full">
+                        <input 
+                        pInputText 
+                        formControlName="numeroVehiculo" 
+                        class="w-full" 
+                        [ngClass]="{'ng-invalid ng-dirty': fb_addVehiculo.get('numeroVehiculo')?.invalid && fb_addVehiculo.get('numeroVehiculo')?.touched}">
+                        <label>Número institucional del vehiculo*</label>
+                    </p-floatlabel>
+                    <div *ngIf="fb_addVehiculo.get('numeroVehiculo')?.invalid && fb_addVehiculo.get('numeroVehiculo')?.touched" class="text-red-500 text-sm">
+                        <span>El número de vehiculo es obligatorio.</span>
+                    </div>
+                </div>
+                <!-- num_vehiculo input end -->
+                <!-- marca input start -->
+                <div>
+                    <p-floatlabel variant="on" class="w-full">
+                        <input 
+                        pInputText 
+                        formControlName="marca" 
+                        class="w-full" 
+                        [ngClass]="{'ng-invalid ng-dirty': fb_addVehiculo.get('marca')?.invalid && fb_addVehiculo.get('marca')?.touched}">
+                        <label>Marca comercial del vehiculo*</label>
+                    </p-floatlabel>
+                    <div *ngIf="fb_addVehiculo.get('marca')?.invalid && fb_addVehiculo.get('marca')?.touched" class="text-red-500 text-sm">
+                        <span>La marca es obligatoria.</span>
+                    </div>
+                </div>
+                <!-- marca input end -->
+                <!-- modelo input start -->
+                <p-floatlabel variant="on" class="w-full">
+                    <input 
+                        pInputText 
+                        formControlName="modelo" 
+                        class="w-full" 
+                        [ngClass]="{'ng-invalid ng-dirty': fb_addVehiculo.get('modelo')?.invalid && fb_addVehiculo.get('modelo')?.touched}">
+                    <label>Modelo del vehiculo</label>
+                </p-floatlabel>
+                <!-- modelo input end -->
+                <!-- version input start -->
+                <p-floatlabel variant="on" class="w-full">
+                    <input 
+                        pInputText 
+                        formControlName="version" 
+                        class="w-full" 
+                        [ngClass]="{'ng-invalid ng-dirty': fb_addVehiculo.get('version')?.invalid && fb_addVehiculo.get('version')?.touched}">
+                    <label>Versión del vehiculo</label>
+                </p-floatlabel>
+                <!-- version input end -->
+                <!-- color input start -->
+                <p-floatlabel variant="on" class="w-full">
+                    <input 
+                        pInputText 
+                        formControlName="color" 
+                        class="w-full" 
+                        [ngClass]="{'ng-invalid ng-dirty': fb_addVehiculo.get('color')?.invalid && fb_addVehiculo.get('color')?.touched}">
+                    <label>Color del vehiculo</label>
+                </p-floatlabel>
+                <!-- color input end -->
+                <!-- Anio del vehiculo input start -->
+                <div>
+                    <p-floatlabel variant="on" class="w-full">
+                        <p-datepicker 
+                        formControlName="anio" 
+                        dateFormat="yy" 
+                        view="year"
+                        [showButtonBar]="true" 
+                        [showIcon]="true" 
+                        class="w-full"
+                        [ngClass]="{'ng-invalid ng-dirty': fb_addVehiculo.get('anio')?.invalid && fb_addVehiculo.get('anio')?.touched}">
+                    </p-datepicker>
+                        <label class="w-full">Año del Vehiculo*</label>
+                    </p-floatlabel>
+                    <div *ngIf="fb_addVehiculo.get('anio')?.invalid && fb_addVehiculo.get('anio')?.touched" class="text-red-500 text-sm">
+                        <span>El año del vehiculo es obligatorio.</span>
+                    </div>
+                </div>
+                <!-- Anio del vehiculo input end -->
+                <!-- Anio ultima RTV input start -->
+                <div>
+                    <p-floatlabel variant="on" class="w-full">
+                        <p-datepicker 
+                        formControlName="ultimoAnioRTV"
+                        dateFormat="yy" 
+                        view="year"
+                        [showButtonBar]="true" 
+                        [showIcon]="true" 
+                        class="w-full"
+                        [ngClass]="{'ng-invalid ng-dirty': fb_addVehiculo.get('ultimoAnioRTV')?.invalid && fb_addVehiculo.get('UltimoAnioRTV')?.touched}">
+                    </p-datepicker>
+                        <label class="w-full">Año de ultima RTV*</label>
+                    </p-floatlabel>
+                    <div *ngIf="fb_addVehiculo.get('ultimoAnioRTV')?.invalid && fb_addVehiculo.get('ultimoAnioRTV')?.touched" class="text-red-500 text-sm">
+                        <span>El año de la ultima RTV es obligatoria.</span>
+                    </div>
+                </div>
+                <!-- Anio del vehiculo input end -->
+                <!-- Anio ultima Matriculacion input start -->
+                <div>
+                    <p-floatlabel variant="on" class="w-full">
+                        <p-datepicker 
+                        formControlName="ultimoAnioMatriculacion"
+                        dateFormat="yy" 
+                        view="year"
+                        [showButtonBar]="true" 
+                        [showIcon]="true" 
+                        class="w-full"
+                        [ngClass]="{'ng-invalid ng-dirty': fb_addVehiculo.get('ultimoAnioMatriculacion')?.invalid && fb_addVehiculo.get('UltimoAnioMatriculacion')?.touched}">
+                    </p-datepicker>
+                        <label class="w-full">Año de ultima Matriculación*</label>
+                    </p-floatlabel>
+                    <div *ngIf="fb_addVehiculo.get('ultimoAnioMatriculacion')?.invalid && fb_addVehiculo.get('ultimoAnioMatriculacion')?.touched" class="text-red-500 text-sm">
+                        <span>El año de la ultima matriculación es obligatoria.</span>
+                    </div>
+                </div>
+                <!-- Anio del vehiculo input end -->
+            </div>
+            <p-divider type="dotted" />
+            <div>
+                <p-fileupload name="demo[]" url="https://www.primefaces.org/cdn/api/upload.php" (onUpload)="onUpload($event)" [multiple]="true" accept="image/*" maxFileSize="1000000" mode="advanced">
+                    <ng-template #empty>
+                        <div>Arrastra y suelta tus archivos para subirlos.</div>
+                    </ng-template>
+                    <ng-template #content>
+                        <ul *ngIf="uploadedFiles.length">
+                            <li *ngFor="let file of uploadedFiles">{{ file.name }} - {{ file.size }} bytes</li>
+                        </ul>
+                    </ng-template>
+                </p-fileupload>
+            </div>
+            <div class="flex justify-end gap-2 mt-4">
+                <p-button label="Cancelar" severity="secondary" (click)="visibleAdd = false; fb_addVehiculo.reset(); uploadedFiles = []" />
+                <p-button label="Guardar" [disabled]="fb_addVehiculo.invalid || uploadedFiles.length < 4" />
+            </div>
+        </div>
+    </form>
+</p-dialog>
