@@ -8,14 +8,16 @@ export const EstadosOTs = [
     {name: 'Finalizado', code: 1},
     {name: 'Finalizado sin Exito', code: 2},
     {name: 'Anulado', code: 3},
-    {name: 'Pendiente', code: 4}];
+    {name: 'Pendiente', code: 4}
+];
 
 export const PrioridadesOT = [
     {name: 'Crítico', code: 0},
     {name: 'Emergencia', code: 1},
     {name: 'Advertencia', code: 2},
     {name: 'Notificación', code: 3},
-    {name: 'Baja prioridad', code: 4}];
+    {name: 'Baja prioridad', code: 4}
+];
 
 export const ExpandOptionsOT = [
     { name: 'Tareas', code: 1 },
@@ -23,4 +25,11 @@ export const ExpandOptionsOT = [
     { name: 'Mecánicos', code: 3 },
     { name: 'Trabajos Externos', code: 4 },
     { name: 'Observaciones', code: 5 },
-    { name: 'Solicitudes', code: 6 }];
+    { name: 'Solicitudes', code: 6 }
+];
+
+export const EstadosVehiculo = [
+    {name: 'Operativo', code: 0},
+    {name: 'Mantenimineto', code: 1},
+    {name: 'Baja', code: 2}
+];

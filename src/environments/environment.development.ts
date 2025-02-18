@@ -6,4 +6,6 @@ export const environment = {
     ordenesTrabajo: '/OrdenesTrabajo',
     mecanico: '/MecanicosController',
     validacion: '/Validacion',
+    vehiculo: '/Vehiculo',
+    licencia: '/LicenciasController'
 };
