@@ -78,7 +78,7 @@
     </p-table>
 </div>
 
-<p-dialog [header]="'Crear Orden de Trabajo: '+codeEditDialog" [modal]="true" [(visible)]="visibleAdd" [style]="{ width: '25rem' }"> <!--Dialog crear Orden de trabajo-->
+<p-dialog header="Crear Orden de Trabajo" [modal]="true" [(visible)]="visibleAdd" [style]="{ width: '25rem' }"> <!--Dialog crear Orden de trabajo-->
     <span class="p-text-secondary block mb-4">Ingresa los siguientes campos para crear la Orden de Trabajo (OT):</span>
     <form [formGroup]="fb_addOt" >
         <div class="flex flex-col mb-4">
@@ -201,7 +201,7 @@
     </form>
 </p-dialog>
 
-<p-dialog header="Editar Orden de Trabajo" [modal]="true" [(visible)]="visibleEdit" [style]="{ width: '25rem' }"> <!--Dialog crear Orden de trabajo-->
+<p-dialog [header]="'Editar Orden de Trabajo: '+codeEditDialog" [modal]="true" [(visible)]="visibleEdit" [style]="{ width: '25rem' }"> <!--Dialog crear Orden de trabajo-->
     <span #EditHeader class="p-text-secondary block mb-4">Actualiza los campos disponibles de la Orden de Trabajo (OT):</span>
     <form [formGroup]="fb_editOt" >
         <div *ngIf="loadingEditDialog">
