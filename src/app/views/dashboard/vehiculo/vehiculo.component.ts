@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { VehiculoService } from '../../services/vehiculo.service';
-import { Licencia, VehiculosList } from '../../../../domain/response/Vehiculo.model';
+import { VehicleDetalleResponse, VehiculosList } from '../../../../domain/response/Vehiculo.model';
+import { AddVehicleInstitucional } from '../../../../domain/request/Vehiculo.model';
 import { Column, HeadersTables } from '../../shared/util/tables';
 import { Table, TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -21,17 +22,12 @@ import { DropdownModule } from 'primeng/dropdown';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TagModule } from 'primeng/tag';
 import { ValidacionService } from '../../services/validacion.service';
-import { LicenciaList } from '../../../../domain/response/Licencia.model';
+import { Licencia } from '../../../../domain/response/Licencia.model';
 import { LicenciaService } from '../../services/licencia.service';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { DividerModule } from 'primeng/divider';
 import { FileUpload } from 'primeng/fileupload';
-import { FileUploadEvent } from 'primeng/fileupload';
-
-interface UploadEvent {
-  originalEvent: Event;
-  files: File[];
-}
+import { SkeletonSimpleComponent } from '../../shared/components/skeleton-simple.component';
 
 @Component({
   selector: 'app-vehiculo',
@@ -57,7 +53,8 @@ interface UploadEvent {
     TagModule,
     MultiSelectModule,
     DividerModule,
-    FileUpload
+    FileUpload,
+    SkeletonSimpleComponent,
   ],
   standalone: true,
   templateUrl: './vehiculo.component.html',
@@ -69,19 +66,27 @@ export class VehiculoComponent implements OnInit{
   cols!: Column[];
 
   loading: boolean = true;
+  loadingEditDialog: boolean = false;
+
   visibleAdd: boolean = false;
+  visibleEdit: boolean = false;
 
   fb_addVehiculo!: FormGroup;
+  fb_editVehiculo!: FormGroup;
+
+  placaEditDialog: string='';
+  VehicleEditDialog!: VehicleDetalleResponse;
 
   estado!: genericT[];
   tiposVehiculo!: genericT[];
-  licencia!: LicenciaList[];
+  licencia!: Licencia[];
 
   selectedEstadoFilter!: genericT;
   selectedYearRTVFilter!: number;
   nowDate!: Date;
+  minDate!: Date;
 
-uploadedFiles: any[] = [];
+  uploadedFiles: any[] = [];
 
   iconValidarDocumento: string = 'pi pi-search';
 
@@ -96,6 +101,29 @@ uploadedFiles: any[] = [];
     this.estado = EstadosVehiculo;
     this.cols = HeadersTables.VehiculosList;
     this.nowDate = new Date();
+    this.nowDate.setFullYear(this.nowDate.getFullYear());
+    this.minDate = new Date(2015, 0, 1);
+    this.VehicleEditDialog = {
+      idVehiculo: 0,
+      marca: '',
+      modelo: '',
+      version: '',
+      placa: '',
+      anio: 0,
+      color: '',
+      numeroChasis: '',
+      numeroVehiculo: '',
+      estado: 0,
+      ultimoAnioMatriculacion: 0,
+      ultimoAnioRTV: 0,
+      tipoVehiculo: '',
+      propietario: {
+        idCliente: 0,
+        nombre: '',
+        apellidos: '',
+      },
+      licencias: []
+    }
     this.tiposVehiculo = [
       {name: 'Automotor', code: 0},
       {name: 'Moto', code: 1},
@@ -121,30 +149,99 @@ uploadedFiles: any[] = [];
       }
     })
     this.fb_addVehiculo = new FormGroup({
-      placa: new FormControl<string | null>(null, [Validators.required, Validators.minLength(7), Validators.maxLength(8)]),
+      placa: new FormControl<string | null>(null, [Validators.required, Validators.pattern(/^[A-Za-z]{3}-\d{4}$/)]),
       num_chasis: new FormControl<string | null>(null),
       tipoVehiculo: new FormControl<number | null>(null, [Validators.required]),
-      estado: new FormControl<number | null>(null, [Validators.required]),
       licencia: new FormControl<Licencia[] | null>(null, [Validators.required]),
-      numeroVehiculo: new FormControl<number | null>(null, [Validators.required, Validators.maxLength(5)]),
+      numeroVehiculo: new FormControl<number | null>(null, [Validators.required, Validators.max(1000)]),
       marca: new FormControl<string | null>(null, [Validators.required]),
       modelo: new FormControl<string | null>(null),
       version: new FormControl<string | null>(null),
       color: new FormControl<string | null>(null),
-      anio: new FormControl<number | null>(null, [Validators.required, Validators.min(2010), Validators.max(this.nowDate.getFullYear())]),
-      ultimoAnioRTV: new FormControl<number | null>(null, [Validators.required, Validators.min(2010), Validators.max(this.nowDate.getFullYear())]),
-      ultimoAnioMatriculacion: new FormControl<number | null>(null, [Validators.required, Validators.min(2010), Validators.max(this.nowDate.getFullYear())]),
-      num_documento: new FormControl<string | null>(null, [Validators.required, Validators.min(1), Validators.max(1000)]),
+      anio: new FormControl<number | null>(null, [Validators.required]),
+      ultimoAnioRTV: new FormControl<number | null>(null, [Validators.required]),
+      ultimoAnioMatriculacion: new FormControl<number | null>(null, [Validators.required]),
+      num_documento: new FormControl<string | null>(null, [Validators.required, Validators.minLength(10), Validators.maxLength(16)]),
       propietarioId: new FormControl<number | null>(null, [Validators.required])
     })
+    this.fb_editVehiculo = new FormGroup({
+      estado: new FormControl<number | null>(null, [Validators.required]),
+      ultimoAnioRTV: new FormControl<number | null>(null, [Validators.required]),
+      ultimoAnioMatriculacion: new FormControl<number | null>(null, [Validators.required]),
+    });
+    this.fb_addVehiculo.get('num_documento')?.valueChanges.subscribe(() => {
+      this.fb_addVehiculo.patchValue({propietarioId: null});;
+      this.iconValidarDocumento = 'pi pi-search';
+    });
   }
-  
+  convertFormToVehicle(): AddVehicleInstitucional {
+    return {
+      numeroChasis: this.fb_addVehiculo.get('num_chasis')?.value,
+      placa: this.fb_addVehiculo.get('placa')?.value,
+      idTipoVehiculo: this.fb_addVehiculo.get('tipoVehiculo')?.value,
+      idLicencias: this.fb_addVehiculo.get('licencia')?.value,
+      numeroVehiculo: this.fb_addVehiculo.get('numeroVehiculo')?.value,
+      marca: this.fb_addVehiculo.get('marca')?.value,
+      modelo: this.fb_addVehiculo.get('modelo')?.value,
+      version: this.fb_addVehiculo.get('version')?.value,
+      color: this.fb_addVehiculo.get('color')?.value,
+      anio: this.fb_addVehiculo.get('anio')?.value,
+      estado: 0,
+      ultimoAnioRTV: this.fb_addVehiculo.get('ultimoAnioRTV')?.value,
+      ultimoAnioMatriculacion: this.fb_addVehiculo.get('ultimoAnioMatriculacion')?.value,
+      idCliente: this.fb_addVehiculo.get('propietarioId')?.value,
+      archivos: this.uploadedFiles
+    };
+  }
+  createVehicle() {
+    const vehicle: AddVehicleInstitucional = this.convertFormToVehicle();
+    this.vehiculoService.postVehicleInstitucional(vehicle).subscribe({
+      next: (response: any) => {
+        this.toastr.success('Vehículo creado correctamente', 'Éxito!');
+        this.visibleAdd = false;
+        this.ngOnInit();
+      },
+      error: (err) => {
+        console.error("Error al crear vehículo: ", err);
+        this.toastr.error('Hubo un error al crear el vehículo', 'Error!');
+      }
+    })
+  }
+  updateVehicleOptions(){
+
+  }
+  onSelectAddFilesVehicle(event:any) {
+    for(let file of event.files) {
+        this.uploadedFiles.push(file);
+    }
+  }
   OnExportButton(){
 
   }
   showDialogAdd() {
     this.visibleAdd = true;
   } 
+  showDialogEdit(placa: string) {
+    this.visibleEdit = true;
+    this.loadingEditDialog = true;
+    this.vehiculoService.getVehiculoByPlaca(placa).subscribe({
+      next: (response: any) => {
+        this.VehicleEditDialog = response;
+        this.fb_editVehiculo.patchValue({
+          estado: response.estado,
+          ultimoAnioRTV: new Date(`${response.ultimoAnioRTV}-01-01`),
+          ultimoAnioMatriculacion: new Date(`${response.ultimoAnioMatriculacion}-01-01`)
+        });
+        this.loadingEditDialog = false;
+      },
+      error: (err) => {
+        console.error("Error al obtener vehículo: ", err);
+        this.toastr.error('Hubo un error al obtener el vehículo', 'Error!');
+        this.loadingEditDialog = false;
+        this.visibleEdit = false;
+      }
+    })
+  }
   filterGlobal(event: Event, dt: any) { //filtro para barra de busqueda
     const inputValue = (event.target as HTMLInputElement)?.value || '';
     dt.filterGlobal(inputValue, 'contains');
@@ -166,7 +263,7 @@ uploadedFiles: any[] = [];
     return item?.name;
   }
   GetSeverityYear(anio: number){
-    const year = this.nowDate.getFullYear();
+    const year = this.nowDate.getFullYear()-1;
     if(anio == year) return 'success';
     if(anio == (year-1)) return 'warn';
     return 'danger';
@@ -177,7 +274,7 @@ uploadedFiles: any[] = [];
     this.validacionService.validarClienteXDoc(numDocumento).subscribe({
       next: (response) => {
         if(response.esClienteActivo){
-          this.fb_addVehiculo.patchValue({clienteId: response.idPersona});
+          this.fb_addVehiculo.patchValue({propietarioId: response.idPersona});
           this.iconValidarDocumento = 'pi pi-check';
         }
         this.iconValidarDocumento = 'pi pi-check';  
@@ -187,10 +284,5 @@ uploadedFiles: any[] = [];
         this.toastr.warning(err.error, "Persona no encontrada!");
       }
     })
-  }
-  onUpload(event:FileUploadEvent) {
-    for(let file of event.files) {
-        this.uploadedFiles.push(file);
-    }
   }
 }
