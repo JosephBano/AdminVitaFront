@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AuthService } from '../auth/service/auth.service';
 import { environment } from '../../../environments/environment.development';
-import { OrdenTrabajo, ordenTrabajoListResponse } from '../../../domain/response/OrdenTrabajoResponse.model';
+import { ExpandInfoOT, OrdenTrabajo, ordenTrabajoListResponse } from '../../../domain/response/OrdenTrabajoResponse.model';
 import { ActualizarOrdenRequest, AgendarOrdenTrabajo } from '../../../domain/request/OrdenTrabajoRequest.model';
 
 @Injectable({
@@ -34,6 +34,11 @@ export class OrdenTrabajoService {
   createOrdenTrabajo(data: AgendarOrdenTrabajo): Observable<any> {
     const headers = this.auth.getAuthHeaders();
     return this.http.post<any>(`${this.apiUrl}/AgendarOrden`, data, { headers });
+  }
+
+  getResumen(code: string):Observable<ExpandInfoOT> {
+    const headers = this.auth.getAuthHeaders();
+    return this.http.get<ExpandInfoOT>(`${this.apiUrl}/ObtenerResumen/${code}`, { headers });
   }
   exportAllToExcel(): Observable<Blob> {
     const headers = this.auth.getAuthHeaders();

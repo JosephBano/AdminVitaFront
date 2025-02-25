@@ -19,15 +19,6 @@ export const PrioridadesOT = [
     {name: 'Baja prioridad', code: 4}
 ];
 
-export const ExpandOptionsOT = [
-    { name: 'Tareas', code: 1 },
-    { name: 'Insumos y repuestos', code: 2 },
-    { name: 'Mecánicos', code: 3 },
-    { name: 'Trabajos Externos', code: 4 },
-    { name: 'Observaciones', code: 5 },
-    { name: 'Solicitudes', code: 6 }
-];
-
 export const EstadosVehiculo = [
     {name: 'Operativo', code: 0},
     {name: 'Mantenimineto', code: 1},

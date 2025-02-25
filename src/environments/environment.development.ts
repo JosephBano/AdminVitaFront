@@ -7,5 +7,8 @@ export const environment = {
     mecanico: '/MecanicosController',
     validacion: '/Validacion',
     vehiculo: '/Vehiculo',
-    licencia: '/LicenciasController'
+    licencia: '/LicenciasController',
+    items: '/Items',
+    tarea: '/Tarea',
+    solicitudRepuesto: '/SolicitudRepuesto'
 };

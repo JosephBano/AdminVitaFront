@@ -1,3 +1,6 @@
+import { Propietario } from "./Cliente.model";
+import { Licencia } from "./Licencia.model";
+
 export interface VehiculosList {
     placa: string;
     tipoVehiculo: string;
@@ -10,9 +13,26 @@ export interface VehiculosList {
     licencia: Licencia[] | null;
 }
 
-export interface Licencia {
-    idLicencia: number;
-    detalle: string;
-    esProfesional: boolean;
+export interface tipoVehiculo {
+    
 }
+
+export interface VehicleDetalleResponse {
+    idVehiculo: number;
+    marca: string;
+    modelo: string;
+    version: string;
+    placa: string;
+    anio: number;
+    color: string;
+    numeroChasis: string;
+    numeroVehiculo: string;
+    estado: number;
+    ultimoAnioMatriculacion: number;
+    ultimoAnioRTV: number;
+    tipoVehiculo: string;
+    propietario: Propietario;
+    licencias: Licencia[];
+  }
+  
   

@@ -1,8 +1,8 @@
 export interface Column {
-    field: string;
-    header: string;
-    sort: boolean;
-    type: string;
+    field?: string;
+    header?: string;
+    sort?: boolean;
+    type?: string;
   }
 
 export const HeadersTables = {
@@ -29,4 +29,55 @@ export const HeadersTables = {
     { field: 'ultimoAnioMatriculacion', header: 'Matriculado', sort: true, type: 'text' },
     { field: 'actions', header: 'Acciones', sort: false, type: '' }
   ],
+  TareasList: [
+    {field: 'codigo', header: 'Código'},
+    {field: 'detalle', header: 'Detalle'},
+    {field: 'estado', header: 'Estado'},
+    {field: 'mecanicos', header: 'Mecánicos'},
+    {field: 'duracion', header: 'Duración (Unidades de Tiempo)'},
+    {field: 'requiereServicioExterno', header: 'Servicio Externo'},
+    {field: 'requiereRepuesto', header: 'Requiere Repuesto/s'},
+    {field: 'observaciones', header: 'Observaciones'}
+  ],
+  RepuestoseInsumosList: [
+    {field: 'codigoItem', header:'Código Item'},
+    {field: 'nombre', header:'Nombre Item'},
+    {field: 'detalle', header:'Detalle Item'},
+    {field: 'codigoTarea', header: 'Código Tarea'},
+    {field: 'solicitante', header: 'Solicitante'},
+    {field: 'cantidad', header: 'Cantatidad'},
+    {field: 'magnitud', header: 'Magnitud'},
+    {field: 'precio', header: 'Precio'}
+  ],
+  ManoDeObraList: [
+    {field: 'codigo', header:'Código Persona'},
+    {field: 'nombreCompleto', header:'Nombre Completo'},
+    {field: 'esSupervisor', header:'Supervisor'},
+    {field: 'codigoTarea', header:'Código Tarea'},
+    {field: 'especialidad', header:'Especialidad Mecanico'},
+    {field: 'duracion', header:'Duración'},
+  ],
+  TrabajoExternoList: [
+    {field: 'codigo', header: 'Código Tarea'},
+    {field: 'solicitante', header: 'Solicitande'},
+    {field: 'detalle', header: 'Detalle'},
+    {field: 'requiereServicioExterno', header: 'Servicio Externo'},
+    {field: 'requiereAutorizacion', header: 'Requiere Autorización'},
+  ],
+  ObservacionesTareaList: [
+    {field: 'codigoTarea', header: 'Código Tarea'},
+    {field: 'responsable', header: 'Responsable'},
+    {field: 'idAdjunto', header: 'Adjunto'},
+    {field: 'detalle', header: 'Detalle'},
+    {field: 'fechaRegistro', header: 'Fecha de Registro'},
+  ],
+  SolicitudTareaList: [
+    {field: 'codigo', header: 'Código Solicitud'},
+    {field: 'detalle', header: 'Detalle'},
+    {field: 'solicitante', header: 'Solicitante'},
+    {field: 'codigoTarea', header: 'Código Tarea'},
+    {field: 'fechaRegistro', header: 'Fecha de Registro'},
+    {field: 'fechaAprobacion', header: 'Fecha de Aprobación'},
+    {field: 'idAdjunto', header: 'Adjunto'},
+  ]
 }

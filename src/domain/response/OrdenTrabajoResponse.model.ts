@@ -11,7 +11,6 @@ export interface ordenTrabajoList {
     placa: string;
     prioridad: number;
 }
-
 export interface OrdenTrabajo {
     codigo: string;
     detalle: string;
@@ -34,4 +33,11 @@ export interface OrdenTrabajo {
     direccion: string;
     supervisor: number;
 }
-
+export interface ExpandInfoOT {
+    totalTareas: number;
+    totalRepuestos: number;
+    totalMecanicos: number;
+    totalTrabajosExternos: number;
+    totalObservaciones: number;
+    totalSolicitudes: number;
+}
