@@ -17,7 +17,7 @@ import { FloatLabel } from 'primeng/floatlabel';
 import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
 import { MecanicoService } from '../../services/mecanico.service';
-import { EstadosOTs, genericT, PrioridadesOT, ExpandOptionsOT } from '../../shared/util/genericData';
+import { EstadosOTs, EstadosVehiculo, genericT, PrioridadesOT } from '../../shared/util/genericData';
 import { TagModule } from 'primeng/tag';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { BadgeModule } from 'primeng/badge';
@@ -25,8 +25,13 @@ import { DropdownModule } from 'primeng/dropdown';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ValidacionService } from '../../services/validacion.service';
 import { ToastrService } from 'ngx-toastr';
-import { SkeletonModule } from 'primeng/skeleton';
 import { ActualizarOrdenRequest, AgendarOrdenTrabajo } from '../../../../domain/request/OrdenTrabajoRequest.model';
+import { DividerModule } from 'primeng/divider';
+import { SkeletonExpandInfoComponent } from '../../shared/components/skeleton-expand-info.component';
+import { SkeletonSimpleComponent } from '../../shared/components/skeleton-simple.component';
+import { TareasService } from '../../services/tareas.service';
+import { RepuestoService } from '../../services/repuesto.service';
+import { SolicitudService } from '../../services/solicitud.service';
 
 @Component({
   selector: 'app-orden-trabajo',
@@ -51,7 +56,9 @@ import { ActualizarOrdenRequest, AgendarOrdenTrabajo } from '../../../../domain/
     BadgeModule,
     DropdownModule,
     ProgressSpinnerModule,
-    SkeletonModule,
+    DividerModule,
+    SkeletonExpandInfoComponent,
+    SkeletonSimpleComponent
   ],
   standalone: true,
   templateUrl: './orden-trabajo.component.html',
@@ -65,8 +72,12 @@ export class OrdenTrabajoComponent implements OnInit {
   ordenes: ordenTrabajoList[] = [];
   cols!: Column[];
 
+  expandDataTables: any[]=[]
+  expandCols: Column[] = [];
+
   loading: boolean = true;
   loadingEditDialog: boolean = true;
+  loadingExpandDialog: boolean = true;
 
   visibleAdd: boolean = false;   
   visibleEdit: boolean = false;   
@@ -78,6 +89,7 @@ export class OrdenTrabajoComponent implements OnInit {
   estado!: genericT[];
   prioridad!: genericT[];
   supervisor!: genericT[];
+  estadoVehiculo!: genericT[];
 
   selectedEstadoFilter!: genericT;
   selectedPrioridadFilter!: genericT;
@@ -87,8 +99,30 @@ export class OrdenTrabajoComponent implements OnInit {
   codeEditDialog: string = '';
   codeExpandDialog: string = '';
 
-  ExpandOptionsValue!: genericT;
+  ExpandOptionsValue!: string;
   ExpandOptions!: genericT[];
+  ExpandItem: OrdenTrabajo = {
+    codigo: '',
+    detalle: '',
+    prioridad: 0,
+    estado: 0,
+    fechaCreada: new Date(),
+    fechaProgramada: new Date(),
+    fechaFinalizacion: new Date(),
+    observacion: '',
+    codigoVehiculo: '',
+    kilometraje: 0,
+    numeroVehiculo: 0,
+    anio: new Date(),
+    estadoVehiculo: '',
+    propietario: '',
+    placa: '',
+    nombreCliente: '',
+    celular: '',
+    correo: '',
+    direccion: '',
+    supervisor: 0
+  };
 
   iconValidarDocumento: string = 'pi pi-search';
   iconValidarPlaca: string = 'pi pi-search';
@@ -99,13 +133,16 @@ export class OrdenTrabajoComponent implements OnInit {
     private mecService: MecanicoService,  
     private validacionService: ValidacionService,
     private toastr: ToastrService,
+    private tareaService: TareasService,
+    private repuestoService: RepuestoService,
+    private solicitudService: SolicitudService
   ) {}
 
   ngOnInit() {    
     this.cols = HeadersTables.OrdenesTrabajoList;
     this.estado = EstadosOTs;
-    this.prioridad = PrioridadesOT
-    this.ExpandOptions = ExpandOptionsOT; 
+    this.prioridad = PrioridadesOT;
+    this.estadoVehiculo = EstadosVehiculo;
     this.minDate = new Date();
 
     this.otService.getOrdenesTrabajoListado().subscribe({
@@ -167,6 +204,7 @@ export class OrdenTrabajoComponent implements OnInit {
     })
   }
   formatDate(dateString: string): string {
+    if(dateString === 'Vacío') return 'Vacío';
     const date = new Date(dateString);
     const day = date.getDate().toString().padStart(2, '0');
     const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Meses van de 0 a 11
@@ -213,7 +251,30 @@ export class OrdenTrabajoComponent implements OnInit {
   }
   showDialogExpand(code: string){
     this.visibleExpand = true;
+    this.loadingExpandDialog = true;
     this.codeExpandDialog = code;
+    
+    this.otService.getOrdenTrabajoCodigo(code).subscribe({
+      next: (response) =>{
+        this.ExpandItem = response;
+        this.otService.getResumen(code).subscribe({
+          next: (response) => {        
+            this.ExpandOptions =[
+              {code: response.totalTareas, name: 'Tareas'},
+              {code: response.totalRepuestos, name: 'Repuestos'},
+              {code: response.totalRepuestos, name: 'Mecanicos'},
+              {code: response.totalTrabajosExternos, name: 'Trabajos Externos'},
+              {code: response.totalObservaciones, name: 'Observaciones'},
+              {code: response.totalSolicitudes, name: 'Solicitudes'}
+            ];
+            this.loadingExpandDialog = false;
+          },
+          error: (err) => {
+            console.log("Error al solicitar Resumen de Orden de Trabajo: ", err);
+          }
+        });
+      }
+    })
   }
   createOT():void{
     //Contenido validacion
@@ -338,5 +399,78 @@ export class OrdenTrabajoComponent implements OnInit {
         this.toastr.warning(err.error, "Vehiculo no encontrado!");
       }
     });
+  }
+  getSupervisor(id: number) {
+    return this.supervisor.find(s => s.code === id)?.name;
+  }
+  getEstadoVehiculo(id:string) {
+    return this.estadoVehiculo.find(e => e.code.toString() == id)?.name;
+  }
+  tablesOptionHandler(){
+    switch(this.ExpandOptionsValue){
+      case 'Tareas':
+        this.tareaService.getTareasByOT(this.codeExpandDialog).subscribe({
+          next: (response) => {
+            this.expandDataTables = response;
+            this.expandCols = HeadersTables.TareasList;
+          },
+          error: (err) => {
+            console.log(err);
+          }
+        })
+        break;
+      case 'Repuestos':
+        this.repuestoService.getRepuestosInsumosByOT(this.codeExpandDialog).subscribe({
+          next: (response) => {
+            this.expandDataTables = response;            
+            this.expandCols = HeadersTables. RepuestoseInsumosList;
+          },
+          error: (err) => {
+            console.log(err);
+          }
+        })
+        break;
+      case 'Mecanicos':
+        this.mecService.getManoObraOT(this.codeExpandDialog).subscribe({
+          next: (response) => {
+            this.expandDataTables = response;
+            this.expandCols = HeadersTables.ManoDeObraList;
+          },
+          error: (err) => {
+            console.log(err);
+          }
+        });
+        break;
+      case 'Trabajos Externos':
+        this.tareaService.getTareaExternaByOT(this.codeExpandDialog).subscribe({
+          next: (response) => {
+            this.expandDataTables = response;
+            this.expandCols = HeadersTables.TrabajoExternoList;
+          },
+          error: (err) => console.log(err)
+        })
+        break;
+      case 'Observaciones': 
+        this.tareaService.getObservacionesTarea(this.codeExpandDialog).subscribe({
+          next: (response) => {
+            this.expandDataTables = response;
+            this.expandCols = HeadersTables.ObservacionesTareaList;
+          },
+          error: (err) => console.log(err)
+        })
+        break;
+      case 'Solicitudes':
+        this.solicitudService.getSolicitudRepuestoTablaExpandOT(this.codeExpandDialog).subscribe({
+          next: (response) => {
+            this.expandDataTables = response;
+            this.expandCols = HeadersTables.SolicitudTareaList;
+          },
+          error: (err) => console.log(err)
+        })
+        break;
+      default:
+        this.expandCols = [];
+        this.expandDataTables = []
+    }
   }
 }
