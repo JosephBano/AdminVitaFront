@@ -16,6 +16,6 @@ export class RepuestoService {
 
   getRepuestosInsumosByOT(code: string): Observable<RepuestosDetalle[]>{
     const headers = this.auth.getAuthHeaders();
-    return this.http.get<RepuestosDetalle[]>(`${this.apiURL}/GerItemsByOT/${code}`, { headers });
+    return this.http.get<RepuestosDetalle[]>(`${this.apiURL}/GetItemsByOT/${code}`, { headers });
   }
 }

@@ -32,6 +32,16 @@ import { SkeletonSimpleComponent } from '../../shared/components/skeleton-simple
 import { TareasService } from '../../services/tareas.service';
 import { RepuestoService } from '../../services/repuesto.service';
 import { SolicitudService } from '../../services/solicitud.service';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { DatePipe } from '@angular/common';
+import { forkJoin } from 'rxjs';
+
+interface jsPDFWithAutoTable extends jsPDF {
+  lastAutoTable: {
+    finalY: number;
+  };
+}
 
 @Component({
   selector: 'app-orden-trabajo',
@@ -64,7 +74,7 @@ import { SolicitudService } from '../../services/solicitud.service';
   templateUrl: './orden-trabajo.component.html',
   styleUrl: './orden-trabajo.component.scss',
   encapsulation: ViewEncapsulation.None,
-  
+  providers: [DatePipe]
 })
 
 export class OrdenTrabajoComponent implements OnInit {
@@ -126,6 +136,23 @@ export class OrdenTrabajoComponent implements OnInit {
 
   iconValidarDocumento: string = 'pi pi-search';
   iconValidarPlaca: string = 'pi pi-search';
+  
+
+  allTablesData: {
+    tareas: any[];
+    repuestos: any[];
+    mecanicos: any[];
+    trabajosExternos: any[];
+    observaciones: any[];
+    solicitudes: any[];
+  } = {
+    tareas: [],
+    repuestos: [],
+    mecanicos: [],
+    trabajosExternos: [],
+    observaciones: [],
+    solicitudes: []
+  };
 
   constructor(
     private otService: OrdenTrabajoService,
@@ -135,7 +162,8 @@ export class OrdenTrabajoComponent implements OnInit {
     private toastr: ToastrService,
     private tareaService: TareasService,
     private repuestoService: RepuestoService,
-    private solicitudService: SolicitudService
+    private solicitudService: SolicitudService,
+    private datePipe: DatePipe
   ) {}
 
   ngOnInit() {    
@@ -472,5 +500,237 @@ export class OrdenTrabajoComponent implements OnInit {
         this.expandCols = [];
         this.expandDataTables = []
     }
+  }
+
+  loadAllDataForPDF(otCode: string) {
+    // Crear un objeto para almacenar las peticiones
+    const requests = {
+      tareas: this.tareaService.getTareasByOT(otCode),
+      repuestos: this.repuestoService.getRepuestosInsumosByOT(otCode),
+      mecanicos: this.mecService.getManoObraOT(otCode),
+      trabajosExternos: this.tareaService.getTareaExternaByOT(otCode),
+      observaciones: this.tareaService.getObservacionesTarea(otCode),
+      solicitudes: this.solicitudService.getSolicitudRepuestoTablaExpandOT(otCode)
+    };
+
+    // Ejecutar todas las peticiones en paralelo
+    return forkJoin(requests);
+  }
+
+  exportCompletePDF() {
+    // Mostrar un indicador de carga
+    // (implementar según el sistema de UI que estés usando)
+    
+    // Cargar todos los datos
+    this.loadAllDataForPDF(this.codeExpandDialog).subscribe({
+      next: (data: any) => {
+        // Guardar todos los datos
+        this.allTablesData.tareas = data.tareas;
+        this.allTablesData.repuestos = data.repuestos;
+        this.allTablesData.mecanicos = data.mecanicos;
+        this.allTablesData.trabajosExternos = data.trabajosExternos;
+        this.allTablesData.observaciones = data.observaciones;
+        this.allTablesData.solicitudes = data.solicitudes;
+        
+        // Generar el PDF con todos los datos
+        this.generateCompletePDF();
+      },
+      error: (err: any) => {
+        console.error('Error al cargar datos para el PDF:', err);
+        // Mostrar mensaje de error al usuario
+      }
+    });
+  }
+
+  // Generar el PDF completo
+  generateCompletePDF() {
+    const doc = new jsPDF('p', 'mm', 'a4') as jsPDFWithAutoTable;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    let y = 10; // Posición Y inicial
+    
+    // Configurar título del documento
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Orden de Trabajo: ' + this.codeExpandDialog, pageWidth / 2, y, { align: 'center' });
+    y += 10;
+    
+    // Agregar fecha de generación
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'italic');
+    const currentDate = this.datePipe.transform(new Date(), 'dd/MM/yyyy HH:mm:ss');
+    doc.text(`Generado el: ${currentDate}`, pageWidth - 15, 10, { align: 'right' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    
+    // Sección: Descripción
+    this.addSectionTitle(doc, 'Descripción', y);
+    y += 7;
+    this.addKeyValueTable(doc, [
+      { key: 'Detalle', value: this.ExpandItem.detalle || 'No disponible' },
+      { key: 'Prioridad', value: this.GetPrioridad(this.ExpandItem.prioridad) || 'No disponible' },
+      { key: 'Estado', value: this.GetEstado(this.ExpandItem.estado) || 'No disponible' },
+      { key: 'Fecha inicio', value: this.formatDate(this.ExpandItem.fechaCreada ? this.ExpandItem.fechaCreada.toString() : 'Vacío') },
+      { key: 'Fecha programada', value: this.formatDate(this.ExpandItem.fechaProgramada ? this.ExpandItem.fechaProgramada.toString() : 'Vacío') },
+      { key: 'Fecha fin', value: this.formatDate(this.ExpandItem.fechaFinalizacion ? this.ExpandItem.fechaFinalizacion.toString() : 'Vacío') }
+    ], y);
+    y += 30;
+    
+    // Sección: Vehículo
+    this.addSectionTitle(doc, 'Vehículo', y);
+    y += 7;
+    this.addKeyValueTable(doc, [
+      { key: 'Código', value: this.ExpandItem.codigoVehiculo || 'No disponible' },
+      { key: 'Placa', value: this.ExpandItem.placa || 'No disponible' },
+      { key: 'Kilometraje', value: (this.ExpandItem.kilometraje || '0') + ' km' },
+      { key: 'Año', value: this.formatDate(this.ExpandItem.anio ? this.ExpandItem.anio.toString() : 'Vacío') },
+      { key: 'Estado (Institucional)', value: this.getEstadoVehiculo(this.ExpandItem.estadoVehiculo) || 'No disponible' },
+      { key: 'Propietario', value: this.ExpandItem.propietario || 'No disponible' }
+    ], y);
+    y += 30;
+    
+    // Sección: Cliente
+    this.addSectionTitle(doc, 'Cliente', y);
+    y += 7;
+    this.addKeyValueTable(doc, [
+      { key: 'Nombre', value: this.ExpandItem.nombreCliente || 'No disponible' },
+      { key: 'Celular', value: this.ExpandItem.celular || 'No disponible' },
+      { key: 'Correo', value: this.ExpandItem.correo || 'No disponible' },
+      { key: 'Dirección', value: this.ExpandItem.direccion || 'No disponible' },
+      { key: 'Supervisor', value: this.getSupervisor(this.ExpandItem.supervisor) || 'No disponible' }
+    ], y);
+    y += 30;
+    
+    // Agregar todas las tablas de datos
+    
+    // 1. Tareas
+    if (this.allTablesData.tareas && this.allTablesData.tareas.length > 0) {
+      this.checkAndAddPage(doc, y, 40);
+      y = this.addTableToDocument(doc, 'Tareas', this.allTablesData.tareas, HeadersTables.TareasList, y);
+      y += 10;
+    }
+    
+    // 2. Repuestos
+    if (this.allTablesData.repuestos && this.allTablesData.repuestos.length > 0) {
+      this.checkAndAddPage(doc, y, 40);
+      y = this.addTableToDocument(doc, 'Repuestos', this.allTablesData.repuestos, HeadersTables.RepuestoseInsumosList, y);
+      y += 10;
+    }
+    
+    // 3. Mecánicos
+    if (this.allTablesData.mecanicos && this.allTablesData.mecanicos.length > 0) {
+      this.checkAndAddPage(doc, y, 40);
+      y = this.addTableToDocument(doc, 'Mecánicos', this.allTablesData.mecanicos, HeadersTables.ManoDeObraList, y);
+      y += 10;
+    }
+    
+    // 4. Trabajos Externos
+    if (this.allTablesData.trabajosExternos && this.allTablesData.trabajosExternos.length > 0) {
+      this.checkAndAddPage(doc, y, 40);
+      y = this.addTableToDocument(doc, 'Trabajos Externos', this.allTablesData.trabajosExternos, HeadersTables.TrabajoExternoList, y);
+      y += 10;
+    }
+    
+    // 5. Observaciones
+    if (this.allTablesData.observaciones && this.allTablesData.observaciones.length > 0) {
+      this.checkAndAddPage(doc, y, 40);
+      y = this.addTableToDocument(doc, 'Observaciones', this.allTablesData.observaciones, HeadersTables.ObservacionesTareaList, y);
+      y += 10;
+    }
+    
+    // 6. Solicitudes
+    if (this.allTablesData.solicitudes && this.allTablesData.solicitudes.length > 0) {
+      this.checkAndAddPage(doc, y, 40);
+      y = this.addTableToDocument(doc, 'Solicitudes', this.allTablesData.solicitudes, HeadersTables.SolicitudTareaList, y);
+    }
+    
+    // Agregar numeración de páginas
+    const totalPages = doc.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.text(`Página ${i} de ${totalPages}`, pageWidth - 20, pageHeight - 10);
+    }
+    
+    // Guardar el PDF
+    doc.save(`Orden_Trabajo_${this.codeExpandDialog}_Completo.pdf`);
+  }
+  
+  // Verificar si necesitamos agregar una nueva página
+  private checkAndAddPage(doc: jsPDF, currentY: number, requiredSpace: number) {
+    const pageHeight = doc.internal.pageSize.getHeight();
+    if (currentY + requiredSpace > pageHeight - 20) {
+      doc.addPage();
+      return 20; // Retornar nueva posición Y después de agregar página
+    }
+    return currentY;
+  }
+  
+  // Método para agregar una tabla al documento
+  private addTableToDocument(doc: jsPDF, title: string, data: any[], headers: any[], y: number): number {
+    // Agregar título de sección
+    this.addSectionTitle(doc, title, y);
+    y += 7;
+    
+    // Preparar cabeceras y datos para la tabla
+    const tableHeaders = headers.map(col => col.header);
+    const tableData = data.map(item => 
+      headers.map(col => {
+        // Transformar el valor según el campo
+        if (col.field.includes('fecha') && item[col.field]) {
+          return this.datePipe.transform(item[col.field], 'dd/MM/yyyy') || 'N/A';
+        }
+        return item[col.field] !== undefined && item[col.field] !== null ? item[col.field].toString() : 'N/A';
+      })
+    );
+    
+    // Agregar la tabla al PDF
+    autoTable(doc, {
+      head: [tableHeaders],
+      body: tableData,
+      startY: y,
+      theme: 'grid',
+      styles: {
+        fontSize: 8,
+        cellPadding: 2
+      },
+      headStyles: {
+        fillColor: [66, 139, 202],
+        textColor: 255
+      },
+      // Configuración para manejar texto largo
+      columnStyles: {
+        0: {cellWidth: 'auto'}, // Primera columna con ancho automático
+        // Añadir más estilos específicos para columnas si es necesario
+      },
+    });
+    
+    // Usar aserción de tipo para acceder a lastAutoTable
+    return (doc as jsPDFWithAutoTable).lastAutoTable.finalY;
+  }
+  // Método para agregar un título de sección
+  private addSectionTitle(doc: jsPDF, title: string, y: number) {
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 102, 204);
+    doc.text(title, 10, y);
+    doc.setTextColor(0);
+    doc.setDrawColor(0, 102, 204);
+    doc.line(10, y + 1, 200, y + 1);
+  }
+  
+  // Método para agregar una tabla de clave-valor
+  private addKeyValueTable(doc: jsPDF, data: {key: string, value: string}[], y: number) {
+    const startY = y;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    
+    data.forEach((item, index) => {
+      const rowY = startY + (index * 5);
+      doc.setFont('helvetica', 'bold');
+      doc.text(item.key + ':', 15, rowY);
+      doc.setFont('helvetica', 'normal');
+      doc.text(item.value, 60, rowY);
+    });
   }
 }
