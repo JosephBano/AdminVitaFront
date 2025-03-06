@@ -79,5 +79,15 @@ export const HeadersTables = {
     {field: 'fechaRegistro', header: 'Fecha de Registro'},
     {field: 'fechaAprobacion', header: 'Fecha de Aprobación'},
     {field: 'idAdjunto', header: 'Adjunto'},
+  ],
+  AdquisicionesList: [
+    { field: 'numeroFactura', header: '# Factura' },
+    { field: 'fechaRegistro', header: 'Fecha de Registro' },
+    { field: 'documento', header: 'Documento Proveedor'},
+    { field: 'nombres', header: 'Proveedor' },
+    { field: 'subtotal', header: 'Subtotal' },
+    { field: 'iva', header: 'IVA' },
+    { field: 'total', header: 'Total' },
+    { field: 'actions', header: 'Acciones', }
   ]
 }
