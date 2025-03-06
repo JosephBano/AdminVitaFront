@@ -1,1 +1,58 @@
-<p>adquisicion works!</p>
+<div class="card" style="margin-bottom: 0;"> <!--CONTENIDO PRINCIPAL-->
+    <p-table 
+    #dt2
+    [columns]="cols" 
+    [value]="adquisicion" 
+    [paginator]="true"
+    [rows]="5"
+    [loading]="loading"
+    [tableStyle]="{ 'min-width': '50rem' }"
+    [rowsPerPageOptions]="[5, 10, 20]"
+    >
+    <ng-template #caption>
+        <div class="flex flex-col-reverse sm:flex-row sm:justify-between gap-2 w-full">
+            <p-button label="Limpiar" severity="secondary" icon="pi pi-filter-slash" (click)="clear(dt2)" />
+            <p-iconfield iconPosition="left" class="mr-1">
+                <p-inputicon>
+                    <i class="pi pi-search"></i>
+                </p-inputicon>
+                <input pInputText type="text" class="w-full" (input)="filterGlobal($event, dt2)" placeholder="Busca por una palabra clave" />
+            </p-iconfield>
+            <div class="flex gap-2 justify-between">
+                <p-button (click)="OnExportButton()" severity="secondary" icon="pi pi-file-export" label="Exportar"></p-button>
+                <p-button (click)="showDialogAdd()" class="w-full sm:min-w-44" icon="pi pi-plus" label="Agregar Vehiculo"></p-button>
+            </div>
+        </div>
+    </ng-template>
+    <ng-template #header let-columns>
+        <tr>
+            <th [class]="{'min-width:15rem':col.sort}" [pSortableColumn]="col.field" *ngFor="let col of columns">
+                <div class="flex items-center w-full">
+                    {{ col.header }}
+                    <p-columnFilter [type]="col.type" *ngIf="col.sort === true" [field]="col.field" display="menu" />
+                </div>
+            </th>
+        </tr>
+        
+    </ng-template>
+    <ng-template #body let-rowData let-columns="columns">
+        <tr>
+            <td  *ngFor="let col of columns">
+                <ng-container 
+                *ngIf="col.field === 'fechaRegistro' 
+                || col.field === 'subtotal' 
+                || col.field === 'iva'
+                || col.field === 'total' 
+                || col.field === 'nombres';
+                else normalData">
+                    <p *ngIf="col.field === 'fechaRegistro'">{{formatDate(rowData['fechaRegistro'])}}</p>
+                </ng-container>
+
+                <ng-template #normalData>
+                    <p>{{ rowData[col.field] }}</p>
+                </ng-template>
+            </td>
+        </tr>
+    </ng-template>
+    </p-table>
+</div>
