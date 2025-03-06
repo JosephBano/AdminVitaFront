@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { VehiculoService } from '../../services/vehiculo.service';
 import { VehicleDetalleResponse, VehiculosList } from '../../../../domain/response/Vehiculo.model';
-import { AddVehicleInstitucional } from '../../../../domain/request/Vehiculo.model';
+import { AddVehicleInstitucional, UpdateOptionsVehicle } from '../../../../domain/request/Vehiculo.model';
 import { Column, HeadersTables } from '../../shared/util/tables';
 import { Table, TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -101,7 +101,7 @@ export class VehiculoComponent implements OnInit{
     this.estado = EstadosVehiculo;
     this.cols = HeadersTables.VehiculosList;
     this.nowDate = new Date();
-    this.nowDate.setFullYear(this.nowDate.getFullYear());
+    this.nowDate.setFullYear(this.nowDate.getFullYear()+1);
     this.minDate = new Date(2015, 0, 1);
     this.VehicleEditDialog = {
       idVehiculo: 0,
@@ -137,7 +137,6 @@ export class VehiculoComponent implements OnInit{
       },
       error: (err) => {
         console.error("Error al obtener vehículos: ", err);
-        this.loading = false;
       }
     })
     this.licenciaService.getLicencias().subscribe({
@@ -208,7 +207,23 @@ export class VehiculoComponent implements OnInit{
     })
   }
   updateVehicleOptions(){
+    const vehicle: UpdateOptionsVehicle = {
+      idVehiculo: this.VehicleEditDialog.idVehiculo,
+      estado: this.fb_editVehiculo.get('estado')?.value,
+      ultimoAnioRTV: this.fb_editVehiculo.get('ultimoAnioRTV')?.value.getFullYear(),
+      ultimoAnioMatriculacion: this.fb_editVehiculo.get('ultimoAnioMatriculacion')?.value.getFullYear()
+    }
 
+    this.vehiculoService.putVehicleInstitucionalOptions(vehicle).subscribe({
+      next: (response: any) => {
+        this.toastr.success('Opciones del vehículo actualizadas correctamente', 'Éxito!');
+        this.visibleEdit = false;
+        this.ngOnInit();
+      },
+      error: (err) => {
+        this.toastr.error('Hubo un error al actualizar las opciones del vehículo', 'Error!');
+      }
+    })
   }
   onSelectAddFilesVehicle(event:any) {
     for(let file of event.files) {
@@ -227,6 +242,7 @@ export class VehiculoComponent implements OnInit{
     this.vehiculoService.getVehiculoByPlaca(placa).subscribe({
       next: (response: any) => {
         this.VehicleEditDialog = response;
+        this.placaEditDialog = placa;
         this.fb_editVehiculo.patchValue({
           estado: response.estado,
           ultimoAnioRTV: new Date(`${response.ultimoAnioRTV}-01-01`),

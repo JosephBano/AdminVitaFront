@@ -324,13 +324,29 @@
     </form>
 </p-dialog>
 
-<p-dialog [header]="'Actualizar Informacion del vehiculo placa '+placaEditDialog" [modal]="true" [(visible)]="visibleEdit" [style]="{ width: '25rem' }"> <!--Dialog crear Orden de trabajo-->
+<p-dialog [header]="'Actualizar Informacion del vehiculo placa '+placaEditDialog" [modal]="true" [(visible)]="visibleEdit" [style]="{ width: '30rem' }"> <!--Dialog crear Orden de trabajo-->
     <form [formGroup]="fb_editVehiculo" >
         <app-skeleton-simple *ngIf="loadingEditDialog" />
         <ng-container *ngIf="!loadingEditDialog">
             <div class="flex flex-col gap-4 m-4">
                 <div>
-                    <p><strong>Vehiculo:</strong>{{VehicleEditDialog.marca + ' ' + VehicleEditDialog.color+' '+VehicleEditDialog.version}}</p>
+                    <p><strong>Vehiculo: </strong>{{VehicleEditDialog.marca + ' ' + VehicleEditDialog.modelo+' '+VehicleEditDialog.anio}}</p>
+                </div>
+                <div>
+                    <p-floatlabel variant="on" class="w-full">
+                        <p-select 
+                        formControlName="estado" 
+                        [options]="estado" 
+                        optionLabel="name" 
+                        optionValue="code"
+                        class="w-full"
+                        [ngClass]="{'ng-invalid ng-dirty': fb_editVehiculo.get('estado')?.invalid && fb_editVehiculo.get('estado')?.touched}">
+                    </p-select>
+                    <label>Estado*</label>
+                    </p-floatlabel>
+                    <div *ngIf="fb_editVehiculo.get('estado')?.invalid && fb_editVehiculo.get('estado')?.touched" class="text-red-500 text-sm">
+                        <span *ngIf="fb_editVehiculo.get('estado')?.errors?.['requiered']">El tipo de vehiculo es obligatorio.</span>
+                    </div>
                 </div>
                 <!-- Anio ultima RTV input start -->
                 <div>
@@ -339,11 +355,12 @@
                         formControlName="ultimoAnioRTV"
                         dateFormat="yy" 
                         view="year"
+                        appendTo="body"
                         [showButtonBar]="true" 
                         [showIcon]="true" 
                         class="w-full"
                         [ngClass]="{'ng-invalid ng-dirty': fb_editVehiculo.get('ultimoAnioRTV')?.invalid && fb_editVehiculo.get('UltimoAnioRTV')?.touched}">
-                    </p-datepicker>
+                        </p-datepicker>
                         <label class="w-full">Año de ultima RTV*</label>
                     </p-floatlabel>
                     <div *ngIf="fb_editVehiculo.get('ultimoAnioRTV')?.invalid && fb_editVehiculo.get('ultimoAnioRTV')?.touched" class="text-red-500 text-sm">
@@ -360,6 +377,7 @@
                         view="year"
                         [showButtonBar]="true" 
                         [showIcon]="true" 
+                        appendTo="body"
                         class="w-full"
                         [ngClass]="{'ng-invalid ng-dirty': fb_editVehiculo.get('ultimoAnioMatriculacion')?.invalid && fb_editVehiculo.get('UltimoAnioMatriculacion')?.touched}">
                     </p-datepicker>
