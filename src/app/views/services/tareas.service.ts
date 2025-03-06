@@ -19,11 +19,11 @@ export class TareasService {
     return this.http.get<TareaDetalle[]>(`${this.apiURL}/GetTareaDetalle`, { params });
   } 
 
-  getTareaExternaByOT(code: string): Observable<TrabajoExternoDetalle[]>{
+  getTareaExternaByOT(code: string): Observable<TrabajoExternoDetalle[]> {
     const headers = this.auth.getAuthHeaders();
-    return this.http.get<TrabajoExternoDetalle[]>(`${this.apiURL}/GetTareaExterna/${code}`,{ headers } );
+    const params = new HttpParams().set('codigo', code);
+    return this.http.get<TrabajoExternoDetalle[]>(`${this.apiURL}/GetTareaExterna`, { headers, params });
   }
-  
   getObservacionesTarea(code:string): Observable<ObservacionesOTDetalle[]>{
     const headers = this.auth.getAuthHeaders();
     return this.http.get<ObservacionesOTDetalle[]>(`${environment.domain}${environment.apiEndpoint}/Observacion/ObtenerObservaciones/${code}`, {headers})
