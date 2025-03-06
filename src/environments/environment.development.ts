@@ -10,5 +10,6 @@ export const environment = {
     licencia: '/LicenciasController',
     items: '/Items',
     tarea: '/Tarea',
-    solicitudRepuesto: '/SolicitudRepuesto'
+    solicitudRepuesto: '/SolicitudRepuesto',
+    adjuntos: '/compras'
 };
