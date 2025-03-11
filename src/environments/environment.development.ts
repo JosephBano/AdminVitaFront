@@ -11,5 +11,5 @@ export const environment = {
     items: '/Items',
     tarea: '/Tarea',
     solicitudRepuesto: '/SolicitudRepuesto',
-    adjuntos: '/compras'
+    adjuntos: '/Adjuntos'
 };
