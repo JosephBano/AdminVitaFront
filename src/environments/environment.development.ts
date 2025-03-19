@@ -11,5 +11,11 @@ export const environment = {
     items: '/Items',
     tarea: '/Tarea',
     solicitudRepuesto: '/SolicitudRepuesto',
-    adjuntos: '/compras'
+    adjuntos: '/compras',
+    proveedor: '/ProveedorController',
+    magnitud: '/MagnitudesController'
 };
+
+export const ivaCalculo = {
+    IVA: 0.15
+}

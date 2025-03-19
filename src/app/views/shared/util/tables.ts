@@ -89,5 +89,14 @@ export const HeadersTables = {
     { field: 'iva', header: 'IVA' },
     { field: 'total', header: 'Total' },
     { field: 'actions', header: 'Acciones', }
+  ],
+  DetalleFacturaList: [
+    { field: 'codigo', header: 'Código'},
+    { field: 'description', header: 'Descripción'},
+    { field: 'magnitud', header: 'Magnitud'},
+    { field: 'cantidad', header: 'Cantidad'},
+    { field: 'valorUnitario', header: 'Valor'},
+    { field: 'subtotal', header: 'Importe'},
+    { field: 'actions', header: 'Acciones'}
   ]
 }

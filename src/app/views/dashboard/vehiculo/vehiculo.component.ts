@@ -43,7 +43,6 @@ import { SkeletonSimpleComponent } from '../../shared/components/skeleton-simple
     FormsModule,
     ReactiveFormsModule,
     DialogModule,
-    DialogModule,
     FloatLabel,
     SelectModule,
     DatePickerModule,

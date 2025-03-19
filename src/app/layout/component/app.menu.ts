@@ -17,7 +17,6 @@ import { AppMenuitem } from './app.menuitem';
 })
 export class AppMenu {
     model: MenuItem[] = [];
-
     ngOnInit() {
         this.model = [
             {
@@ -32,19 +31,26 @@ export class AppMenu {
             {
                 label: 'Vehiculos',
                 items: [
-                    { label: 'Inventario Vehicular', icon: 'pi pi-fw pi-id-card', routerLink: ['/panel/Vehiculos'] }
+                    { label: 'Inventario Vehicular', icon: 'pi pi-fw pi-car', routerLink: ['/panel/Vehiculos'] }
                 ]
             },
             {
                 label: 'Inventario',
                 items: [
-                    { label: 'Inventario de Items', icon: 'pi pi-fw pi-id-card', routerLink: ['/panel/Inventario'] }
+                    { label: 'Inventario de Items', icon: 'pi pi-fw pi-box', routerLink: ['/panel/Inventario'] }
                 ]
             },
             {
                 label: 'Adquisiciones',
                 items: [
-                    { label: 'Sistema de Adquisiciones', icon: 'pi pi-fw pi-id-card', routerLink: ['/panel/Adquisiciones'] },
+                    { 
+                        label: 'Sistema de Adquisiciones', 
+                        icon: 'pi pi-fw pi-shopping-cart',
+                        items: [
+                            {label: 'Listado Adquisiciones', routerLink: ['/panel/Adquisiciones']},
+                            {label: 'Agregar Adquisiciones', routerLink: ['/panel/Adquisiciones/agregar']}
+                        ]
+                    },
                 ]
             }
         ];

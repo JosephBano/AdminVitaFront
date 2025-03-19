@@ -84,13 +84,13 @@
 
             &.active-route {
                 font-weight: 700;
-                color: var(--primary-contrast-color);
-                background-color: var(--surface-hover);
+                color: var(--surface-hover);
+                background-color: var(--primary-contrast-color);
             }
 
             &:hover {
                 background-color: var(--surface-hover);
-                color: black;
+                color: #545454;
             }
 
             &:focus {
