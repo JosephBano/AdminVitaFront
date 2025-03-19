@@ -33,9 +33,10 @@
   font-size: 14px;
   text-justify: center !important;
 }
-.p-datepicker {
+.p-datepicker, .p-iconfield {
   width: 100%;
 }
-.p-iconfield {
-  width: 100%;
+.borde-contenedor {
+  border: 1px solid var(--p-inputtext-border-color);
+  border-radius: 7px;
 }
