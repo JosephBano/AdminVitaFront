@@ -1,8 +1,8 @@
 <div class="card" style="margin-bottom: 0;"> <!--CONTENIDO PRINCIPAL-->
     <p-table 
-    #dt2
+    #dt4
     [columns]="cols" 
-    [value]="adquisicion" 
+    [value]="compras" 
     [paginator]="true"
     [rows]="5"
     [loading]="loading"
@@ -11,16 +11,16 @@
     >
     <ng-template #caption>
         <div class="flex flex-col-reverse sm:flex-row sm:justify-between gap-2 w-full">
-            <p-button label="Limpiar" severity="secondary" icon="pi pi-filter-slash" (click)="clear(dt2)" />
+            <p-button label="Limpiar" severity="secondary" icon="pi pi-filter-slash" (click)="clear(dt4)" />
             <p-iconfield iconPosition="left" class="mr-1">
                 <p-inputicon>
                     <i class="pi pi-search"></i>
                 </p-inputicon>
-                <input pInputText type="text" class="w-full" (input)="filterGlobal($event, dt2)" placeholder="Busca por una palabra clave" />
+                <input pInputText type="text" class="w-full" (input)="filterGlobal($event, dt4)" placeholder="Busca por una palabra clave" />
             </p-iconfield>
             <div class="flex gap-2 justify-between">
                 <p-button (click)="OnExportButton()" severity="secondary" icon="pi pi-file-export" label="Exportar"></p-button>
-                <p-button (click)="showDialogAdd()" class="w-full sm:min-w-44" icon="pi pi-plus" label="Agregar Vehiculo"></p-button>
+                <p-button (click)="abrirNuevaPestana()" class="w-full sm:min-w-48" icon="pi pi-plus" label="Agregar Adquisición"></p-button>
             </div>
         </div>
     </ng-template>
@@ -46,10 +46,18 @@
                 || col.field === 'nombres';
                 else normalData">
                     <p *ngIf="col.field === 'fechaRegistro'">{{formatDate(rowData['fechaRegistro'])}}</p>
+                    <p *ngIf="col.field === 'nombres'">{{getNameProvider(rowData['numeroFactura'])}}</p>
+                    <p *ngIf="col.field === 'subtotal'">{{rowData['subtotal'] | currency:'USD':true}}</p>
+                    <p *ngIf="col.field === 'iva'">{{rowData['iva'] | currency:'USD':true}}</p>
+                    <p *ngIf="col.field === 'total'">{{rowData['total'] | currency:'USD':true}}</p>
                 </ng-container>
-
                 <ng-template #normalData>
                     <p>{{ rowData[col.field] }}</p>
+                    <div *ngIf="col.field =='actions'" class="flex justify-start w-full gap-2"> 
+                        <p-button icon="pi pi-pen-to-square" [rounded]="true" [text]="true" [raised]="true" severity="secondary" />
+                        <p-button icon="pi pi-expand" [rounded]="true" [text]="true" [raised]="true" severity="secondary" />
+                        <p-button icon="pi pi-download" [rounded]="true" [text]="true" [raised]="true" severity="secondary" />
+                    </div>
                 </ng-template>
             </td>
         </tr>
