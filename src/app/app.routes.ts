@@ -7,6 +7,7 @@ import { VehiculoComponent } from './views/dashboard/vehiculo/vehiculo.component
 import { InventarioComponent } from './views/dashboard/inventario/inventario.component';
 import { AdquisicionComponent } from './views/dashboard/adquisicion/adquisicion.component';
 import { NotfoundComponent } from './views/notfound/notfound.component';
+import { AgregarAdquisicionComponent } from './views/dashboard/adquisicion/agregar-adquisicion/agregar-adquisicion.component';
 
 export const appRoutes: Routes = [
     {   path: '', component: LoginComponent },
@@ -16,7 +17,10 @@ export const appRoutes: Routes = [
             { path: 'OrdenTrabajo', component: OrdenTrabajoComponent},
             { path: 'Vehiculos', component: VehiculoComponent},
             { path: 'Inventario', component: InventarioComponent},
-            { path: 'Adquisiciones', component: AdquisicionComponent}
+            { path: 'Adquisiciones', children: [
+                { path: '', component:AdquisicionComponent},
+                { path: 'agregar', component: AgregarAdquisicionComponent}
+            ]}
         ]},
     {   path: 'notFound404', component: NotfoundComponent}, 
     {   path: '**', redirectTo: 'notFound404', pathMatch: 'full'   },
