@@ -13,7 +13,8 @@ export const environment = {
     solicitudRepuesto: '/SolicitudRepuesto',
     adquisicion: '/compras',
     proveedor: '/ProveedorController',
-    magnitud: '/MagnitudesController'
+    magnitud: '/MagnitudesController',
+    adjuntos: '/Adjuntos'
 };
 
 export const ivaCalculo = {
