@@ -9,7 +9,7 @@ import { Observable } from 'rxjs';
 })
 export class ComprasService {
 
-  private apiURL = `${environment.domain}${environment.apiEndpoint}${environment.adjuntos}`
+  private apiURL = `${environment.domain}${environment.apiEndpoint}${environment.adquisicion}`
 
   constructor(private http: HttpClient, private auth: AuthService) { }
 
