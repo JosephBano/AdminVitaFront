@@ -28,6 +28,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { DividerModule } from 'primeng/divider';
 import { FileUpload } from 'primeng/fileupload';
 import { SkeletonSimpleComponent } from '../../shared/components/skeleton-simple.component';
+import { formatDate } from '@angular/common';
 
 @Component({
   selector: 'app-vehiculo',
@@ -88,6 +89,7 @@ export class VehiculoComponent implements OnInit{
   uploadedFiles: any[] = [];
 
   iconValidarDocumento: string = 'pi pi-search';
+  exportColumns!: { title: string; dataKey: string }[];
 
   constructor(
     private vehiculoService: VehiculoService,
@@ -171,6 +173,11 @@ export class VehiculoComponent implements OnInit{
       this.fb_addVehiculo.patchValue({propietarioId: null});;
       this.iconValidarDocumento = 'pi pi-search';
     });
+    this.exportColumns = this.cols.map((col) => ({
+      title: col.header || '',
+      dataKey: col.field || ''
+    }));
+    
   }
   convertFormToVehicle(): AddVehicleInstitucional {
     return {
@@ -228,9 +235,6 @@ export class VehiculoComponent implements OnInit{
     for(let file of event.files) {
         this.uploadedFiles.push(file);
     }
-  }
-  OnExportButton(){
-
   }
   showDialogAdd() {
     this.visibleAdd = true;
@@ -299,5 +303,146 @@ export class VehiculoComponent implements OnInit{
         this.toastr.warning(err.error, "Persona no encontrada!");
       }
     })
+  }
+  // Método para exportar a CSV con opciones avanzadas
+  exportCSV() {
+    // Preparar datos para exportación
+    const exportData = this.vehiculos.map(vehiculo => {
+      // Crear un nuevo objeto para exportación
+      const vehiculoExport: Record<string, any> = {};
+      
+      // Procesar cada columna
+      this.cols.forEach(col => {
+        if (!col.field || !col.header) return;
+        
+        // Caso especial para licencias
+        if (col.field === 'licencia') {
+          // Extraer los valores de licencia usando una función especializada
+          vehiculoExport[col.header] = this.extraerTextoLicencias(vehiculo.licencia);
+        }
+        // Caso especial para estado
+        else if (col.field === 'estado') {
+          vehiculoExport[col.header] = this.GetEstado(Number(vehiculo[col.field])) || '';
+        } 
+        // Caso general para otros campos
+        else {
+          vehiculoExport[col.header] = (vehiculo as any)[col.field] || '';
+        }
+      });
+      
+      return vehiculoExport;
+    });
+    
+    // Exportar a Excel
+    import('xlsx').then(xlsx => {
+      const worksheet = xlsx.utils.json_to_sheet(exportData);
+      const workbook = { Sheets: { 'Vehiculos': worksheet }, SheetNames: ['Vehiculos'] };
+      const excelBuffer = xlsx.write(workbook, { bookType: 'xlsx', type: 'array' });
+      
+      this.saveAsExcelFile(excelBuffer, "vehiculos_institucionales");
+    }).catch(err => {
+      console.error('Error al exportar a Excel:', err);
+      this.toastr.error('Hubo un problema al exportar los datos', 'Error');
+    });
+  }
+  
+  // Agregar esta nueva función especializada
+  private extraerTextoLicencias(licencias: any): string {
+    // Si no hay licencias o no es un array
+    if (!licencias || !Array.isArray(licencias) || licencias.length === 0) {
+      return 'Sin licencias';
+    }
+    
+    // Convertir cada licencia a texto
+    const textos = licencias.map(lic => {
+      // Si es un objeto
+      if (lic && typeof lic === 'object') {
+        // Buscar cualquier propiedad de texto que pudiera contener la información
+        if (lic.detalle) return String(lic.detalle);
+        if (lic.descripcion) return String(lic.descripcion);
+        if (lic.nombre) return String(lic.nombre);
+        if (lic.tipo) return String(lic.tipo);
+        
+        // Si no hay propiedades específicas, convertir todo el objeto a JSON
+        const objKeys = Object.keys(lic);
+        if (objKeys.length > 0) {
+          // Intentar primero con la primera propiedad
+          const firstProp = lic[objKeys[0]];
+          if (typeof firstProp === 'string' || typeof firstProp === 'number') {
+            return String(firstProp);
+          }
+        }
+        
+        // Si todo lo demás falla, mostrar [ID: X]
+        if (lic.idLicencia) return `[ID: ${lic.idLicencia}]`;
+      }
+      
+      // Si la licencia es un valor primitivo
+      return String(lic);
+    });
+    
+    // Filtrar elementos vacíos y unir con comas
+    return textos.filter(t => t && t.trim() !== '').join(', ');
+  }
+  // Método para exportar a Excel
+// Método para exportar a Excel
+exportExcel() {
+  import('xlsx').then((xlsx) => {
+    // Preparar datos para exportación
+    const exportData = this.vehiculos.map(vehiculo => {
+      const data: Record<string, any> = {};
+      
+      this.cols.forEach(col => {
+        // Verificar que field y header no sean undefined
+        if (col.field && col.header) {
+          // Manejo especial para el campo de licencia
+          if (col.field === 'licencia' && vehiculo.licencia && Array.isArray(vehiculo.licencia)) {
+            data[col.header] = (vehiculo.licencia as Licencia[])
+              .map(item => item.detalle)
+              .join(', ');
+          }
+          // Manejo para el campo estado
+          else if (col.field === 'estado' && col.field in vehiculo) {
+            const estado = vehiculo[col.field as keyof VehiculosList];
+            data[col.header] = estado !== null ? this.GetEstado(estado as number) : '';
+          } 
+          // Manejo para otros campos
+          else if (col.field in vehiculo) {
+            data[col.header] = vehiculo[col.field as keyof VehiculosList];
+          }
+        }
+      });
+      
+      return data;
+    });
+    
+    const worksheet = xlsx.utils.json_to_sheet(exportData);
+    const workbook = { Sheets: { 'Vehiculos': worksheet }, SheetNames: ['Vehiculos'] };
+    const excelBuffer = xlsx.write(workbook, { bookType: 'xlsx', type: 'array' });
+    
+    this.saveAsExcelFile(excelBuffer, "vehiculos_institucionales");
+  });
+}
+  // Método auxiliar para guardar como archivo Excel
+  saveAsExcelFile(buffer: any, fileName: string): void {
+    const EXCEL_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8';
+    const EXCEL_EXTENSION = '.xlsx';
+    const data: Blob = new Blob([buffer], { type: EXCEL_TYPE });
+    
+    // Crear enlace de descarga
+    const url = window.URL.createObjectURL(data);
+    const a = document.createElement('a');
+    document.body.appendChild(a);
+    a.href = url;
+    a.download = fileName + '_' + formatDate(new Date(), 'yyyy-MM-dd', 'en-US') + EXCEL_EXTENSION;
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  }
+  
+  // Implementar el método OnExportButton existente
+  OnExportButton() {
+    // Puedes llamar a exportCSV() o exportExcel() según prefieras
+    this.exportCSV();
   }
 }

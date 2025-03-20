@@ -861,10 +861,14 @@ private logImageUrls() {
     // Agregar imágenes de adjuntos de observaciones
     if (this.adjuntoImages && this.adjuntoImages.length > 0) {
       y += 10;
-      y = this.addAdjuntosToDocument(doc, 'Imágenes de Observaciones', 
-           this.allTablesData.observaciones
-               .filter(obs => obs.idAdjunto)
-               .map(obs => obs.idAdjunto), y);
+      y = this.addAdjuntosToDocument(
+        doc, 
+        { text: 'Adjunto de Observaciones', style: 'subheading' },
+        this.allTablesData.observaciones
+          .filter(obs => obs.idAdjunto)
+          .map(obs => obs.idAdjunto), 
+        y
+      );
       y += 15;
     }
   }
@@ -877,10 +881,14 @@ private logImageUrls() {
     // Agregar imágenes de adjuntos de solicitudes
     if (this.adjuntoImages && this.adjuntoImages.length > 0) {
       y += 10;
-      y = this.addAdjuntosToDocument(doc, 'Imágenes de Solicitudes', 
-           this.allTablesData.solicitudes
-               .filter(sol => sol.idAdjunto)
-               .map(sol => sol.idAdjunto), y);
+      y = this.addAdjuntosToDocument(
+        doc, 
+        { text: 'Adjunto de Solicitudes', style: 'subheading' },
+        this.allTablesData.solicitudes
+          .filter(sol => sol.idAdjunto)
+          .map(sol => sol.idAdjunto), 
+        y
+      );
     }
   }
       
@@ -989,19 +997,33 @@ private logImageUrls() {
     }
 
    // Modificación del método para agregar adjuntos al documento
-  private addAdjuntosToDocument(doc: jsPDF, title: string, adjuntosIds: number[], y: number): number {
+   private addAdjuntosToDocument(doc: jsPDF, title: string | { text: string, style: string }, adjuntosIds: number[], y: number): number {
     // No hacer nada si no hay adjuntos o imágenes cargadas
     if (!adjuntosIds || adjuntosIds.length === 0 || !this.adjuntoImages || this.adjuntoImages.length === 0) {
       return y;
     }
     
-    // Agregar título de sección con caja
-    y = this.addSectionWithBox(doc, title, y);
+    // Determinar el texto del título
+    const titleText = typeof title === 'string' ? title : title.text;
+    const isSubheading = typeof title === 'object' && title.style === 'subheading';
+    
+    // Agregar título de sección con caja pero con estilo diferente si es subheading
+    if (isSubheading) {
+      // Aplicar estilo de subtítulo (sin caja o con estilo diferente)
+      doc.setFontSize(12); // Tamaño más pequeño para subtítulo
+      doc.setFont('helvetica', 'bold');
+      doc.text(titleText, 20, y);
+      y += 5;
+    } else {
+      // Estilo original con caja
+      y = this.addSectionWithBox(doc, titleText, y);
+    }
+    
     y += 10;
     
     // Tamaño máximo para las imágenes
-    const maxWidth = 170;
-    const maxHeight = 120;
+    const maxWidth = 120;
+    const maxHeight = 80;
     
     // Agregar cada adjunto que corresponda a las IDs proporcionadas
     for (const id of adjuntosIds) {
@@ -1167,27 +1189,30 @@ private cleanFileUrl(url: string): string {
 
 // Método para obtener un ícono según el tipo de archivo
 private obtenerIconoTipoArchivo(tipoArchivo: string): string {
-  if (!tipoArchivo) return '📄'; // Documento genérico
+  if (!tipoArchivo) return '[DOC]'; // Documento genérico
   
   const tipo = tipoArchivo.toLowerCase();
   
   if (tipo.includes('pdf') || tipo.endsWith('.pdf')) {
-    return '📕';
+    return '[PDF]';
   } else if (tipo.includes('excel') || tipo.includes('spreadsheet') || 
              tipo.endsWith('.xls') || tipo.endsWith('.xlsx') || tipo.endsWith('.csv')) {
-    return '📊';
+    return '[XLS]';
   } else if (tipo.includes('word') || tipo.includes('document') || 
              tipo.endsWith('.doc') || tipo.endsWith('.docx')) {
-    return '📝';
+    return '[DOC]';
   } else if (tipo.includes('zip') || tipo.includes('rar') || tipo.includes('compressed') ||
              tipo.endsWith('.zip') || tipo.endsWith('.rar') || tipo.endsWith('.7z')) {
-    return '🗜️';
+    return '[ZIP]';
   } else if (tipo.includes('audio') || tipo.endsWith('.mp3') || tipo.endsWith('.wav')) {
-    return '🔊';
+    return '[AUD]';
   } else if (tipo.includes('video') || tipo.endsWith('.mp4') || tipo.endsWith('.avi')) {
-    return '🎬';
+    return '[VID]';
+  } else if (tipo.includes('image') || tipo.endsWith('.jpg') || tipo.endsWith('.jpeg') || 
+             tipo.endsWith('.png') || tipo.endsWith('.gif')) {
+    return '[IMG]';
   } else {
-    return '📄';
+    return '[DOC]';
   }
 }
 }
