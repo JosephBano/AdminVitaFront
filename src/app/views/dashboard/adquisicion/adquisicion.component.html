@@ -47,9 +47,9 @@
                 else normalData">
                     <p *ngIf="col.field === 'fechaRegistro'">{{formatDate(rowData['fechaRegistro'])}}</p>
                     <p *ngIf="col.field === 'nombres'">{{getNameProvider(rowData['numeroFactura'])}}</p>
-                    <p *ngIf="col.field === 'subtotal'">{{rowData['subtotal'] | currency:'USD':true}}</p>
-                    <p *ngIf="col.field === 'iva'">{{rowData['iva'] | currency:'USD':true}}</p>
-                    <p *ngIf="col.field === 'total'">{{rowData['total'] | currency:'USD':true}}</p>
+                    <p *ngIf="col.field === 'subtotal'">{{rowData['subtotal'] | currency:'USD':'symbol-narrow'}}</p>
+                    <p *ngIf="col.field === 'iva'">{{rowData['iva'] | currency:'USD':'symbol-narrow'}}</p>
+                    <p *ngIf="col.field === 'total'">{{rowData['total'] | currency:'USD':'symbol-narrow'}}</p>
                 </ng-container>
                 <ng-template #normalData>
                     <p>{{ rowData[col.field] }}</p>
