@@ -19,8 +19,7 @@ export class AdjuntoService {
 
   // Obtener adjunto por ID
   getAdjuntoById(id: number): Observable<Adjunto> {
-    const headers = this.auth.getAuthHeaders();
-    return this.http.get<Adjunto>(`${this.apiUrl}/GetById/${id}`, { headers });
+    return this.http.get<Adjunto>(`${this.apiUrl}/GetById/${id}`);
   }
 
   // Obtener adjuntos por vehículo
