@@ -45,7 +45,7 @@ export const HeadersTables = {
     {field: 'detalle', header:'Detalle Item'},
     {field: 'codigoTarea', header: 'Código Tarea'},
     {field: 'solicitante', header: 'Solicitante'},
-    {field: 'cantidad', header: 'Cantatidad'},
+    {field: 'cantidad', header: 'Cantidad'},
     {field: 'magnitud', header: 'Magnitud'},
     {field: 'precio', header: 'Precio'}
   ],
@@ -98,5 +98,16 @@ export const HeadersTables = {
     { field: 'valorUnitario', header: 'Valor'},
     { field: 'subtotal', header: 'Importe'},
     { field: 'actions', header: 'Acciones'}
-  ]
+  ],
+  InventarioList: [
+    { field: 'codigo', header: 'Código'},
+    { field: 'nombre', header: 'Nombre'},
+    { field: 'descripcion', header: 'Descripción'},
+    { field: 'stock', header: 'Stock'},
+    { field: 'stockMin', header: 'Stock Min'},
+    { field: 'stockIdeal', header: 'Stock Ideal'},
+    { field: 'magnitud', header: 'Magnitud'},
+    { field: 'valorUnitario', header: 'Valor'},
+    { field: 'actions', header: 'Acciones'}
+  ],
 }

@@ -14,7 +14,8 @@ export const environment = {
     adquisicion: '/compras',
     proveedor: '/ProveedorController',
     magnitud: '/MagnitudesController',
-    adjuntos: '/Adjuntos'
+    adjuntos: '/Adjuntos',
+    archivos: '/archivos',
 };
 
 export const ivaCalculo = {

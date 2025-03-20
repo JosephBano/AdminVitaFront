@@ -7,5 +7,6 @@ export interface Item {
     stockMin: number;
     stockIdeal: number;
     stock: number;
+    idMagnitud?: number;
     nombreMagnitud?: string;
 }
