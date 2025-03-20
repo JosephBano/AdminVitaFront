@@ -743,536 +743,526 @@ export class OrdenTrabajoComponent implements OnInit {
       b: parseInt(result[3], 16)
     } : { r: 0, g: 0, b: 0 };
   }
+  // Método para agregar una sección con una caja decorativa
+  private addSectionWithBox(doc: jsPDF, title: string, y: number, width: number = 190, xOffset: number = 10): number {
+    const rgb = this.hexToRgb('#1f295b');
     
-    // Método para agregar una sección con una caja decorativa
-    private addSectionWithBox(doc: jsPDF, title: string, y: number, width: number = 190, xOffset: number = 10): number {
-      const rgb = this.hexToRgb('#1f295b');
-      
-      // Título de la sección en MAYÚSCULAS
-      doc.setFontSize(12); // Aumentado de 11 a 12
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(rgb.r, rgb.g, rgb.b);
-      doc.text(title.toUpperCase(), xOffset + 5, y);
-      
-      // Dibujar borde para la caja con más grosor
-      doc.setDrawColor(rgb.r, rgb.g, rgb.b);
-      doc.setLineWidth(0.8); // Aumentado grosor de línea
-      doc.roundedRect(xOffset, y - 5, width, 8, 1, 1, 'S');
-      
-      // Restaurar colores
-      doc.setTextColor(0);
-      doc.setLineWidth(0.3);
-      
-      return y;
-    }
-        // Método para agregar una tabla de clave-valor con más espacio
-        private addKeyValueTable(doc: jsPDF, data: {key: string, value: string}[], y: number, width: number = 190, xOffset: number = 10): number {
-          const rgb = this.hexToRgb('#1f295b');
-          
-          // Calculate height based on actual content
-          const rowHeight = 8; // Reduced from 12 to 8
-          const rowPadding = 2; // Additional padding between rows
-          const boxPadding = 6; // Padding inside the box (reduced from 10)
-          
-          // Calculate exact height needed for content
-          const boxHeight = (data.length * (rowHeight + rowPadding)) + boxPadding;
-          
-          // Draw box with exact height
-          doc.setDrawColor(rgb.r, rgb.g, rgb.b, 0.5);
-          doc.setLineWidth(0.3);
-          doc.roundedRect(xOffset, y, width, boxHeight, 2, 2, 'S');
-          
-          // Create table with content-appropriate spacing
-          autoTable(doc, {
-            body: data.map(item => [
-              {content: item.key+':', styles: {fontStyle: 'bold'}}, 
-              {content: item.value, styles: {cellWidth: 'wrap'}}
-            ]),
-            startY: y + 3, // Reduced top padding
-            theme: 'plain',
-            styles: {
-              fontSize: 10,
-              cellPadding: 2, // Reduced padding
-              overflow: 'linebreak',
-              cellWidth: 'wrap'
-            },
-            columnStyles: {
-              0: {
-                cellWidth: 40, // Reduced width for labels
-                textColor: [rgb.r, rgb.g, rgb.b],
-                fontStyle: 'bold'
-              },
-              1: {
-                cellWidth: 'auto',
-                minCellWidth: 100
-              }
-            },
-            margin: { left: xOffset + 5, right: xOffset + 5 }
-          });
-          
-          // Get the exact final Y position
-          return (doc as jsPDFWithAutoTable).lastAutoTable?.finalY || (y + boxHeight);
-        }
-    // Generar el PDF completo con el nuevo layout
-      generateCompletePDF() {
-        const doc = new jsPDF('p', 'mm', 'a4') as jsPDFWithAutoTable;
-        const pageWidth = doc.internal.pageSize.getWidth();
-        const pageHeight = doc.internal.pageSize.getHeight();
-        
-        // Aplicar fondo y decoraciones
-        this.applyBackgroundToAllPages(doc);
-        
-        // Agregar logo 
-        this.addLogoToAllPages(doc);
-        
-        // Dejar más espacio para el logo
-        let y = 40; // Aumentado de 30 a 40
-        
-        // Título en MAYÚSCULAS y con más destaque
-        const titleRgb = this.hexToRgb('#1f295b');
-        doc.setFontSize(20); // Aumentado tamaño de fuente
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(titleRgb.r, titleRgb.g, titleRgb.b);
-        doc.text('ORDEN DE TRABAJO: ' + this.codeExpandDialog.toUpperCase(), pageWidth / 2, y, { align: 'center' });
-        y += 20; // Más espacio después del título
-        
-        // Fecha de generación
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'italic');
-        doc.setTextColor(100, 100, 100);
-        const currentDate = this.datePipe.transform(new Date(), 'dd/MM/yyyy HH:mm:ss');
-        doc.text(`Generado el: ${currentDate}`, pageWidth - 15, 15, { align: 'right' });
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(10);
-        doc.setTextColor(0, 0, 0);
-        
-        const fullWidth = 190;
-        const leftMargin = 10;
-        
-       // Sección: Descripción
-      this.addSectionTitle(doc, 'Descripción', y);
-      y += 7;
-      this.addKeyValueTable(doc, [
-        { key: 'Detalle', value: this.ExpandItem.detalle || 'No disponible' },
-        { key: 'Prioridad', value: this.GetPrioridad(this.ExpandItem.prioridad) || 'No disponible' },
-        { key: 'Estado', value: this.GetEstado(this.ExpandItem.estado) || 'No disponible' },
-        { key: 'Fecha inicio', value: this.formatDate(this.ExpandItem.fechaCreada ? this.ExpandItem.fechaCreada.toString() : 'Vacío') },
-        { key: 'Fecha programada', value: this.formatDate(this.ExpandItem.fechaProgramada ? this.ExpandItem.fechaProgramada.toString() : 'Vacío') },
-        { key: 'Fecha fin', value: this.formatDate(this.ExpandItem.fechaFinalizacion ? this.ExpandItem.fechaFinalizacion.toString() : 'Vacío') }
-      ], y);
-      y += 70; 
-          // Sección: Vehículo
-      this.addSectionTitle(doc, 'Vehículo', y);
-      y += 7;
-      this.addKeyValueTable(doc, [
-        { key: 'Código', value: this.ExpandItem.codigoVehiculo || 'No disponible' },
-        { key: 'Placa', value: this.ExpandItem.placa || 'No disponible' },
-        { key: 'Kilometraje', value: (this.ExpandItem.kilometraje || '0') + ' km' },
-        { key: 'Año', value: this.formatDate(this.ExpandItem.anio ? this.ExpandItem.anio.toString() : 'Vacío') },
-        { key: 'Estado (Institucional)', value: this.getEstadoVehiculo(this.ExpandItem.estadoVehiculo) || 'No disponible' },
-        { key: 'Propietario', value: this.ExpandItem.propietario || 'No disponible' }
-      ], y);
-      y += 70;
+    // Título de la sección en MAYÚSCULAS
+    doc.setFontSize(12); // Aumentado de 11 a 12
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(rgb.r, rgb.g, rgb.b);
+    doc.text(title.toUpperCase(), xOffset + 5, y);
     
-    // Sección: Cliente
-    this.addSectionTitle(doc, 'Cliente', y);
-    y += 7;
-    this.addKeyValueTable(doc, [
-      { key: 'Nombre', value: this.ExpandItem.nombreCliente || 'No disponible' },
-      { key: 'Celular', value: this.ExpandItem.celular || 'No disponible' },
-      { key: 'Correo', value: this.ExpandItem.correo || 'No disponible' },
-      { key: 'Dirección', value: this.ExpandItem.direccion || 'No disponible' },
-      { key: 'Supervisor', value: this.getSupervisor(this.ExpandItem.supervisor) || 'No disponible' }
-    ], y);
-    y += 30;
-      // 1. Tareas
-      if (this.allTablesData.tareas && this.allTablesData.tareas.length > 0) {
-        y = this.checkAndAddPage(doc, y, 40);
-        y = this.addTableToDocument(doc, 'Tareas', this.allTablesData.tareas, HeadersTables.TareasList, y);
-        y += 15;
-      }
-      
-      // 2. Repuestos
-      if (this.allTablesData.repuestos && this.allTablesData.repuestos.length > 0) {
-        y = this.checkAndAddPage(doc, y, 40);
-        y = this.addTableToDocument(doc, 'Repuestos', this.allTablesData.repuestos, HeadersTables.RepuestoseInsumosList, y);
-        y += 15;
-      }
-      
-      // 3. Mecánicos
-      if (this.allTablesData.mecanicos && this.allTablesData.mecanicos.length > 0) {
-        y = this.checkAndAddPage(doc, y, 40);
-        y = this.addTableToDocument(doc, 'Mecánicos', this.allTablesData.mecanicos, HeadersTables.ManoDeObraList, y);
-        y += 15;
-      }
-      
-      // 4. Trabajos Externos
-      if (this.allTablesData.trabajosExternos && this.allTablesData.trabajosExternos.length > 0) {
-        y = this.checkAndAddPage(doc, y, 40);
-        y = this.addTableToDocument(doc, 'Trabajos Externos', this.allTablesData.trabajosExternos, HeadersTables.TrabajoExternoList, y);
-        y += 15;
-      }
-      
-       // 5. Observaciones con adjuntos
-  if (this.allTablesData.observaciones && this.allTablesData.observaciones.length > 0) {
-    y = this.checkAndAddPage(doc, y, 40);
-    y = this.addTableToDocument(doc, 'Observaciones', this.allTablesData.observaciones, HeadersTables.ObservacionesTareaList, y);
+    // Dibujar borde para la caja con más grosor
+    doc.setDrawColor(rgb.r, rgb.g, rgb.b);
+    doc.setLineWidth(0.8); // Aumentado grosor de línea
+    doc.roundedRect(xOffset, y - 5, width, 8, 1, 1, 'S');
     
-    // Agregar imágenes de adjuntos de observaciones
-    if (this.adjuntoImages && this.adjuntoImages.length > 0) {
-      y += 10;
-      y = this.addAdjuntosToDocument(
-        doc, 
-        { text: 'Adjunto de Observaciones', style: 'subheading' },
-        this.allTablesData.observaciones
-          .filter(obs => obs.idAdjunto)
-          .map(obs => obs.idAdjunto), 
-        y
-      );
-      y += 15;
-    }
-  }
-  
-  // 6. Solicitudes con adjuntos
-  if (this.allTablesData.solicitudes && this.allTablesData.solicitudes.length > 0) {
-    y = this.checkAndAddPage(doc, y, 40);
-    y = this.addTableToDocument(doc, 'Solicitudes', this.allTablesData.solicitudes, HeadersTables.SolicitudTareaList, y);
-    
-    // Agregar imágenes de adjuntos de solicitudes
-    if (this.adjuntoImages && this.adjuntoImages.length > 0) {
-      y += 10;
-      y = this.addAdjuntosToDocument(
-        doc, 
-        { text: 'Adjunto de Solicitudes', style: 'subheading' },
-        this.allTablesData.solicitudes
-          .filter(sol => sol.idAdjunto)
-          .map(sol => sol.idAdjunto), 
-        y
-      );
-    }
-  }
-      
-      // Agregar numeración de páginas con estilo mejorado
-      const totalPages = doc.getNumberOfPages();
-      for (let i = 1; i <= totalPages; i++) {
-        doc.setPage(i);
-        doc.setFontSize(8);
-        doc.setTextColor(80, 80, 80);
-        doc.text(`Página ${i} de ${totalPages}`, pageWidth - 20, pageHeight - 10);
-        
-        // Agregar un footer o pie de página en cada página
-        this.addFooter(doc, pageHeight);
-      }
-      
-      // Guardar el PDF
-      doc.save(`Orden_Trabajo_${this.codeExpandDialog}_Completo.pdf`);
-    }
-    
-    // Método para agregar un pie de página
-    private addFooter(doc: jsPDF, pageHeight: number) {
-      const rgb = this.hexToRgb('#1f295b'); // Nuevo color institucional
-      doc.setFontSize(8);
-      doc.setTextColor(rgb.r, rgb.g, rgb.b);
-      doc.text('Confidencial - Uso exclusivo de ISTPET', 10, pageHeight - 10);
-    }
-
-    // Método para el manejo de texto largo
-    private truncateText(text: string, maxLength: number): string {
-      if (!text) return 'No disponible';
-      return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
-    }
-
-    // Método para verificar y agregar una nueva página si es necesario
-    private checkAndAddPage(doc: jsPDF, y: number, requiredSpace: number): number {
-      const pageHeight = doc.internal.pageSize.getHeight();
-      if (y + requiredSpace > pageHeight - 20) { // 20 es el margen inferior
-        doc.addPage();
-        return 20; // Reiniciar la posición Y en la nueva página
-      }
-      return y;
-    }
-  
-    // Método para agregar una tabla al documento con estilo mejorado
-    private addTableToDocument(doc: jsPDF, title: string, data: any[], headers: any[], y: number): number {
-      // Agregar título de sección con caja
-      y = this.addSectionWithBox(doc, title, y);
-      y += 7;
-      
-      // Preparar cabeceras y datos para la tabla
-      const tableHeaders = headers.map(col => col.header);
-      const tableData = data.map(item => 
-        headers.map(col => {
-          // Transformar el valor según el campo
-          if (col.field.includes('fecha') && item[col.field]) {
-            return this.datePipe.transform(item[col.field], 'dd/MM/yyyy') || 'N/A';
-          }
-          return item[col.field] !== undefined && item[col.field] !== null ? item[col.field].toString() : 'N/A';
-        })
-      );
-      
-      // Convertir color hex a decimal
-      const rgb = this.hexToRgb('#1f295b');
-      
-      // Agregar la tabla al PDF con estilo mejorado
-      autoTable(doc, {
-        head: [tableHeaders],
-        body: tableData,
-        startY: y,
-        theme: 'grid',
-        styles: {
-          fontSize: 8,
-          cellPadding: 3,
-          lineColor: [220, 220, 220]
-        },
-        headStyles: {
-          fillColor: [rgb.r, rgb.g, rgb.b],
-          textColor: 255,
-          fontStyle: 'bold'
-        },
-        alternateRowStyles: {
-          fillColor: [248, 248, 252]
-        },
-        columnStyles: {
-          0: {cellWidth: 'auto'}, // Primera columna con ancho automático
-        },
-        margin: { left: 10, right: 10 },
-        didParseCell: function(data) {
-          if (data.row.index === 0) {
-            data.cell.styles.lineWidth = 0.5;
-          }
-        }
-      });
-      
-      // Usar aserción de tipo para acceder a lastAutoTable
-      return (doc as jsPDFWithAutoTable).lastAutoTable.finalY + 5;
-    }
-    private addSectionTitle(doc: jsPDF, title: string, y: number) {
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(0, 102, 204);
-      doc.text(title, 10, y);
-      doc.setTextColor(0);
-      doc.setDrawColor(0, 102, 204);
-      doc.line(10, y + 1, 200, y + 1);
-    }
-
-   // Modificación del método para agregar adjuntos al documento
-   private addAdjuntosToDocument(doc: jsPDF, title: string | { text: string, style: string }, adjuntosIds: number[], y: number): number {
-    // No hacer nada si no hay adjuntos o imágenes cargadas
-    if (!adjuntosIds || adjuntosIds.length === 0 || !this.adjuntoImages || this.adjuntoImages.length === 0) {
-      return y;
-    }
-    
-    // Determinar el texto del título
-    const titleText = typeof title === 'string' ? title : title.text;
-    const isSubheading = typeof title === 'object' && title.style === 'subheading';
-    
-    // Agregar título de sección con caja pero con estilo diferente si es subheading
-    if (isSubheading) {
-      // Aplicar estilo de subtítulo (sin caja o con estilo diferente)
-      doc.setFontSize(12); // Tamaño más pequeño para subtítulo
-      doc.setFont('helvetica', 'bold');
-      doc.text(titleText, 20, y);
-      y += 5;
-    } else {
-      // Estilo original con caja
-      y = this.addSectionWithBox(doc, titleText, y);
-    }
-    
-    y += 10;
-    
-    // Tamaño máximo para las imágenes
-    const maxWidth = 120;
-    const maxHeight = 80;
-    
-    // Agregar cada adjunto que corresponda a las IDs proporcionadas
-    for (const id of adjuntosIds) {
-      // Buscar la imagen cargada que corresponde a este ID
-      const adjuntoInfo = this.adjuntoImages.find(img => img.id === id);
-      if (adjuntoInfo) {
-        // Verificar si es necesario cambiar de página
-        y = this.checkAndAddPage(doc, y, maxHeight + 30);
-        
-        // Encontrar el adjunto correspondiente para obtener su nombre y tipo
-        const adjunto = this.adjuntos.find(adj => adj.idAdjunto === id);
-        const nombre = adjunto ? adjunto.nombre : `Adjunto #${id}`;
-        const tipoArchivo = adjunto ? adjunto.tipoArchivo : '';
-        
-        // Agregar un subtítulo para el adjunto
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'italic');
-        doc.text(nombre, 20, y);
-        y += 5;
-        
-        // Determinar si es una imagen o un archivo para descargar
-        const esImagen = this.esArchivoImagen(tipoArchivo);
-        
-        if (esImagen) {
-          try {
-            // Intentar agregar la imagen
-            doc.addImage(adjuntoInfo.dataUrl, 'JPEG', 20, y, maxWidth, maxHeight, undefined, 'FAST');
-            y += maxHeight + 15;
-          } catch (error) {
-            console.error(`Error al agregar imagen ${id} al PDF:`, error);
-            y = this.agregarPlaceholderImagen(doc, nombre, adjuntoInfo.dataUrl, 20, y, maxWidth, maxHeight);
-          }
-        } else {
-          // Es un archivo para descargar, agregar un botón/enlace
-          y = this.agregarEnlaceDescarga(doc, nombre, tipoArchivo, adjuntoInfo.dataUrl, 20, y);
-        }
-      }
-    }
+    // Restaurar colores
+    doc.setTextColor(0);
+    doc.setLineWidth(0.3);
     
     return y;
   }
-  // Método para verificar si un archivo es una imagen
-private esArchivoImagen(tipoArchivo: string): boolean {
-  if (!tipoArchivo) return false;
-  
-  const tiposImagen = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/bmp', 'image/webp'];
-  
-  // Si el tipo MIME está disponible directamente
-  if (tiposImagen.includes(tipoArchivo.toLowerCase())) {
-    return true;
+  // Método para agregar una tabla de clave-valor con más espacio
+  private addKeyValueTable(doc: jsPDF, data: {key: string, value: string}[], y: number, width: number = 190, xOffset: number = 10): number {
+    const rgb = this.hexToRgb('#1f295b');
+    
+    // Calculate height based on actual content
+    const rowHeight = 8; // Reduced from 12 to 8
+    const rowPadding = 2; // Additional padding between rows
+    const boxPadding = 6; // Padding inside the box (reduced from 10)
+    
+    // Calculate exact height needed for content
+    const boxHeight = (data.length * (rowHeight + rowPadding)) + boxPadding;
+    
+    // Draw box with exact height
+    doc.setDrawColor(rgb.r, rgb.g, rgb.b, 0.5);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(xOffset, y, width, boxHeight, 2, 2, 'S');
+    
+    // Create table with content-appropriate spacing
+    autoTable(doc, {
+      body: data.map(item => [
+        {content: item.key+':', styles: {fontStyle: 'bold'}}, 
+        {content: item.value, styles: {cellWidth: 'wrap'}}
+      ]),
+      startY: y + 3, // Reduced top padding
+      theme: 'plain',
+      styles: {
+        fontSize: 10,
+        cellPadding: 2, // Reduced padding
+        overflow: 'linebreak',
+        cellWidth: 'wrap'
+      },
+      columnStyles: {
+        0: {
+          cellWidth: 40, // Reduced width for labels
+          textColor: [rgb.r, rgb.g, rgb.b],
+          fontStyle: 'bold'
+        },
+        1: {
+          cellWidth: 'auto',
+          minCellWidth: 100
+        }
+      },
+      margin: { left: xOffset + 5, right: xOffset + 5 }
+    });
+    
+    // Get the exact final Y position
+    return (doc as jsPDFWithAutoTable).lastAutoTable?.finalY || (y + boxHeight);
   }
+  // Generar el PDF completo con el nuevo layout
+    generateCompletePDF() {
+      const doc = new jsPDF('p', 'mm', 'a4') as jsPDFWithAutoTable;
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      
+      // Aplicar fondo y decoraciones
+      this.applyBackgroundToAllPages(doc);
+      
+      // Agregar logo 
+      this.addLogoToAllPages(doc);
+      
+      // Dejar más espacio para el logo
+      let y = 40; // Aumentado de 30 a 40
+      
+      // Título en MAYÚSCULAS y con más destaque
+      const titleRgb = this.hexToRgb('#1f295b');
+      doc.setFontSize(20); // Aumentado tamaño de fuente
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(titleRgb.r, titleRgb.g, titleRgb.b);
+      doc.text('ORDEN DE TRABAJO: ' + this.codeExpandDialog.toUpperCase(), pageWidth / 2, y, { align: 'center' });
+      y += 20; // Más espacio después del título
+      
+      // Fecha de generación
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'italic');
+      doc.setTextColor(100, 100, 100);
+      const currentDate = this.datePipe.transform(new Date(), 'dd/MM/yyyy HH:mm:ss');
+      doc.text(`Generado el: ${currentDate}`, pageWidth - 15, 15, { align: 'right' });
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      
+      const fullWidth = 190;
+      const leftMargin = 10;
+      
+      // Sección: Descripción
+    this.addSectionTitle(doc, 'Descripción', y);
+    y += 7;
+    this.addKeyValueTable(doc, [
+      { key: 'Detalle', value: this.ExpandItem.detalle || 'No disponible' },
+      { key: 'Prioridad', value: this.GetPrioridad(this.ExpandItem.prioridad) || 'No disponible' },
+      { key: 'Estado', value: this.GetEstado(this.ExpandItem.estado) || 'No disponible' },
+      { key: 'Fecha inicio', value: this.formatDate(this.ExpandItem.fechaCreada ? this.ExpandItem.fechaCreada.toString() : 'Vacío') },
+      { key: 'Fecha programada', value: this.formatDate(this.ExpandItem.fechaProgramada ? this.ExpandItem.fechaProgramada.toString() : 'Vacío') },
+      { key: 'Fecha fin', value: this.formatDate(this.ExpandItem.fechaFinalizacion ? this.ExpandItem.fechaFinalizacion.toString() : 'Vacío') }
+    ], y);
+    y += 70; 
+        // Sección: Vehículo
+    this.addSectionTitle(doc, 'Vehículo', y);
+    y += 7;
+    this.addKeyValueTable(doc, [
+      { key: 'Código', value: this.ExpandItem.codigoVehiculo || 'No disponible' },
+      { key: 'Placa', value: this.ExpandItem.placa || 'No disponible' },
+      { key: 'Kilometraje', value: (this.ExpandItem.kilometraje || '0') + ' km' },
+      { key: 'Año', value: this.formatDate(this.ExpandItem.anio ? this.ExpandItem.anio.toString() : 'Vacío') },
+      { key: 'Estado (Institucional)', value: this.getEstadoVehiculo(this.ExpandItem.estadoVehiculo) || 'No disponible' },
+      { key: 'Propietario', value: this.ExpandItem.propietario || 'No disponible' }
+    ], y);
+    y += 70;
   
-  // Si solo tenemos la extensión
-  const extensiones = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
-  const extension = tipoArchivo.toLowerCase().split('.').pop();
-  return extension ? extensiones.includes(extension) : false;
-}
-
-// Método para agregar un placeholder de imagen cuando hay error
-private agregarPlaceholderImagen(doc: jsPDF, nombre: string, url: string, x: number, y: number, width: number, height: number): number {
-  doc.setDrawColor(200, 200, 200);
-  doc.setFillColor(245, 245, 245);
-  doc.roundedRect(x, y, width, height, 2, 2, 'FD');
-  
-  doc.setFontSize(10);
-  doc.setTextColor(100, 100, 100);
-  doc.text(`[Imagen no disponible: ${nombre}]`, x + 20, y + 30);
-  
-  // Truncar la URL si es muy larga
-  const urlCorta = url.length > 60 ? url.substring(0, 57) + '...' : url;
-  doc.text(`Referencia: ${urlCorta}`, x + 20, y + 45);
-  
-  return y + height + 15;
-}
-
-// Método para agregar un enlace de descarga para archivos no-imagen
-private agregarEnlaceDescarga(doc: jsPDF, nombre: string, tipoArchivo: string, url: string, x: number, y: number): number {
-  // Obtener ícono según tipo de archivo
-  const icono = this.obtenerIconoTipoArchivo(tipoArchivo);
-  
-  // Crear un recuadro para el archivo
-  const rgb = this.hexToRgb('#f2f6fc');
-  doc.setFillColor(rgb.r, rgb.g, rgb.b);
-  doc.setDrawColor(200, 200, 200);
-  doc.roundedRect(x, y, 170, 40, 3, 3, 'FD');
-  
-  // Dibujar ícono
-  doc.setFontSize(20);
-  doc.setTextColor(80, 80, 80);
-  doc.text(icono, x + 15, y + 20);
-  
-  // Información del archivo
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(50, 50, 50);
-  doc.text(nombre, x + 40, y + 15);
-  
-  // Tipo de archivo y tamaño (si está disponible)
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(100, 100, 100);
-  const infoArchivo = tipoArchivo || 'Documento';
-  doc.text(infoArchivo, x + 40, y + 25);
-  
-  // Agregar un enlace clicable para descargar
-  const linkWidth = 80;
-  const linkHeight = 12;
-  const linkX = x + 40;
-  const linkY = y + 27;
-  
-  // Dibujar botón de descarga
-  const linkRgb = this.hexToRgb('#1f295b');
-  doc.setFillColor(linkRgb.r, linkRgb.g, linkRgb.b);
-  doc.roundedRect(linkX, linkY, linkWidth, linkHeight, 2, 2, 'F');
-  
-  // Texto del botón
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(8);
-  doc.text("DESCARGAR ARCHIVO", linkX + linkWidth/2, linkY + linkHeight/2 + 2, { align: 'center' });
-  
-  // Asegurarse de que la URL no tenga la referencia a C:// o rutas locales
-  const cleanedUrl = this.cleanFileUrl(url);
-  
-  // Agregar link con URL del archivo para descarga
-  doc.link(linkX, linkY, linkWidth, linkHeight, { url: cleanedUrl });
-  
-  return y + 50; // Espacio para el siguiente elemento
-}
-
-// Método para limpiar una URL de archivo de rutas del sistema
-private cleanFileUrl(url: string): string {
-  // Si la URL ya es una URL HTTP/HTTPS completa, devolverla sin cambios
-  if (url.startsWith('http://') || url.startsWith('https://')) {
-    return url;
-  }
-  
-  // Obtener la base URL del servicio
-  const baseUrl = 'http://localhost:7267';
-  
-  // Si la URL tiene referencias a rutas del sistema
-  if (url.includes('c://') || url.includes('C://') || url.includes('c:\\') || url.includes('C:\\')) {
-    // Extraer la parte después de "Uploads/"
-    const uploadMatch = url.match(/Uploads[\/\\](.+)$/);
-    if (uploadMatch && uploadMatch[1]) {
-      return `${baseUrl}/api/archivos/Uploads/${uploadMatch[1]}`;
+  // Sección: Cliente
+  this.addSectionTitle(doc, 'Cliente', y);
+  y += 7;
+  this.addKeyValueTable(doc, [
+    { key: 'Nombre', value: this.ExpandItem.nombreCliente || 'No disponible' },
+    { key: 'Celular', value: this.ExpandItem.celular || 'No disponible' },
+    { key: 'Correo', value: this.ExpandItem.correo || 'No disponible' },
+    { key: 'Dirección', value: this.ExpandItem.direccion || 'No disponible' },
+    { key: 'Supervisor', value: this.getSupervisor(this.ExpandItem.supervisor) || 'No disponible' }
+  ], y);
+  y += 30;
+    // 1. Tareas
+    if (this.allTablesData.tareas && this.allTablesData.tareas.length > 0) {
+      y = this.checkAndAddPage(doc, y, 40);
+      y = this.addTableToDocument(doc, 'Tareas', this.allTablesData.tareas, HeadersTables.TareasList, y);
+      y += 15;
     }
     
-    // Si no hay un patrón de "Uploads", extraer solo el nombre del archivo
-    const fileMatch = url.match(/[\/\\]([^\/\\]+\.[a-zA-Z0-9]+)$/);
-    if (fileMatch && fileMatch[1]) {
-      return `${baseUrl}/api/archivos/Uploads/${fileMatch[1]}`;
+    // 2. Repuestos
+    if (this.allTablesData.repuestos && this.allTablesData.repuestos.length > 0) {
+      y = this.checkAndAddPage(doc, y, 40);
+      y = this.addTableToDocument(doc, 'Repuestos', this.allTablesData.repuestos, HeadersTables.RepuestoseInsumosList, y);
+      y += 15;
+    }
+    
+    // 3. Mecánicos
+    if (this.allTablesData.mecanicos && this.allTablesData.mecanicos.length > 0) {
+      y = this.checkAndAddPage(doc, y, 40);
+      y = this.addTableToDocument(doc, 'Mecánicos', this.allTablesData.mecanicos, HeadersTables.ManoDeObraList, y);
+      y += 15;
+    }
+    
+    // 4. Trabajos Externos
+    if (this.allTablesData.trabajosExternos && this.allTablesData.trabajosExternos.length > 0) {
+      y = this.checkAndAddPage(doc, y, 40);
+      y = this.addTableToDocument(doc, 'Trabajos Externos', this.allTablesData.trabajosExternos, HeadersTables.TrabajoExternoList, y);
+      y += 15;
+    }
+    
+      // 5. Observaciones con adjuntos
+if (this.allTablesData.observaciones && this.allTablesData.observaciones.length > 0) {
+  y = this.checkAndAddPage(doc, y, 40);
+  y = this.addTableToDocument(doc, 'Observaciones', this.allTablesData.observaciones, HeadersTables.ObservacionesTareaList, y);
+  
+  // Agregar imágenes de adjuntos de observaciones
+  if (this.adjuntoImages && this.adjuntoImages.length > 0) {
+    y += 10;
+    y = this.addAdjuntosToDocument(
+      doc, 
+      { text: 'Adjunto de Observaciones', style: 'subheading' },
+      this.allTablesData.observaciones
+        .filter(obs => obs.idAdjunto)
+        .map(obs => obs.idAdjunto), 
+      y
+    );
+    y += 15;
+  }
+}
+
+// 6. Solicitudes con adjuntos
+if (this.allTablesData.solicitudes && this.allTablesData.solicitudes.length > 0) {
+  y = this.checkAndAddPage(doc, y, 40);
+  y = this.addTableToDocument(doc, 'Solicitudes', this.allTablesData.solicitudes, HeadersTables.SolicitudTareaList, y);
+  
+  // Agregar imágenes de adjuntos de solicitudes
+  if (this.adjuntoImages && this.adjuntoImages.length > 0) {
+    y += 10;
+    y = this.addAdjuntosToDocument(
+      doc, 
+      { text: 'Adjunto de Solicitudes', style: 'subheading' },
+      this.allTablesData.solicitudes
+        .filter(sol => sol.idAdjunto)
+        .map(sol => sol.idAdjunto), 
+      y
+    );
+  }
+}
+    
+    // Agregar numeración de páginas con estilo mejorado
+    const totalPages = doc.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(80, 80, 80);
+      doc.text(`Página ${i} de ${totalPages}`, pageWidth - 20, pageHeight - 10);
+      
+      // Agregar un footer o pie de página en cada página
+      this.addFooter(doc, pageHeight);
+    }
+    
+    // Guardar el PDF
+    doc.save(`Orden_Trabajo_${this.codeExpandDialog}_Completo.pdf`);
+  }   
+  // Método para agregar un pie de página
+  private addFooter(doc: jsPDF, pageHeight: number) {
+    const rgb = this.hexToRgb('#1f295b'); // Nuevo color institucional
+    doc.setFontSize(8);
+    doc.setTextColor(rgb.r, rgb.g, rgb.b);
+    doc.text('Confidencial - Uso exclusivo de ISTPET', 10, pageHeight - 10);
+  }
+  // Método para el manejo de texto largo
+  private truncateText(text: string, maxLength: number): string {
+    if (!text) return 'No disponible';
+    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+  }
+  // Método para verificar y agregar una nueva página si es necesario
+  private checkAndAddPage(doc: jsPDF, y: number, requiredSpace: number): number {
+    const pageHeight = doc.internal.pageSize.getHeight();
+    if (y + requiredSpace > pageHeight - 20) { // 20 es el margen inferior
+      doc.addPage();
+      return 20; // Reiniciar la posición Y en la nueva página
+    }
+    return y;
+  }
+  // Método para agregar una tabla al documento con estilo mejorado
+  private addTableToDocument(doc: jsPDF, title: string, data: any[], headers: any[], y: number): number {
+    // Agregar título de sección con caja
+    y = this.addSectionWithBox(doc, title, y);
+    y += 7;
+    
+    // Preparar cabeceras y datos para la tabla
+    const tableHeaders = headers.map(col => col.header);
+    const tableData = data.map(item => 
+      headers.map(col => {
+        // Transformar el valor según el campo
+        if (col.field.includes('fecha') && item[col.field]) {
+          return this.datePipe.transform(item[col.field], 'dd/MM/yyyy') || 'N/A';
+        }
+        return item[col.field] !== undefined && item[col.field] !== null ? item[col.field].toString() : 'N/A';
+      })
+    );
+    
+    // Convertir color hex a decimal
+    const rgb = this.hexToRgb('#1f295b');
+    
+    // Agregar la tabla al PDF con estilo mejorado
+    autoTable(doc, {
+      head: [tableHeaders],
+      body: tableData,
+      startY: y,
+      theme: 'grid',
+      styles: {
+        fontSize: 8,
+        cellPadding: 3,
+        lineColor: [220, 220, 220]
+      },
+      headStyles: {
+        fillColor: [rgb.r, rgb.g, rgb.b],
+        textColor: 255,
+        fontStyle: 'bold'
+      },
+      alternateRowStyles: {
+        fillColor: [248, 248, 252]
+      },
+      columnStyles: {
+        0: {cellWidth: 'auto'}, // Primera columna con ancho automático
+      },
+      margin: { left: 10, right: 10 },
+      didParseCell: function(data) {
+        if (data.row.index === 0) {
+          data.cell.styles.lineWidth = 0.5;
+        }
+      }
+    });
+    
+    // Usar aserción de tipo para acceder a lastAutoTable
+    return (doc as jsPDFWithAutoTable).lastAutoTable.finalY + 5;
+  }
+  private addSectionTitle(doc: jsPDF, title: string, y: number) {
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(0, 102, 204);
+    doc.text(title, 10, y);
+    doc.setTextColor(0);
+    doc.setDrawColor(0, 102, 204);
+    doc.line(10, y + 1, 200, y + 1);
+  }
+  // Modificación del método para agregar adjuntos al documento
+  private addAdjuntosToDocument(doc: jsPDF, title: string | { text: string, style: string }, adjuntosIds: number[], y: number): number {
+  // No hacer nada si no hay adjuntos o imágenes cargadas
+  if (!adjuntosIds || adjuntosIds.length === 0 || !this.adjuntoImages || this.adjuntoImages.length === 0) {
+    return y;
+  }
+  
+  // Determinar el texto del título
+  const titleText = typeof title === 'string' ? title : title.text;
+  const isSubheading = typeof title === 'object' && title.style === 'subheading';
+  
+  // Agregar título de sección con caja pero con estilo diferente si es subheading
+  if (isSubheading) {
+    // Aplicar estilo de subtítulo (sin caja o con estilo diferente)
+    doc.setFontSize(12); // Tamaño más pequeño para subtítulo
+    doc.setFont('helvetica', 'bold');
+    doc.text(titleText, 20, y);
+    y += 5;
+  } else {
+    // Estilo original con caja
+    y = this.addSectionWithBox(doc, titleText, y);
+  }
+  
+  y += 10;
+  
+  // Tamaño máximo para las imágenes
+  const maxWidth = 120;
+  const maxHeight = 80;
+  
+  // Agregar cada adjunto que corresponda a las IDs proporcionadas
+  for (const id of adjuntosIds) {
+    // Buscar la imagen cargada que corresponde a este ID
+    const adjuntoInfo = this.adjuntoImages.find(img => img.id === id);
+    if (adjuntoInfo) {
+      // Verificar si es necesario cambiar de página
+      y = this.checkAndAddPage(doc, y, maxHeight + 30);
+      
+      // Encontrar el adjunto correspondiente para obtener su nombre y tipo
+      const adjunto = this.adjuntos.find(adj => adj.idAdjunto === id);
+      const nombre = adjunto ? adjunto.nombre : `Adjunto #${id}`;
+      const tipoArchivo = adjunto ? adjunto.tipoArchivo : '';
+      
+      // Agregar un subtítulo para el adjunto
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'italic');
+      doc.text(nombre, 20, y);
+      y += 5;
+      
+      // Determinar si es una imagen o un archivo para descargar
+      const esImagen = this.esArchivoImagen(tipoArchivo);
+      
+      if (esImagen) {
+        try {
+          // Intentar agregar la imagen
+          doc.addImage(adjuntoInfo.dataUrl, 'JPEG', 20, y, maxWidth, maxHeight, undefined, 'FAST');
+          y += maxHeight + 15;
+        } catch (error) {
+          console.error(`Error al agregar imagen ${id} al PDF:`, error);
+          y = this.agregarPlaceholderImagen(doc, nombre, adjuntoInfo.dataUrl, 20, y, maxWidth, maxHeight);
+        }
+      } else {
+        // Es un archivo para descargar, agregar un botón/enlace
+        y = this.agregarEnlaceDescarga(doc, nombre, tipoArchivo, adjuntoInfo.dataUrl, 20, y);
+      }
     }
   }
   
-  // Si la URL no tiene un patrón reconocible, devolverla con el prefijo API correcto
-  if (url.includes('/api/archivos/')) {
-    return url;
+  return y;
   }
-  
-  // Caso predeterminado: asegurarse de que tenga el prefijo correcto
-  return `${baseUrl}/api/archivos/Uploads/${url.split('/').pop()}`;
-}
-
-// Método para obtener un ícono según el tipo de archivo
-private obtenerIconoTipoArchivo(tipoArchivo: string): string {
-  if (!tipoArchivo) return '[DOC]'; // Documento genérico
-  
-  const tipo = tipoArchivo.toLowerCase();
-  
-  if (tipo.includes('pdf') || tipo.endsWith('.pdf')) {
-    return '[PDF]';
-  } else if (tipo.includes('excel') || tipo.includes('spreadsheet') || 
-             tipo.endsWith('.xls') || tipo.endsWith('.xlsx') || tipo.endsWith('.csv')) {
-    return '[XLS]';
-  } else if (tipo.includes('word') || tipo.includes('document') || 
-             tipo.endsWith('.doc') || tipo.endsWith('.docx')) {
-    return '[DOC]';
-  } else if (tipo.includes('zip') || tipo.includes('rar') || tipo.includes('compressed') ||
-             tipo.endsWith('.zip') || tipo.endsWith('.rar') || tipo.endsWith('.7z')) {
-    return '[ZIP]';
-  } else if (tipo.includes('audio') || tipo.endsWith('.mp3') || tipo.endsWith('.wav')) {
-    return '[AUD]';
-  } else if (tipo.includes('video') || tipo.endsWith('.mp4') || tipo.endsWith('.avi')) {
-    return '[VID]';
-  } else if (tipo.includes('image') || tipo.endsWith('.jpg') || tipo.endsWith('.jpeg') || 
-             tipo.endsWith('.png') || tipo.endsWith('.gif')) {
-    return '[IMG]';
-  } else {
-    return '[DOC]';
+  // Método para verificar si un archivo es una imagen
+  private esArchivoImagen(tipoArchivo: string): boolean {
+    if (!tipoArchivo) return false;
+    
+    const tiposImagen = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/bmp', 'image/webp'];
+    
+    // Si el tipo MIME está disponible directamente
+    if (tiposImagen.includes(tipoArchivo.toLowerCase())) {
+      return true;
+    }
+    
+    // Si solo tenemos la extensión
+    const extensiones = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
+    const extension = tipoArchivo.toLowerCase().split('.').pop();
+    return extension ? extensiones.includes(extension) : false;
   }
-}
+  // Método para agregar un placeholder de imagen cuando hay error
+  private agregarPlaceholderImagen(doc: jsPDF, nombre: string, url: string, x: number, y: number, width: number, height: number): number {
+    doc.setDrawColor(200, 200, 200);
+    doc.setFillColor(245, 245, 245);
+    doc.roundedRect(x, y, width, height, 2, 2, 'FD');
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`[Imagen no disponible: ${nombre}]`, x + 20, y + 30);
+    
+    // Truncar la URL si es muy larga
+    const urlCorta = url.length > 60 ? url.substring(0, 57) + '...' : url;
+    doc.text(`Referencia: ${urlCorta}`, x + 20, y + 45);
+    
+    return y + height + 15;
+  }
+  // Método para agregar un enlace de descarga para archivos no-imagen
+  private agregarEnlaceDescarga(doc: jsPDF, nombre: string, tipoArchivo: string, url: string, x: number, y: number): number {
+    // Obtener ícono según tipo de archivo
+    const icono = this.obtenerIconoTipoArchivo(tipoArchivo);
+    
+    // Crear un recuadro para el archivo
+    const rgb = this.hexToRgb('#f2f6fc');
+    doc.setFillColor(rgb.r, rgb.g, rgb.b);
+    doc.setDrawColor(200, 200, 200);
+    doc.roundedRect(x, y, 170, 40, 3, 3, 'FD');
+    
+    // Dibujar ícono
+    doc.setFontSize(20);
+    doc.setTextColor(80, 80, 80);
+    doc.text(icono, x + 15, y + 20);
+    
+    // Información del archivo
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(50, 50, 50);
+    doc.text(nombre, x + 40, y + 15);
+    
+    // Tipo de archivo y tamaño (si está disponible)
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 100, 100);
+    const infoArchivo = tipoArchivo || 'Documento';
+    doc.text(infoArchivo, x + 40, y + 25);
+    
+    // Agregar un enlace clicable para descargar
+    const linkWidth = 80;
+    const linkHeight = 12;
+    const linkX = x + 40;
+    const linkY = y + 27;
+    
+    // Dibujar botón de descarga
+    const linkRgb = this.hexToRgb('#1f295b');
+    doc.setFillColor(linkRgb.r, linkRgb.g, linkRgb.b);
+    doc.roundedRect(linkX, linkY, linkWidth, linkHeight, 2, 2, 'F');
+    
+    // Texto del botón
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(8);
+    doc.text("DESCARGAR ARCHIVO", linkX + linkWidth/2, linkY + linkHeight/2 + 2, { align: 'center' });
+    
+    // Asegurarse de que la URL no tenga la referencia a C:// o rutas locales
+    const cleanedUrl = this.cleanFileUrl(url);
+    
+    // Agregar link con URL del archivo para descarga
+    doc.link(linkX, linkY, linkWidth, linkHeight, { url: cleanedUrl });
+    
+    return y + 50; // Espacio para el siguiente elemento
+  }
+  // Método para limpiar una URL de archivo de rutas del sistema
+  private cleanFileUrl(url: string): string {
+    // Si la URL ya es una URL HTTP/HTTPS completa, devolverla sin cambios
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    
+    // Obtener la base URL del servicio
+    const baseUrl = 'http://localhost:7267';
+    
+    // Si la URL tiene referencias a rutas del sistema
+    if (url.includes('c://') || url.includes('C://') || url.includes('c:\\') || url.includes('C:\\')) {
+      // Extraer la parte después de "Uploads/"
+      const uploadMatch = url.match(/Uploads[\/\\](.+)$/);
+      if (uploadMatch && uploadMatch[1]) {
+        return `${baseUrl}/api/archivos/Uploads/${uploadMatch[1]}`;
+      }
+      
+      // Si no hay un patrón de "Uploads", extraer solo el nombre del archivo
+      const fileMatch = url.match(/[\/\\]([^\/\\]+\.[a-zA-Z0-9]+)$/);
+      if (fileMatch && fileMatch[1]) {
+        return `${baseUrl}/api/archivos/Uploads/${fileMatch[1]}`;
+      }
+    }
+    
+    // Si la URL no tiene un patrón reconocible, devolverla con el prefijo API correcto
+    if (url.includes('/api/archivos/')) {
+      return url;
+    }
+    
+    // Caso predeterminado: asegurarse de que tenga el prefijo correcto
+    return `${baseUrl}/api/archivos/Uploads/${url.split('/').pop()}`;
+  }
+  // Método para obtener un ícono según el tipo de archivo
+  private obtenerIconoTipoArchivo(tipoArchivo: string): string {
+    if (!tipoArchivo) return '[DOC]'; // Documento genérico
+    
+    const tipo = tipoArchivo.toLowerCase();
+    
+    if (tipo.includes('pdf') || tipo.endsWith('.pdf')) {
+      return '[PDF]';
+    } else if (tipo.includes('excel') || tipo.includes('spreadsheet') || 
+              tipo.endsWith('.xls') || tipo.endsWith('.xlsx') || tipo.endsWith('.csv')) {
+      return '[XLS]';
+    } else if (tipo.includes('word') || tipo.includes('document') || 
+              tipo.endsWith('.doc') || tipo.endsWith('.docx')) {
+      return '[DOC]';
+    } else if (tipo.includes('zip') || tipo.includes('rar') || tipo.includes('compressed') ||
+              tipo.endsWith('.zip') || tipo.endsWith('.rar') || tipo.endsWith('.7z')) {
+      return '[ZIP]';
+    } else if (tipo.includes('audio') || tipo.endsWith('.mp3') || tipo.endsWith('.wav')) {
+      return '[AUD]';
+    } else if (tipo.includes('video') || tipo.endsWith('.mp4') || tipo.endsWith('.avi')) {
+      return '[VID]';
+    } else if (tipo.includes('image') || tipo.endsWith('.jpg') || tipo.endsWith('.jpeg') || 
+              tipo.endsWith('.png') || tipo.endsWith('.gif')) {
+      return '[IMG]';
+    } else {
+      return '[DOC]';
+    }
+  }
 }

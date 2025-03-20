@@ -344,8 +344,7 @@ export class VehiculoComponent implements OnInit{
       console.error('Error al exportar a Excel:', err);
       this.toastr.error('Hubo un problema al exportar los datos', 'Error');
     });
-  }
-  
+  }  
   // Agregar esta nueva función especializada
   private extraerTextoLicencias(licencias: any): string {
     // Si no hay licencias o no es un array
@@ -385,44 +384,44 @@ export class VehiculoComponent implements OnInit{
     return textos.filter(t => t && t.trim() !== '').join(', ');
   }
   // Método para exportar a Excel
-// Método para exportar a Excel
-exportExcel() {
-  import('xlsx').then((xlsx) => {
-    // Preparar datos para exportación
-    const exportData = this.vehiculos.map(vehiculo => {
-      const data: Record<string, any> = {};
-      
-      this.cols.forEach(col => {
-        // Verificar que field y header no sean undefined
-        if (col.field && col.header) {
-          // Manejo especial para el campo de licencia
-          if (col.field === 'licencia' && vehiculo.licencia && Array.isArray(vehiculo.licencia)) {
-            data[col.header] = (vehiculo.licencia as Licencia[])
-              .map(item => item.detalle)
-              .join(', ');
+  // Método para exportar a Excel
+  exportExcel() {
+    import('xlsx').then((xlsx) => {
+      // Preparar datos para exportación
+      const exportData = this.vehiculos.map(vehiculo => {
+        const data: Record<string, any> = {};
+        
+        this.cols.forEach(col => {
+          // Verificar que field y header no sean undefined
+          if (col.field && col.header) {
+            // Manejo especial para el campo de licencia
+            if (col.field === 'licencia' && vehiculo.licencia && Array.isArray(vehiculo.licencia)) {
+              data[col.header] = (vehiculo.licencia as Licencia[])
+                .map(item => item.detalle)
+                .join(', ');
+            }
+            // Manejo para el campo estado
+            else if (col.field === 'estado' && col.field in vehiculo) {
+              const estado = vehiculo[col.field as keyof VehiculosList];
+              data[col.header] = estado !== null ? this.GetEstado(estado as number) : '';
+            } 
+            // Manejo para otros campos
+            else if (col.field in vehiculo) {
+              data[col.header] = vehiculo[col.field as keyof VehiculosList];
+            }
           }
-          // Manejo para el campo estado
-          else if (col.field === 'estado' && col.field in vehiculo) {
-            const estado = vehiculo[col.field as keyof VehiculosList];
-            data[col.header] = estado !== null ? this.GetEstado(estado as number) : '';
-          } 
-          // Manejo para otros campos
-          else if (col.field in vehiculo) {
-            data[col.header] = vehiculo[col.field as keyof VehiculosList];
-          }
-        }
+        });
+        
+        return data;
       });
       
-      return data;
+      const worksheet = xlsx.utils.json_to_sheet(exportData);
+      const workbook = { Sheets: { 'Vehiculos': worksheet }, SheetNames: ['Vehiculos'] };
+      const excelBuffer = xlsx.write(workbook, { bookType: 'xlsx', type: 'array' });
+      
+      this.saveAsExcelFile(excelBuffer, "vehiculos_institucionales");
     });
-    
-    const worksheet = xlsx.utils.json_to_sheet(exportData);
-    const workbook = { Sheets: { 'Vehiculos': worksheet }, SheetNames: ['Vehiculos'] };
-    const excelBuffer = xlsx.write(workbook, { bookType: 'xlsx', type: 'array' });
-    
-    this.saveAsExcelFile(excelBuffer, "vehiculos_institucionales");
-  });
-}
+  }
   // Método auxiliar para guardar como archivo Excel
   saveAsExcelFile(buffer: any, fileName: string): void {
     const EXCEL_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8';
@@ -439,10 +438,8 @@ exportExcel() {
     window.URL.revokeObjectURL(url);
     document.body.removeChild(a);
   }
-  
   // Implementar el método OnExportButton existente
   OnExportButton() {
-    // Puedes llamar a exportCSV() o exportExcel() según prefieras
     this.exportCSV();
   }
 }
