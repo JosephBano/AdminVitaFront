@@ -8,7 +8,7 @@ import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ComprasService } from '../../services/Compras.service';
+import { ComprasService } from '../../services/compras.service';
 import { Router } from '@angular/router';
 
 @Component({
