@@ -29,6 +29,10 @@ import { DividerModule } from 'primeng/divider';
 import { FileUpload } from 'primeng/fileupload';
 import { SkeletonSimpleComponent } from '../../shared/components/skeleton-simple.component';
 import { formatDate } from '@angular/common';
+import { TipoVehiculoService } from '../../services/tipo-vehiculo.service';
+import { Image, ImageModule } from 'primeng/image';
+import { AdjuntoService } from '../../services/adjunto.service';
+import { ArchivosService } from '../../services/archivos.service';
 
 @Component({
   selector: 'app-vehiculo',
@@ -55,6 +59,7 @@ import { formatDate } from '@angular/common';
     DividerModule,
     FileUpload,
     SkeletonSimpleComponent,
+    ImageModule,
   ],
   standalone: true,
   templateUrl: './vehiculo.component.html',
@@ -67,15 +72,17 @@ export class VehiculoComponent implements OnInit{
 
   loading: boolean = true;
   loadingEditDialog: boolean = false;
+  loadingExpandDialog: boolean = false;
 
   visibleAdd: boolean = false;
   visibleEdit: boolean = false;
+  visibleExpand: boolean = false;
 
   fb_addVehiculo!: FormGroup;
   fb_editVehiculo!: FormGroup;
 
-  placaEditDialog: string='';
-  VehicleEditDialog!: VehicleDetalleResponse;
+  VehicleAuxDialog!: VehicleDetalleResponse;
+  ImgsVehicle: string[] = ['','','',''];
 
   estado!: genericT[];
   tiposVehiculo!: genericT[];
@@ -89,13 +96,15 @@ export class VehiculoComponent implements OnInit{
   uploadedFiles: any[] = [];
 
   iconValidarDocumento: string = 'pi pi-search';
-  exportColumns!: { title: string; dataKey: string }[];
 
   constructor(
     private vehiculoService: VehiculoService,
     private validacionService: ValidacionService,
     private toastr: ToastrService,
-    private licenciaService: LicenciaService
+    private licenciaService: LicenciaService,
+    private tipoVehService: TipoVehiculoService,
+    private adjuntoService: AdjuntoService,
+    private archService: ArchivosService
   ) { }
 
   ngOnInit(): void {
@@ -104,33 +113,23 @@ export class VehiculoComponent implements OnInit{
     this.nowDate = new Date();
     this.nowDate.setFullYear(this.nowDate.getFullYear()+1);
     this.minDate = new Date(2015, 0, 1);
-    this.VehicleEditDialog = {
-      idVehiculo: 0,
-      marca: '',
-      modelo: '',
-      version: '',
-      placa: '',
-      anio: 0,
-      color: '',
-      numeroChasis: '',
-      numeroVehiculo: '',
-      estado: 0,
-      ultimoAnioMatriculacion: 0,
-      ultimoAnioRTV: 0,
-      tipoVehiculo: '',
-      propietario: {
-        idCliente: 0,
-        nombre: '',
-        apellidos: '',
+    this.VehicleAuxDialog = this.setPlaneVehicle();
+    this.getData();
+    this.inizializeFormsGroup();
+    this.fb_addVehiculo.get('num_documento')?.valueChanges.subscribe(() => {
+      this.fb_addVehiculo.patchValue({propietarioId: null});;
+      this.iconValidarDocumento = 'pi pi-search';
+    });
+  }
+  getData() {
+    this.tipoVehService.getOrdenesTrabajoListado().subscribe({
+      next: (response) => {
+        this.tiposVehiculo = response;
       },
-      licencias: []
-    }
-    this.tiposVehiculo = [
-      {name: 'Automotor', code: 0},
-      {name: 'Moto', code: 1},
-      {name: 'Camioneta', code: 2},
-      {name: 'Utilitario', code: 3}
-    ];
+      error: (err) => {
+        console.error("Error al obtener tipos de vehículo: ", err);
+      }
+    });
     this.vehiculoService.getVehiculosInstitucionales().subscribe({
       next: (response) => {
         this.vehiculos = response;
@@ -148,6 +147,8 @@ export class VehiculoComponent implements OnInit{
         console.error("Error al obtener licencias: ", err);
       }
     })
+  }
+  inizializeFormsGroup() {
     this.fb_addVehiculo = new FormGroup({
       placa: new FormControl<string | null>(null, [Validators.required, Validators.pattern(/^[A-Za-z]{3}-\d{4}$/)]),
       num_chasis: new FormControl<string | null>(null),
@@ -169,15 +170,29 @@ export class VehiculoComponent implements OnInit{
       ultimoAnioRTV: new FormControl<number | null>(null, [Validators.required]),
       ultimoAnioMatriculacion: new FormControl<number | null>(null, [Validators.required]),
     });
-    this.fb_addVehiculo.get('num_documento')?.valueChanges.subscribe(() => {
-      this.fb_addVehiculo.patchValue({propietarioId: null});;
-      this.iconValidarDocumento = 'pi pi-search';
-    });
-    this.exportColumns = this.cols.map((col) => ({
-      title: col.header || '',
-      dataKey: col.field || ''
-    }));
-    
+  }
+  setPlaneVehicle(){
+    return {
+      idVehiculo: 0,
+      marca: '',
+      modelo: '',
+      version: '',
+      placa: '',
+      anio: 0,
+      color: '',
+      numeroChasis: '',
+      numeroVehiculo: '',
+      estado: 0,
+      ultimoAnioMatriculacion: 0,
+      ultimoAnioRTV: 0,
+      tipoVehiculo: '',
+      propietario: {
+        idCliente: 0,
+        nombre: '',
+        apellidos: '',
+      },
+      licencias: []
+    }
   }
   convertFormToVehicle(): AddVehicleInstitucional {
     return {
@@ -214,7 +229,7 @@ export class VehiculoComponent implements OnInit{
   }
   updateVehicleOptions(){
     const vehicle: UpdateOptionsVehicle = {
-      idVehiculo: this.VehicleEditDialog.idVehiculo,
+      idVehiculo: this.VehicleAuxDialog.idVehiculo,
       estado: this.fb_editVehiculo.get('estado')?.value,
       ultimoAnioRTV: this.fb_editVehiculo.get('ultimoAnioRTV')?.value.getFullYear(),
       ultimoAnioMatriculacion: this.fb_editVehiculo.get('ultimoAnioMatriculacion')?.value.getFullYear()
@@ -236,6 +251,16 @@ export class VehiculoComponent implements OnInit{
         this.uploadedFiles.push(file);
     }
   }
+  cargarArchivo(fileName: string) {
+    this.archService.getArchivo(fileName).subscribe(blob => {
+      const reader = new FileReader();
+        reader.onload = () => {
+          this.ImgsVehicle.push(reader.result as string);
+        };
+        reader.readAsDataURL(blob);
+      
+    });
+  }
   showDialogAdd() {
     this.visibleAdd = true;
   } 
@@ -244,8 +269,7 @@ export class VehiculoComponent implements OnInit{
     this.loadingEditDialog = true;
     this.vehiculoService.getVehiculoByPlaca(placa).subscribe({
       next: (response: any) => {
-        this.VehicleEditDialog = response;
-        this.placaEditDialog = placa;
+        this.VehicleAuxDialog = response;
         this.fb_editVehiculo.patchValue({
           estado: response.estado,
           ultimoAnioRTV: new Date(`${response.ultimoAnioRTV}-01-01`),
@@ -260,6 +284,37 @@ export class VehiculoComponent implements OnInit{
         this.visibleEdit = false;
       }
     })
+  }
+  showDialogExpand(placa: string){
+    this.ImgsVehicle = ['','','',''];
+    this.visibleExpand = true;
+    this.VehicleAuxDialog = this.setPlaneVehicle();
+    this.vehiculoService.getVehiculoByPlaca(placa).subscribe({
+      next: (vehiculo: any) => {
+        this.VehicleAuxDialog = vehiculo;
+        this.adjuntoService.getAdjuntosByVehiculo(vehiculo.idVehiculo).subscribe({
+          next: (adjuntos: any) => {
+            adjuntos.map( (adjunto:any, index:any) => {
+              this.cargarArchivo(adjunto.ruta);
+              if((adjuntos.length-1) == index) {
+                this.loadingExpandDialog = false;
+                return;
+              }
+            })
+          },
+          error: (err) => {
+            console.error("Error al obtener adjuntos: ", err);
+            this.toastr.error('Hubo un error al obtener los adjuntos', 'Error!');
+          }
+        })
+      },
+      error: (err) => {
+        console.error("Error al obtener vehículo: ", err);
+        this.toastr.error('Hubo un error al obtener el vehículo', 'Error!');
+        this.loadingEditDialog = false;
+        this.visibleEdit = false;
+      }
+    });
   }
   filterGlobal(event: Event, dt: any) { //filtro para barra de busqueda
     const inputValue = (event.target as HTMLInputElement)?.value || '';
@@ -383,7 +438,6 @@ export class VehiculoComponent implements OnInit{
     // Filtrar elementos vacíos y unir con comas
     return textos.filter(t => t && t.trim() !== '').join(', ');
   }
-  // Método para exportar a Excel
   // Método para exportar a Excel
   exportExcel() {
     import('xlsx').then((xlsx) => {

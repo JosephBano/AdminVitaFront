@@ -76,7 +76,7 @@
                 <div *ngIf="col.field =='actions'" class="flex justify-start w-full gap-2"> 
                     <p-button icon="pi pi-users" [rounded]="true" [text]="true" [raised]="true" severity="secondary" />
                     <p-button icon="pi pi-pen-to-square" (onClick)="showDialogEdit(rowData['placa'])" [rounded]="true" [text]="true" [raised]="true" severity="secondary" />
-                    <p-button icon="pi pi-expand" [rounded]="true" [text]="true" [raised]="true" severity="secondary" />
+                    <p-button icon="pi pi-expand" (onClick)="showDialogExpand(rowData['placa'])" [rounded]="true" [text]="true" [raised]="true" severity="secondary" />
                 </div>
             </td>
         </tr>
@@ -147,8 +147,8 @@
                         <p-select 
                         formControlName="tipoVehiculo" 
                         [options]="tiposVehiculo" 
-                        optionLabel="name" 
-                        optionValue="code"
+                        optionLabel="detalle" 
+                        optionValue="idTipoVehiculo"
                         class="w-full"
                         [ngClass]="{'ng-invalid ng-dirty': fb_addVehiculo.get('tipoVehiculo')?.invalid && fb_addVehiculo.get('tipoVehiculo')?.touched}">
                     </p-select>
@@ -324,13 +324,13 @@
     </form>
 </p-dialog>
 
-<p-dialog [header]="'Actualizar Informacion del vehiculo placa '+placaEditDialog" [modal]="true" [(visible)]="visibleEdit" [style]="{ width: '30rem' }"> <!--Dialog crear Orden de trabajo-->
+<p-dialog [header]="'Actualizar Informacion del vehiculo placa ' + VehicleAuxDialog.placa" [modal]="true" [(visible)]="visibleEdit" [style]="{ width: '30rem' }"> <!--Dialog crear Orden de trabajo-->
     <form [formGroup]="fb_editVehiculo" >
         <app-skeleton-simple *ngIf="loadingEditDialog" />
         <ng-container *ngIf="!loadingEditDialog">
             <div class="flex flex-col gap-4 m-4">
                 <div>
-                    <p><strong>Vehiculo: </strong>{{VehicleEditDialog.marca + ' ' + VehicleEditDialog.modelo+' '+VehicleEditDialog.anio}}</p>
+                    <p><strong>Vehiculo: </strong>{{VehicleAuxDialog.marca + ' ' + VehicleAuxDialog.modelo+' '+VehicleAuxDialog.anio}}</p>
                 </div>
                 <div>
                     <p-floatlabel variant="on" class="w-full">
@@ -395,4 +395,34 @@
             <p-button label="Save" [disabled]="loadingEditDialog" (click)="updateVehicleOptions()" />
         </div>
     </form>
+</p-dialog>
+
+<p-dialog [header]="'Vehiculo ' + VehicleAuxDialog.placa" [modal]="true" [modal]="true" [(visible)]="visibleExpand" [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }" [style]="{ width: '75vw' }"> 
+    <app-skeleton-simple *ngIf="loadingExpandDialog"/>
+        <ng-container *ngIf="!loadingExpandDialog">
+            <div class="card borde-contenedor py-1">
+                <div class="d-flex flex-column">
+                    <p-divider><b>Información del vehiculo</b></p-divider>
+                    <p><strong>Placa:</strong> {{ VehicleAuxDialog.placa }}</p>
+                    <p><strong>Marca:</strong> {{ VehicleAuxDialog.marca }}</p>
+                    <p><strong>Modelo:</strong> {{ VehicleAuxDialog.modelo }} ({{ VehicleAuxDialog.anio }})</p>
+                    <p><strong>Versión:</strong> {{ VehicleAuxDialog.version }}</p>
+                    <p><strong>Color:</strong> {{ VehicleAuxDialog.color }}</p>
+                    <p><strong>Tipo:</strong> {{ VehicleAuxDialog.tipoVehiculo }}</p>
+                    <p><strong>Número de Chasis:</strong> {{ VehicleAuxDialog.numeroChasis }}</p>
+                    <p><strong>Última Matriculación:</strong> {{ VehicleAuxDialog.ultimoAnioMatriculacion }}</p>
+                    <p><strong>Última RTV:</strong> {{ VehicleAuxDialog.ultimoAnioRTV }}</p>
+                    <p-divider align="left"><b>Propietario</b></p-divider>
+                    <p><strong>Nombre:</strong> {{ VehicleAuxDialog.propietario.nombre }} {{ VehicleAuxDialog.propietario.apellidos }}</p>
+                </div>
+                <p-divider><b>Imagenes del vehiculo</b></p-divider>
+                <div class="flex flex-row gap-2 w-full justify-between flex-wrap">
+                    <ng-container *ngFor="let card of ImgsVehicle">
+                        <div *ngIf="card !== ''" class="borde-contenedor">
+                            <p-image class="m-0 p-0" [src]="card" width="250" [preview]="true"/>
+                        </div>
+                    </ng-container>
+                </div>
+            </div>
+        </ng-container>
 </p-dialog>

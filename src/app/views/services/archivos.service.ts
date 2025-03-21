@@ -13,6 +13,11 @@ export class ArchivosService {
   constructor(private http:HttpClient) { }
 
   getArchivo(fileName: string): Observable<Blob> {
-    return this.http.get(`${this.apiUrl}/Uploads/${fileName}`, { responseType: 'blob' });
+    const name = this.obtenerNombreArchivo(fileName);
+    return this.http.get(`${this.apiUrl}/Uploads/${name}`, { responseType: 'blob' });
+  }
+
+  private obtenerNombreArchivo(ruta: string): string {
+    return ruta.split('/').pop() || '';
   }
 }
