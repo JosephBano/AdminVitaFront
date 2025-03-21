@@ -465,13 +465,9 @@ export class OrdenTrabajoComponent implements OnInit {
   getAdjuntoNameById(id:number) {
     this.adjuntoService.getAdjuntoById(id).subscribe({
       next: (response) => {
-        const name = this.obtenerNombreArchivo(response.ruta);
-        this.cargarArchivo(name);
+        this.cargarArchivo(response.ruta);
       }
     });
-  }
-  obtenerNombreArchivo(ruta: string): string {
-    return ruta.split('/').pop() || '';
   }
   cargarArchivo(fileName: string) {
     this.archivoService.getArchivo(fileName).subscribe(blob => {
