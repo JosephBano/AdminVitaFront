@@ -16,6 +16,7 @@ export const environment = {
     magnitud: '/MagnitudesController',
     adjuntos: '/Adjuntos',
     archivos: '/archivos',
+    tipoVehiculo: '/TipoVehiculo',
 };
 
 export const ivaCalculo = {
