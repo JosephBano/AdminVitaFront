@@ -8,6 +8,7 @@
     [loading]="loading"
     [tableStyle]="{ 'min-width': '50rem' }"
     [rowsPerPageOptions]="[5, 10, 20]"
+    stripedRows
     >
     <ng-template #caption>
         <div class="flex flex-col-reverse sm:flex-row sm:justify-between gap-2 w-full">
@@ -298,7 +299,7 @@
             </p-selectbutton>
         </div>
         <div class="flex flex-col justify-center">
-            <p-table [columns]="expandCols" [value]="expandDataTables" [tableStyle]="{ 'min-width': '50rem' }">
+            <p-table showGridlines [columns]="expandCols" [value]="expandDataTables" [tableStyle]="{ 'min-width': '50rem' }">
                 <ng-template #header let-columns>
                     <tr>
                         <th *ngFor="let col of columns">
