@@ -121,7 +121,7 @@
                     <div *ngIf="detallesCompra.length === 0" class="flex justify-center w-full">
                         <p> No hay detalles agregados. </p>
                     </div>
-                    <p-table *ngIf="detallesCompra.length !== 0" min="0" [columns]="detalleCols" [value]="detallesCompra" >
+                    <p-table  stripedRows *ngIf="detallesCompra.length !== 0" min="0" [columns]="detalleCols" [value]="detallesCompra" >
                         <ng-template #header let-columns>
                             <tr>
                                 <th *ngFor="let col of columns">
