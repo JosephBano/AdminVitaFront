@@ -30,9 +30,10 @@ import { FileUpload } from 'primeng/fileupload';
 import { SkeletonSimpleComponent } from '../../shared/components/skeleton-simple.component';
 import { formatDate } from '@angular/common';
 import { TipoVehiculoService } from '../../services/tipo-vehiculo.service';
-import { Image, ImageModule } from 'primeng/image';
+import { ImageModule } from 'primeng/image';
 import { AdjuntoService } from '../../services/adjunto.service';
 import { ArchivosService } from '../../services/archivos.service';
+import { PropietarioService } from '../../services/propietario.service';
 
 @Component({
   selector: 'app-vehiculo',
@@ -73,10 +74,13 @@ export class VehiculoComponent implements OnInit{
   loading: boolean = true;
   loadingEditDialog: boolean = false;
   loadingExpandDialog: boolean = false;
+  loadingPropietariosDialog: boolean = false;
 
   visibleAdd: boolean = false;
   visibleEdit: boolean = false;
   visibleExpand: boolean = false;
+  visiblePropietarios: boolean = false;
+  visibleAddPropietario: boolean = false;
 
   fb_addVehiculo!: FormGroup;
   fb_editVehiculo!: FormGroup;
@@ -87,6 +91,10 @@ export class VehiculoComponent implements OnInit{
   estado!: genericT[];
   tiposVehiculo!: genericT[];
   licencia!: Licencia[];
+
+  propietarios!: any[];
+  colsPropietarios!: Column[];
+  headerPlacaPropietario: string = '';
 
   selectedEstadoFilter!: genericT;
   selectedYearRTVFilter!: number;
@@ -104,12 +112,14 @@ export class VehiculoComponent implements OnInit{
     private licenciaService: LicenciaService,
     private tipoVehService: TipoVehiculoService,
     private adjuntoService: AdjuntoService,
-    private archService: ArchivosService
+    private archService: ArchivosService,
+    private propietarioService: PropietarioService,
   ) { }
 
   ngOnInit(): void {
     this.estado = EstadosVehiculo;
     this.cols = HeadersTables.VehiculosList;
+    this.colsPropietarios = HeadersTables.PropietariosList;
     this.nowDate = new Date();
     this.nowDate.setFullYear(this.nowDate.getFullYear()+1);
     this.minDate = new Date(2015, 0, 1);
@@ -315,6 +325,39 @@ export class VehiculoComponent implements OnInit{
         this.visibleEdit = false;
       }
     });
+  }
+  showDialogPropietarios(id: number, placa: string) {
+    this.visiblePropietarios = true;
+    this.visibleAddPropietario = false;
+    this.loadingPropietariosDialog = true;
+    this.headerPlacaPropietario = placa;
+    this.propietarioService.getPropietariosVehiculo(id).subscribe({
+      next: (response: any) => {
+        this.propietarios = response;
+        this.loadingPropietariosDialog = false;
+      }, 
+      error: (err) => {
+        console.error("Error al obtener propietarios: ", err);
+        this.toastr.error('Hubo un error al obtener los propietarios', 'Error!');
+        this.loadingPropietariosDialog = false;
+        this.visiblePropietarios = false;
+      }
+    });
+  }
+  showDialogAddPropietario() {
+    this.visibleAddPropietario = true;
+  }
+  formatDate(dateString: string): string {
+    if(dateString === 'Vacío') return 'Vacío';
+    const date = new Date(dateString);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Meses van de 0 a 11
+    const year = date.getFullYear();
+
+    return `${day}/${month}/${year}`;
+  }
+  closeDialogAddPropietario(){
+    this.visibleAddPropietario = false;
   }
   filterGlobal(event: Event, dt: any) { //filtro para barra de busqueda
     const inputValue = (event.target as HTMLInputElement)?.value || '';
