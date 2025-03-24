@@ -110,4 +110,11 @@ export const HeadersTables = {
     { field: 'valorUnitario', header: 'Valor'},
     { field: 'actions', header: 'Acciones'}
   ],
+  PropietariosList: [
+    { field: 'nombreCompleto', header: 'Nombre/Nombre Empresa'},
+    { field: 'documento', header: 'Cédula/RUC'},
+    { field: 'fechaInicio', header: 'Fecha de Inicio'},
+    { field: 'fechaFin', header: 'Fecha de Fin'},
+    { field: 'estadoPropiedad', header: 'Estado'}
+  ]
 }

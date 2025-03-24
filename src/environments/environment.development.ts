@@ -17,6 +17,7 @@ export const environment = {
     adjuntos: '/Adjuntos',
     archivos: '/archivos',
     tipoVehiculo: '/TipoVehiculo',
+    propietario: '/RegistroPropietario',
 };
 
 export const ivaCalculo = {
