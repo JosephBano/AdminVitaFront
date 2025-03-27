@@ -10,6 +10,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ComprasService } from '../../services/compras.service';
 import { Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 import { AdjuntoService } from '../../services/adjunto.service';
 import { ArchivosService } from '../../services/archivos.service';
 
@@ -42,8 +43,9 @@ export class AdquisicionComponent implements OnInit {
     private comprasService: ComprasService, 
     private adjuntoService: AdjuntoService,
     private archivoService: ArchivosService,
-    private datePipe: DatePipe,
-    private router: Router
+    private router: Router,
+    private toastr: ToastrService,
+    private datePipe: DatePipe, 
   ){}
   ngOnInit(): void {
     this.cols = HeadersTables.AdquisicionesList;
@@ -80,7 +82,7 @@ export class AdquisicionComponent implements OnInit {
         });
       },
       error: (err) => {
-        console.error("Error al obtener información del adjunto:", err);
+        this.toastr.error('Factura sin adjunto!!!', 'Error');
       }
     });
   }
