@@ -34,6 +34,7 @@ import { ImageModule } from 'primeng/image';
 import { AdjuntoService } from '../../services/adjunto.service';
 import { ArchivosService } from '../../services/archivos.service';
 import { PropietarioService } from '../../services/propietario.service';
+import { FormularioPersonaComponent } from '../../shared/components/formulario-persona/formulario-persona.component';
 
 @Component({
   selector: 'app-vehiculo',
@@ -61,6 +62,7 @@ import { PropietarioService } from '../../services/propietario.service';
     FileUpload,
     SkeletonSimpleComponent,
     ImageModule,
+    FormularioPersonaComponent
   ],
   standalone: true,
   templateUrl: './vehiculo.component.html',

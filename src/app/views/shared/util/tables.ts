@@ -116,5 +116,14 @@ export const HeadersTables = {
     { field: 'fechaInicio', header: 'Fecha de Inicio'},
     { field: 'fechaFin', header: 'Fecha de Fin'},
     { field: 'estadoPropiedad', header: 'Estado'}
+  ],
+  MovimientosItemList: [
+    { field: 'codigo', header: 'Código'},
+    { field: 'nombre', header: 'Descripción'},
+    { field: 'fechaMovimiento', header: 'Fecha'},
+    { field: 'movimiento', header: 'Tipo'},
+    { field: 'cantidad', header: 'Cantidad'},
+    { field: 'stock', header: 'Stock'},
+    { field: 'nombreMagnitud', header: 'Magnitud'}
   ]
 }

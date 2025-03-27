@@ -480,17 +480,12 @@ styleClass="!border-0"
 maskStyleClass="backdrop-blur-sm" 
 closeOnEscape="true"
 focusTrap="true"
+[style]="{ width: '30rem' }"
 >
     <ng-template #headless>
-        <div class="flex flex-col px-8 py-8 gap-6 rounded-2xl"
-            style="border-radius: 12px"
-        >
-           
-            <div class="inline-flex flex-col gap-2">
-                <label class="text-primary-50 font-semibold">Username</label>
-                <input pInputText  class="!p-4 w-80" />
-            </div>
-            
+        <div class="flex flex-col px-8 py-8 gap-6 rounded-2xl" style="border-radius: 12px"> 
+            <h5 class="text-2xl text-center text-black">Cambiar Propietario</h5>
+            <app-formulario-persona></app-formulario-persona>   
             <div class="flex items-center gap-4">
                 <p-button (onClick)="closeDialogAddPropietario()" label="Cerrar"/>
             </div>

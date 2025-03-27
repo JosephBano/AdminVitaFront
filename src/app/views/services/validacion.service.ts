@@ -26,4 +26,8 @@ export class ValidacionService {
       const headers = this.auth.getAuthHeaders();
       return this.http.get<VehiculoValidadoXPlaca>(`${this.apiUrl}/ValidarVehiculo/${placa}`, { headers });
     }
+    validarPersonaXDoc(documento: string): Observable<any> {
+      const headers = this.auth.getAuthHeaders();
+      return this.http.post<any>(`${this.apiUrl}/ValidarPersona`, {documento}, { headers });
+    }
 }
