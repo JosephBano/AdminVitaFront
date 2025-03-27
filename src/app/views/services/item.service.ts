@@ -18,4 +18,8 @@ export class ItemService {
     const headers = this.auth.getAuthHeaders();
     return this.http.get<Item[]>(`${this.apiURL}/GetListaItems`, { headers });
   }
+  getMovimientosXItems(id: number): Observable<any>{
+    const headers = this.auth.getAuthHeaders();
+    return this.http.get<any>(`${this.apiURL}/GetMovimientoItem/${id}`, { headers });
+  }
 }

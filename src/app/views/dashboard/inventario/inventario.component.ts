@@ -9,6 +9,8 @@ import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { DialogModule } from 'primeng/dialog';
+import { SkeletonSimpleComponent } from '../../shared/components/skeleton-simple.component';
 
 @Component({
   selector: 'app-inventario',
@@ -23,6 +25,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
     InputTextModule,
     FormsModule,
     ReactiveFormsModule,
+    DialogModule,
+    SkeletonSimpleComponent,
   ],
   templateUrl: './inventario.component.html',
   styleUrl: './inventario.component.scss'
@@ -32,19 +36,39 @@ export class InventarioComponent implements OnInit {
   cols!: Column[];
 
   loading: boolean = true;
+  loadingMovimientosDialog: boolean = true;
+
+  colsMovimientos!: Column[];
+  movimientos: any[] =[];
+
+  visiblePropietarios:boolean = false;
 
   constructor( 
     private itemService: ItemService,
   ){}
 
   ngOnInit(): void {
+    this.initData();
+  }
+  initData(){
     this.cols = HeadersTables.InventarioList; 
+    this.colsMovimientos = HeadersTables.MovimientosItemList;
     this.itemService.getItemsList().subscribe({
       next: (response) => {
         this.Items = response;
         this.loading = false;
       },
       error: (err) => console.error(err)
+    })
+    
+  }
+  showMovimientosItem(codigo: number){
+    this.visiblePropietarios = true;
+    this.itemService.getMovimientosXItems(codigo).subscribe({
+      next: (response) => {
+        this.movimientos = response;
+        this.loadingMovimientosDialog = false;
+      }
     })
   }
 
