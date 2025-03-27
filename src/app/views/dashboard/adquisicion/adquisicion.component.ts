@@ -1,18 +1,22 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Column, HeadersTables } from '../../shared/util/tables';
 import { CompraResponse } from '../../../../domain/response/Adquisicion.model';
 import { Table, TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
-import { CommonModule, NgFor, NgIf } from '@angular/common';
+import { CommonModule, DatePipe, NgFor, NgIf } from '@angular/common';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ComprasService } from '../../services/compras.service';
 import { Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
+import { AdjuntoService } from '../../services/adjunto.service';
+import { ArchivosService } from '../../services/archivos.service';
 
 @Component({
   selector: 'app-adquisicion',
+  providers: [DatePipe] ,
   imports: [
     TableModule,
     ButtonModule,
@@ -29,7 +33,7 @@ import { Router } from '@angular/router';
   styleUrl: './adquisicion.component.scss'
 })
 export class AdquisicionComponent implements OnInit {
-
+  @ViewChild('dt4') dt4!: Table;
   compras: CompraResponse[] = [];
   cols!: Column[];
 
@@ -37,7 +41,11 @@ export class AdquisicionComponent implements OnInit {
 
   constructor( 
     private comprasService: ComprasService, 
-    private router: Router
+    private adjuntoService: AdjuntoService,
+    private archivoService: ArchivosService,
+    private router: Router,
+    private toastr: ToastrService,
+    private datePipe: DatePipe, 
   ){}
   ngOnInit(): void {
     this.cols = HeadersTables.AdquisicionesList;
@@ -51,6 +59,33 @@ export class AdquisicionComponent implements OnInit {
     })
   }
 
+  DownloadFile(IdAdjunto: number) {
+    this.adjuntoService.getAdjuntoById(IdAdjunto).subscribe({
+      next: (adjunto) => {
+        this.archivoService.getArchivo(adjunto.ruta).subscribe({
+          next: (blob) => {
+            const blobUrl = window.URL.createObjectURL(blob);
+            const downloadLink = document.createElement('a');
+            downloadLink.href = blobUrl;
+            const fileName = adjunto.nombre;
+            downloadLink.download = fileName;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            setTimeout(() => {
+              document.body.removeChild(downloadLink);
+              window.URL.revokeObjectURL(blobUrl);
+            }, 100);
+          },
+          error: (err) => {
+            console.error("Error al descargar el archivo:", err);
+          }
+        });
+      },
+      error: (err) => {
+        this.toastr.error('Factura sin adjunto!!!', 'Error');
+      }
+    });
+  }
   filterGlobal(event: Event, dt: any) { //filtro para barra de busqueda
     const inputValue = (event.target as HTMLInputElement)?.value || '';
     dt.filterGlobal(inputValue, 'contains');
@@ -77,7 +112,72 @@ export class AdquisicionComponent implements OnInit {
   abrirNuevaPestana() {
     this.router.navigate(['panel/Adquisiciones/agregar']);
   }
-  OnExportButton() {}
+  exportCSV() {
+    if (!this.dt4) {
+      console.error('La tabla no está lista para exportar');
+      return;
+    }
+    // Obtener solo los datos filtrados (o todos si no hay filtro)
+    const datosParaExportar = this.dt4.filteredValue || this.compras;
+    // Preparar datos para exportación
+    const exportData = datosParaExportar.map(compra => {
+      // Crear un nuevo objeto para exportación
+      const compraExport: Record<string, any> = {};
+      // Procesar cada columna
+      this.cols.forEach(col => {
+        if (!col.field || !col.header) return;
+        // Caso especial para fechas
+        if (col.field === 'fechaRegistro' && compra[col.field]) {
+          compraExport[col.header] = this.formatDate(compra[col.field]) || '';
+        }
+        // Caso especial para nombres del proveedor
+        else if (col.field === 'nombres') {
+          compraExport[col.header] = this.getNameProvider(compra['numeroFactura']) || '';
+        }
+        // Caso especial para valores monetarios
+        else if (['subtotal', 'iva', 'total'].includes(col.field)) {
+          compraExport[col.header] = `$${compra[col.field].toFixed(2)}`;
+        }
+        // Caso general para otros campos
+        else {
+          compraExport[col.header] = compra[col.field] || '';
+        }
+      });
+      
+      return compraExport;
+    });
+    // Exportar a Excel
+    import('xlsx').then(xlsx => {
+      const worksheet = xlsx.utils.json_to_sheet(exportData);
+      const workbook = { Sheets: { 'Adquisiciones': worksheet }, SheetNames: ['Adquisiciones'] };
+      const excelBuffer = xlsx.write(workbook, { bookType: 'xlsx', type: 'array' });
+      
+      this.saveAsExcelFile(excelBuffer, "adquisiciones");
+    }).catch(err => {
+      console.error('Error al exportar a Excel:', err);
+    });
+  }
+saveAsExcelFile(buffer: any, fileName: string): void {
+  const EXCEL_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8';
+  const EXCEL_EXTENSION = '.xlsx';
+  const data: Blob = new Blob([buffer], { type: EXCEL_TYPE });
+  // Crear enlace de descarga
+  const url = window.URL.createObjectURL(data);
+  const a = document.createElement('a');
+  document.body.appendChild(a);
+  a.href = url;
+  a.download = fileName + '_' + this.datePipe.transform(new Date(), 'yyyy-MM-dd') + EXCEL_EXTENSION;
+  a.click();
+  window.URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+}
+OnExportButton() {
+  try {
+    this.exportCSV();
+  } catch (error) {
+    console.error('Error al exportar datos:', error);
+  }
+}
   showDialogAdd(){}
   showDialogEdit(){}
 }

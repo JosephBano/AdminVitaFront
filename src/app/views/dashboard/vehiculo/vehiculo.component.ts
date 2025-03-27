@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, viewChild } from '@angular/core';
 import { VehiculoService } from '../../services/vehiculo.service';
 import { VehicleDetalleResponse, VehiculosList } from '../../../../domain/response/Vehiculo.model';
 import { AddVehicleInstitucional, UpdateOptionsVehicle } from '../../../../domain/request/Vehiculo.model';
@@ -69,7 +69,7 @@ import { FormularioPersonaComponent } from '../../shared/components/formulario-p
   styleUrl: './vehiculo.component.scss'
 })
 export class VehiculoComponent implements OnInit{
-  
+  @ViewChild('dt2') dt2!: Table;
   vehiculos: VehiculosList[] = [];
   cols!: Column[];
 
@@ -406,8 +406,10 @@ export class VehiculoComponent implements OnInit{
   }
   // Método para exportar a CSV con opciones avanzadas
   exportCSV() {
+    // Obtener solo los datos filtrados (o todos si no hay filtro)
+    const datosParaExportar = this.dt2.filteredValue || this.vehiculos;
     // Preparar datos para exportación
-    const exportData = this.vehiculos.map(vehiculo => {
+    const exportData = datosParaExportar.map(vehiculo => {
       // Crear un nuevo objeto para exportación
       const vehiculoExport: Record<string, any> = {};
       
@@ -482,44 +484,6 @@ export class VehiculoComponent implements OnInit{
     
     // Filtrar elementos vacíos y unir con comas
     return textos.filter(t => t && t.trim() !== '').join(', ');
-  }
-  // Método para exportar a Excel
-  exportExcel() {
-    import('xlsx').then((xlsx) => {
-      // Preparar datos para exportación
-      const exportData = this.vehiculos.map(vehiculo => {
-        const data: Record<string, any> = {};
-        
-        this.cols.forEach(col => {
-          // Verificar que field y header no sean undefined
-          if (col.field && col.header) {
-            // Manejo especial para el campo de licencia
-            if (col.field === 'licencia' && vehiculo.licencia && Array.isArray(vehiculo.licencia)) {
-              data[col.header] = (vehiculo.licencia as Licencia[])
-                .map(item => item.detalle)
-                .join(', ');
-            }
-            // Manejo para el campo estado
-            else if (col.field === 'estado' && col.field in vehiculo) {
-              const estado = vehiculo[col.field as keyof VehiculosList];
-              data[col.header] = estado !== null ? this.GetEstado(estado as number) : '';
-            } 
-            // Manejo para otros campos
-            else if (col.field in vehiculo) {
-              data[col.header] = vehiculo[col.field as keyof VehiculosList];
-            }
-          }
-        });
-        
-        return data;
-      });
-      
-      const worksheet = xlsx.utils.json_to_sheet(exportData);
-      const workbook = { Sheets: { 'Vehiculos': worksheet }, SheetNames: ['Vehiculos'] };
-      const excelBuffer = xlsx.write(workbook, { bookType: 'xlsx', type: 'array' });
-      
-      this.saveAsExcelFile(excelBuffer, "vehiculos_institucionales");
-    });
   }
   // Método auxiliar para guardar como archivo Excel
   saveAsExcelFile(buffer: any, fileName: string): void {

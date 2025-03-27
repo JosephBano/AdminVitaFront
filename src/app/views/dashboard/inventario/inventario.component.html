@@ -20,7 +20,7 @@
                 <input pInputText type="text" class="w-full" (input)="filterGlobal($event, dt5)" placeholder="Busca por una palabra clave" />
             </p-iconfield>
             <div class="flex gap-2 justify-end">
-                <p-button severity="secondary" icon="pi pi-file-export" label="Exportar"></p-button>
+                <p-button (click)="OnExportButton()" severity="secondary" icon="pi pi-file-export" label="Exportar"></p-button>
                 <p-button class="w-full sm:min-w-48" fluid icon="pi pi-plus" label="Agregar Item"></p-button>
             </div>
         </div>

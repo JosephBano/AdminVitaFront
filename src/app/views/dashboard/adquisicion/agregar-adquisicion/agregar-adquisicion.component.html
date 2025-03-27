@@ -38,13 +38,24 @@
                                 </p-button>
                             </div>
                             <div *ngIf="fb_adquisicion.get('doc_proveedor')?.invalid && fb_adquisicion.get('doc_proveedor')?.touched" class="text-red-500 text-sm mt-2">
-                                <span *ngIf="fb_adquisicion.get('doc_proveedor')?.errors?.['required']">El número de factura es obligatorio.</span>
+                                <span *ngIf="fb_adquisicion.get('doc_proveedor')?.errors?.['required']">El CI/RUC es obligatorio.</span>
                                 <span *ngIf="fb_adquisicion.get('doc_proveedor')?.errors?.['minlength']">Debe tener al menos 10 caracteres.</span>
                                 <span *ngIf="fb_adquisicion.get('doc_proveedor')?.errors?.['maxlength']">Debe tener máximo 16 caracteres.</span>
                             </div>
                         </div>
                     </div>
-                    <p-fileupload class="sm:mt-2" #fu mode="basic" chooseLabel="Elejir" chooseIcon="pi pi-upload" name="demo[]" accept="image/*" maxFileSize="1000000" (onUpload)="onUpload($event)" />
+                    <p-fileupload 
+                    class="sm:mt-2" 
+                    #fu 
+                    mode="basic" 
+                    chooseLabel="Elegir archivo" 
+                    chooseIcon="pi pi-upload" 
+                    name="file" 
+                    accept="image/*" 
+                    maxFileSize="1000000" 
+                    [auto]="false"
+                    (onSelect)="onFileSelect($event)" 
+                     />
                 </div>
             </form>
         </p-card>
@@ -89,6 +100,8 @@
                                     optionValue="idMagnitud" 
                                     placeholder="Magnitud"
                                     [showClear]="true" 
+                                    [loading]="loadingMagnitudes"
+                                    [disabled]="isMagnitudDisabled()"
                                     class="w-full sm:max-w-36">
                                 </p-select>
                                 <p-floatlabel variant="on" class="w-full sm:max-w-28">
@@ -108,7 +121,7 @@
                                         locale="en-US"
                                         fluid
                                         />
-                                    <label>Valor</label>
+                                    <label>Valor</label>    
                                 </p-floatlabel>  
                             </div>
                             <div class="sm:w-24">
@@ -160,7 +173,7 @@
     <p-card fluid class="w-full h-full md:max-w-60 lg:min-w-80">
         <div class="w-full mb-8">
             <ng-container *ngIf="fb_adquisicion.get('id_proveedor')?.value !== null">
-                <p class="mb-4"><strong>Información</strong></p>
+                <p class="mb-4"><strong>Información Proveedor</strong></p>
                 <p class="mb-2">Nombre: {{resumen.nombre}}</p>
                 <p class="mb-2" *ngIf="resumen.razonSocial !== ''">Razón Social: {{resumen.razonSocial}}</p>
                 <p class="mb-2">Email: {{resumen.email}}</p>
@@ -182,6 +195,7 @@
         severity="success" 
         fluid
         [disabled]="fb_adquisicion.invalid || fb_adquisicion.get('id_proveedor')?.value === null"
-        />
+        (onClick)="crearCompra()"
+    />
     </p-card>
 </div>

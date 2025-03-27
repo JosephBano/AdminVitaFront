@@ -18,6 +18,8 @@ export const environment = {
     archivos: '/archivos',
     tipoVehiculo: '/TipoVehiculo',
     propietario: '/RegistroPropietario',
+    detalleCompra: '/DetallesCompra',
+    conversionUnidades: '/ConversionUnidades',
 };
 
 export const ivaCalculo = {

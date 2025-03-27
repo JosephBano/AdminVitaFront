@@ -1,5 +1,5 @@
 import { CommonModule, NgFor, NgIf } from '@angular/common';
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { Table, TableModule } from 'primeng/table';
 import { OrdenTrabajoService } from '../../services/orden-trabajo.service';
 import { OrdenTrabajo, ordenTrabajoList } from '../../../../domain/response/OrdenTrabajoResponse.model';
@@ -84,7 +84,7 @@ interface jsPDFWithAutoTable extends jsPDF {
 })
 
 export class OrdenTrabajoComponent implements OnInit {
-
+  @ViewChild('dt1') dt1!: Table;
   ordenes: ordenTrabajoList[] = [];
   cols!: Column[];
 
@@ -400,20 +400,67 @@ export class OrdenTrabajoComponent implements OnInit {
         return undefined;
     }
   }
-  OnExportButton() {
-    this.otService.exportAllToExcel().subscribe(response => {
-      const blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'OrdenesTrabajo.xlsx';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-    }, error => {
-      console.error('Error al exportar el archivo:', error);
+  exportCSV() {
+    // Obtener solo los datos filtrados (o todos si no hay filtro)
+    const datosParaExportar = this.dt1.filteredValue || this.ordenes;
+    // Preparar datos para exportación
+    const exportData = datosParaExportar.map(orden => {
+      // Crear un nuevo objeto para exportación
+      const ordenExport: Record<string, any> = {};
+      // Procesar cada columna
+      this.cols.forEach(col => {
+        if (!col.field || !col.header) return;
+        // Caso especial para estado
+        if (col.field === 'estado') {
+          ordenExport[col.header] = this.GetEstado(Number(orden[col.field])) || '';
+        }
+        // Caso especial para prioridad
+        else if (col.field === 'prioridad') {
+          ordenExport[col.header] = this.GetPrioridad(Number(orden[col.field])) || '';
+        }
+        // Caso especial para fechas
+        else if (col.field.includes('fecha') && orden[col.field]) {
+          ordenExport[col.header] = this.formatDate(orden[col.field]) || '';
+        }
+        // Caso especial para supervisor
+        else if (col.field === 'supervisor' && orden[col.field]) {
+          ordenExport[col.header] = this.getSupervisor(orden[col.field]) || '';
+        }
+        // Caso general para otros campos
+        else {
+          ordenExport[col.header] = orden[col.field] || '';
+        }
+      });
+      return ordenExport;
     });
+    // Exportar a Excel
+    import('xlsx').then(xlsx => {
+      const worksheet = xlsx.utils.json_to_sheet(exportData);
+      const workbook = { Sheets: { 'Ordenes_Trabajo': worksheet }, SheetNames: ['Ordenes_Trabajo'] };
+      const excelBuffer = xlsx.write(workbook, { bookType: 'xlsx', type: 'array' });
+      
+      this.saveAsExcelFile(excelBuffer, "ordenes_trabajo");
+    }).catch(err => {
+      console.error('Error al exportar a Excel:', err);
+      this.toastr.error('Hubo un problema al exportar los datos', 'Error');
+    });
+  }
+  saveAsExcelFile(buffer: any, fileName: string): void {
+    const EXCEL_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8';
+    const EXCEL_EXTENSION = '.xlsx';
+    const data: Blob = new Blob([buffer], { type: EXCEL_TYPE });
+    // Crear enlace de descarga
+    const url = window.URL.createObjectURL(data);
+    const a = document.createElement('a');
+    document.body.appendChild(a);
+    a.href = url;
+    a.download = fileName + '_' + this.datePipe.transform(new Date(), 'yyyy-MM-dd') + EXCEL_EXTENSION;
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  }
+  OnExportButton() {
+    this.exportCSV();
   }
   validarDocumento() {
     this.iconValidarDocumento = ''

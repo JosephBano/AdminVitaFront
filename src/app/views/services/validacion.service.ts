@@ -4,6 +4,7 @@ import { AuthService } from '../auth/service/auth.service';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ClienteValidadoXDoc, VehiculoValidadoXPlaca } from '../../../domain/response/Validacion.model';
+import { PersonaValidadaXDoc } from '../../../domain/response/Persona.model';
 
 @Injectable({
   providedIn: 'root'
@@ -18,9 +19,9 @@ export class ValidacionService {
       const headers = this.auth.getAuthHeaders();
       return this.http.get<ClienteValidadoXDoc>(`${this.apiUrl}/ValidarCliente/${documento}`, { headers });
     }
-    validarProveedorXDoc(documento: string): Observable<any>{
+    validarProveedorXDoc(documento: string): Observable<any> {
       const headers = this.auth.getAuthHeaders();
-      return this.http.post<any>(`${environment.domain+environment.apiEndpoint+environment.proveedor}/ValidarProveedor`, { documento }, { headers });
+      return this.http.post<any>(`${this.apiUrl}/ValidarProveedor`, { documento }, { headers });
     }
     validarVehiculoXPlaca(placa: string): Observable<VehiculoValidadoXPlaca> {
       const headers = this.auth.getAuthHeaders();
