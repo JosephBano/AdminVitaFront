@@ -213,6 +213,7 @@ export class AgregarAdquisicionComponent implements OnInit {
   }
   crearDetalleCompra(cantidadFinal: number, idMagnitudSeleccionada: number | null) {
     const cantidadOriginal = this.fb_detalleAdquisicion.get('cantidad')?.value;
+    const valorUnitario = this.fb_detalleAdquisicion.get('valorUnitario')?.value || this.selectedItem.valorUnitario;
 
     const detalleCompraPeticion = {
       idDetalleCompra: null,
@@ -221,7 +222,7 @@ export class AgregarAdquisicionComponent implements OnInit {
       idMagnitud: idMagnitudSeleccionada, 
       cantidad: cantidadFinal, 
       cantidadBase : cantidadOriginal,
-      valorUnitario: this.selectedItem.valorUnitario,
+      valorUnitario: valorUnitario,
     };
     
     const detalleCompra = {
@@ -234,8 +235,8 @@ export class AgregarAdquisicionComponent implements OnInit {
       cantidadConvertida: cantidadFinal !== this.fb_detalleAdquisicion.get('cantidad')?.value ? 
         `(${cantidadFinal} ${this.magnitudOrigenItem?.unidad})` : '',
       cantidadBase: cantidadOriginal,
-      valorUnitario: this.selectedItem.valorUnitario,
-      subtotal: cantidadFinal * this.selectedItem.valorUnitario,
+      valorUnitario: valorUnitario,
+      subtotal: cantidadOriginal * valorUnitario,
     };
     
     this.detallesCompraPeticion.push(detalleCompraPeticion);
