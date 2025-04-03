@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment.development';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Cliente } from '../../../domain/request/Cliente.model';
+import { Propietario } from '../../../domain/request/Cliente.model';
 import { toFormData } from '../shared/util/form-data.util';
 
 @Injectable({
@@ -18,8 +18,8 @@ export class PropietarioService {
     return this.http.get<any>(`${this.apiUrl}/GetPropietariosVehiculo/${id}`);
   }
 
-   registrarPropietario(cliente: Cliente): Observable<any> {
-      const formData = toFormData(cliente);
+   registrarPropietario(propietario: Propietario): Observable<any> {
+      const formData = toFormData(propietario);
       return this.http.post(`${this.apiUrl}/RegistrarPropietario`, formData);
     }
 }
