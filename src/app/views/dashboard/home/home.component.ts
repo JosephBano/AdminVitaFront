@@ -212,7 +212,8 @@ export class HomeComponent implements OnInit {
       this.OrdenesOptions = {
         stacked: false,
         maintainAspectRatio: false,
-        aspectRatio: 0.6,
+        aspectRatio: window.innerWidth < 992 ? 1 : 0.6,
+        responsive: true,
         plugins: {
           legend: {
             labels: {
@@ -425,6 +426,8 @@ initKardexChartOptions() {
     const surfaceBorder = documentStyle.getPropertyValue('--p-content-border-color');
 
     this.KardexOptions = {
+      maintainAspectRatio: false,
+      responsive: true,
       plugins: {
         legend: {
           labels: {
