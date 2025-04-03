@@ -20,6 +20,7 @@ export const environment = {
     propietario: '/RegistroPropietario',
     detalleCompra: '/DetallesCompra',
     conversionUnidades: '/ConversionUnidades',
+    cliente: '/Clientes',
 };
 
 export const ivaCalculo = {

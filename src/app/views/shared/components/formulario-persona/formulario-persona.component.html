@@ -1,6 +1,6 @@
 <form [formGroup]="form_persona">
     <div class="w-full">
-        <div class="flex gap-2">
+        <div class="flex gap-2 mt-2">
             <p-floatlabel variant="on" class="w-full">
                 <input 
                 pInputText 
@@ -21,7 +21,7 @@
         <ng-container *ngIf="validarExistePersona">
             <div class="mb-2 mt-4">
                 <label>Tipo Persona</label>
-                <div class="flex flex-wrap gap-4">
+                <div class="flex gap-4">
                     <div *ngFor="let tipo of tipoPersona" class="field-checkbox">
                         <p-radiobutton [inputId]="tipo.key" [value]="tipo" formControlName="tipoPersona" />
                         <label [for]="tipo.key" class="ml-2">{{ tipo.name }}</label>
@@ -87,7 +87,7 @@
                     <label>Dirección</label>
                 </p-floatlabel>
                 <p-floatlabel variant="on" class="w-full" *ngIf="form_persona.get('tipoPersona')?.value?.key !== 'E' && form_persona.get('tipoPersona')?.value?.key !== null">
-                    <p-datepicker formControlName="fecha_nacimiento" showIcon iconDisplay="input" />
+                    <p-datepicker formControlName="fecha_nacimiento" dateFormat="dd/mm/yy" showIcon iconDisplay="input" />
                     <label>Cumpleaños</label>
                 </p-floatlabel>
                 <div class="my-2" *ngIf="form_persona.get('tipoPersona')?.value?.key !== 'E' && form_persona.get('tipoPersona')?.value?.key !== null">
@@ -116,8 +116,12 @@
                         </div>
                     </div>
                 </div>
-                <span *ngIf="form_persona.invalid">Form Invalido</span>
+                <div class="flex justify-between max-h-12 gap-4">
+                    <p-button pButton fluid label="Cancelar" severity="secondary" (onClick)="closeDialog()"/>
+                    <p-button type="submit" pButton fluid label="Crear" [disabled]="form_persona.invalid" (click)="crearPersonaHandler()"/>
+                </div>
             </div>
         </ng-container>
+        <p-button *ngIf="!validarExistePersona" class="mt-4 max-h-12" pButton fluid label="Cancelar" severity="secondary" (onClick)="closeDialog()"/>
     </div>
 </form>
