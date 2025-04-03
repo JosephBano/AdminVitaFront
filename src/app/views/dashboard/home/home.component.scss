@@ -8,10 +8,13 @@
   
   .dashboard-container {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    gap: 16px;
-    height: calc(100vh - 32px);
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 1rem;
+    
+    // Diseño para móviles: columna única
+    @media (max-width: 992px) {
+      grid-template-columns: 1fr;
+    }
   }
   
   .dashboard-quadrant {
