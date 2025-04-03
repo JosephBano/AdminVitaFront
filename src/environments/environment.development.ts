@@ -21,6 +21,7 @@ export const environment = {
     detalleCompra: '/DetallesCompra',
     conversionUnidades: '/ConversionUnidades',
     cliente: '/Clientes',
+    reporte: '/Reportes',
 };
 
 export const ivaCalculo = {
