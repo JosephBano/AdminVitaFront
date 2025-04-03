@@ -466,28 +466,27 @@ closeOnEscape="false">
                 </tr>
             </ng-template>
             </p-table>
-            <div class="w-full mt-4 flex justify-end">
-                <p-button fluid class="w-full" (onClick)="showDialogAddPropietario()" severity="secondary" label="Cambiar Propietario"/>
-            </div>
         </ng-container>
+        <div *ngIf="!loadingPropietariosDialog" class="w-full mt-4 max-w-96 flex flex-row justify-center align-center">
+            <p-button fluid class="w-full" (onClick)="showDialogAddPropietario()" severity="secondary" label="Cambiar Propietario"/>
+        </div>
 </p-dialog>
 
 <p-dialog 
 [visible]="visibleAddPropietario && visiblePropietarios"
 [modal]="true" 
-styleClass="!border-0" 
-maskStyleClass="backdrop-blur-sm" 
 closeOnEscape="true"
-focusTrap="true"
 [style]="{ width: '30rem' }"
+[contentStyle]="{ 'max-height': '100vh', 'overflow': 'auto' }"
 >
-    <ng-template #headless>
-        <div class="flex flex-col px-8 py-8 gap-6 rounded-2xl" style="border-radius: 12px"> 
-            <h5 class="text-2xl text-center text-black">Cambiar Propietario</h5>
-            <app-formulario-persona></app-formulario-persona>   
-            <div class="flex items-center gap-4">
-                <p-button (onClick)="closeDialogAddPropietario()" label="Cerrar"/>
-            </div>
-        </div>
-    </ng-template>
+<ng-template #headless>
+    <div class="flex flex-col px-6 py-6 gap-6 rounded-2xl h-full max-h-[80vh] overflow-hidden">
+      <h5 class="text-2xl text-center text-black">Cambiar Propietario</h5>
+  
+      <div class="overflow-y-auto grow pr-2">
+        <app-formulario-persona (formSubmitted)="responseDialogPropietariosForm($event)" personaVariante="propietario" [initialData]="idVehiculoPropietario"></app-formulario-persona>
+      </div>
+    </div>
+  </ng-template>
+  
 </p-dialog>

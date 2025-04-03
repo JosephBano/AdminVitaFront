@@ -97,6 +97,7 @@ export class VehiculoComponent implements OnInit{
   propietarios!: any[];
   colsPropietarios!: Column[];
   headerPlacaPropietario: string = '';
+  idVehiculoPropietario!: number;
 
   selectedEstadoFilter!: genericT;
   selectedYearRTVFilter!: number;
@@ -263,6 +264,11 @@ export class VehiculoComponent implements OnInit{
         this.uploadedFiles.push(file);
     }
   }
+  responseDialogPropietariosForm(valor: any){
+    if (valor) {
+      this.closeDialogAddPropietario();
+    }
+  }
   cargarArchivo(fileName: string) {
     this.archService.getArchivo(fileName).subscribe(blob => {
       const reader = new FileReader();
@@ -333,6 +339,7 @@ export class VehiculoComponent implements OnInit{
     this.visibleAddPropietario = false;
     this.loadingPropietariosDialog = true;
     this.headerPlacaPropietario = placa;
+    this.idVehiculoPropietario = id;
     this.propietarioService.getPropietariosVehiculo(id).subscribe({
       next: (response: any) => {
         this.propietarios = response;
