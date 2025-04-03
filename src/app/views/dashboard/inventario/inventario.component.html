@@ -67,7 +67,7 @@
 <p-dialog 
 header="Movimiento de Item" 
 [modal]="true" 
-[(visible)]="visiblePropietarios" 
+[(visible)]="visibleMovimientos" 
 [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }" 
 [style]="{ width: '75vw' }"
 closeOnEscape="false"> 
@@ -90,4 +90,14 @@ closeOnEscape="false">
             </ng-template>
         </p-table>
     </ng-container>
+</p-dialog>
+
+<p-dialog 
+header="Crear Item" 
+[modal]="true" 
+[(visible)]="visibleCrearItem" 
+[breakpoints]="{ '1199px': '75vw', '575px': '90vw' }" 
+[style]="{ width: '75vw' }"
+closeOnEscape="false"> 
+    
 </p-dialog>

@@ -43,7 +43,8 @@ export class InventarioComponent implements OnInit {
   colsMovimientos!: Column[];
   movimientos: any[] =[];
 
-  visiblePropietarios:boolean = false;
+  visibleMovimientos:boolean = false;
+  visibleCrearItem: boolean = false;
 
   constructor( 
     private itemService: ItemService,
@@ -66,7 +67,7 @@ export class InventarioComponent implements OnInit {
     
   }
   showMovimientosItem(codigo: number){
-    this.visiblePropietarios = true;
+    this.visibleMovimientos = true;
     this.itemService.getMovimientosXItems(codigo).subscribe({
       next: (response) => {
         this.movimientos = response;
@@ -74,11 +75,9 @@ export class InventarioComponent implements OnInit {
       }
     })
   }
-
   clear(table: Table) {
     table.clear();
   }
-
   filterGlobal(event: Event, dt: any) { //filtro para barra de busqueda
     const inputValue = (event.target as HTMLInputElement)?.value || '';
     dt.filterGlobal(inputValue, 'contains');
@@ -88,16 +87,11 @@ export class InventarioComponent implements OnInit {
       console.error('La tabla no está lista para exportar. Intente nuevamente en unos segundos.');
       return;
     }
-    // Obtener solo los datos filtrados (o todos si no hay filtro)
     const datosParaExportar = this.dt5.filteredValue || this.Items;
-    // Preparar datos para exportación
     const exportData = datosParaExportar.map(item => {
-      // Crear un nuevo objeto para exportación
       const itemExport: Record<string, any> = {};
-      // Procesar cada columna
       this.cols.forEach(col => {
         if (!col.field || !col.header) return;
-        // Caso especial para magnitud (usar nombreMagnitud)
         if (col.field === 'magnitud') {
           itemExport[col.header] = item['nombreMagnitud'] || '';
         }
@@ -124,7 +118,7 @@ export class InventarioComponent implements OnInit {
       console.error('Error al exportar a Excel:', err);
     });
   }
-saveAsExcelFile(buffer: any, fileName: string): void {
+  saveAsExcelFile(buffer: any, fileName: string): void {
   const EXCEL_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8';
   const EXCEL_EXTENSION = '.xlsx';
   const data: Blob = new Blob([buffer], { type: EXCEL_TYPE });
@@ -137,12 +131,12 @@ saveAsExcelFile(buffer: any, fileName: string): void {
   a.click();
   window.URL.revokeObjectURL(url);
   document.body.removeChild(a);
-}
-OnExportButton() {
-  try {
-    this.exportCSV();
-  } catch (error) {
-    console.error('Error al exportar datos:', error);
   }
-}
+  OnExportButton() {
+    try {
+      this.exportCSV();
+    } catch (error) {
+      console.error('Error al exportar datos:', error);
+    }
+  }
 }
