@@ -1,0 +1,499 @@
+// ESTILOS GENERALES
+:host ::ng-deep {
+  [pTemplate="header"] {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--surface-border, #e5e7eb);
+    background-color: #f9fafb;
+    
+    .text-xl {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #444;
+      margin: 0;
+      padding: 0;
+      letter-spacing: 0.2px;
+      transition: color 0.2s ease;
+      
+      &:hover {
+        color: var(--primary-color, #4f46e5);
+      }
+    }
+  }
+  // Colores para los valores positivos/negativos
+  .text-green-500 {
+    color: #22c55e !important;
+    font-weight: 500;
+  }
+
+  .text-red-500 {
+    color: #ef4444 !important;
+    font-weight: 500;
+  }
+  
+  // Tabla principal
+  .p-datatable {
+    .p-datatable-header {
+      padding: 0.75rem;
+    }
+    
+    .p-column-filter-menu-button {
+      width: 2rem;
+      height: 2rem;
+    }
+    
+    td {
+      padding: 0.5rem 0.75rem;
+      vertical-align: middle;
+    }
+    
+    .p-paginator {
+      padding: 0.5rem;
+    }
+  }
+  
+  // Botones y inputs
+  .p-button {
+    &.p-button-sm {
+      font-size: 0.875rem;
+      padding: 0.4rem 0.75rem;
+    }
+    
+    &.p-button-icon-only {
+      width: 2.5rem;
+      height: 2.5rem;
+    }
+  }
+  
+  // Diálogo
+  .p-dialog {
+    .p-dialog-header {
+    padding: 0.75rem 1.25rem; // Reducido de 1rem 1.5rem
+    line-height: 1.3;
+  }
+    .p-dialog-content {
+      padding: 0;
+    }
+    
+    .p-dialog-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--surface-border);
+    }
+  }
+  
+  // Calendario
+  .p-calendar {
+    .p-inputtext {
+      height: 34px; // Reducido de 36px
+      font-size: 0.9rem; // Texto más pequeño
+    }
+    
+    .p-button {
+      height: 34px; // Reducido de 36px
+    }
+  }
+  .p-button {
+    &.p-button-sm {
+      padding: 0.3rem 0.65rem; // Reducido de 0.4rem 0.75rem
+      font-size: 0.85rem; // Ligeramente más pequeño
+    }
+  }
+  // Tooltip mejorado
+  .p-tooltip {
+    max-width: 250px;
+    
+    .p-tooltip-text {
+      padding: 0.75rem;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      background-color: rgba(33, 33, 33, 0.95);
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+      
+      .tooltip-title {
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        padding-bottom: 0.25rem;
+      }
+      
+      .tooltip-summary {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        
+        .tooltip-item {
+          display: flex;
+          align-items: center;
+          
+          .tooltip-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+            
+            &.ingreso { background-color: #4CAF50; }
+            &.egreso { background-color: #F44336; }
+            &.prestamo { background-color: #FF9800; }
+            &.devuelto { background-color: #2196F3; }
+          }
+        }
+      }
+    }
+  }
+  
+  // Chips
+  .p-chip {
+    cursor: pointer;
+  }
+
+  .bg-primary {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+  }
+}
+
+// ESTILOS DE ESPACIADO
+.gap-2 {
+  gap: 0.5rem;
+}
+
+// ESTILOS PARA EL FILTRO
+.filter-container {
+  margin-bottom: 0.5rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #f0f0f0;
+  background-color: #f9fafb;
+  border-radius: 6px;
+  
+  &.compact-filter {
+    max-width: 100%;
+    
+    .filter-content {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 1rem; // Espacio entre grupos de elementos
+      
+      .date-control {
+        display: flex;
+        flex-grow: 0; // No expandirse demasiado
+        align-items: center;
+        gap: 0.5rem;
+        
+        .date-label {
+          font-weight: 600;
+          margin: 0;
+          font-size: 0.85rem;
+          white-space: nowrap;
+          color: #444;
+        }
+        
+        .date-input-container {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+      }
+      
+      .filter-actions {
+        display: flex;
+        gap: 0.5rem;
+        margin-left: auto; 
+      }
+    }
+  }
+}
+.flex.flex-wrap.justify-between.items-end.gap-3 {
+  gap: 0.5rem !important; 
+  align-items: center !important; 
+}
+// ESTILOS PARA EL HEATMAP
+.grid-cols-7 {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+}
+
+// Contenedor del mes
+.heatmap-month {
+  max-width: 900px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  overflow: hidden;  
+  h3 {
+    color: #333;
+    text-align: center;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+  }
+}
+
+// Celdas de día - mejoradas
+.small-day-cell {
+  width: 100%;
+  aspect-ratio: 1.25 / 1;
+  min-height: 60px;
+  position: relative;
+  cursor: pointer;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease-in-out;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  
+  .day-number {
+    position: absolute;
+    top: 5px;
+    left: 7px;
+    font-size: 0.9rem;
+    color: rgba(0, 0, 0, 0.6);
+    font-weight: 500;
+  }
+  
+  .day-count {
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+  
+  // Indicadores de movimiento mejorados
+  .movement-indicators {
+    position: absolute;
+    bottom: 5px;
+    display: flex;
+    gap: 3px;
+    justify-content: center;
+    width: 100%;
+    
+    .movement-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+      
+      &.ingreso { background-color: #4CAF50; }
+      &.egreso { background-color: #F44336; }
+      &.prestamo { background-color: #FF9800; }
+      &.devuelto { background-color: #2196F3; }
+    }
+  }
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 2;
+  }
+  
+  // Mostrar etiquetas de movimiento al hacer hover
+  &:hover .movement-indicators {
+    .movement-dot {
+      width: auto;
+      height: 16px;
+      border-radius: 3px;
+      padding: 0 4px;
+      font-size: 0.65rem;
+      line-height: 16px;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      white-space: nowrap;
+      
+      &.ingreso { 
+        background-color: #4CAF50;
+        &::after { content: "I"; }
+      }
+      &.egreso { 
+        background-color: #F44336;
+        &::after { content: "E"; }
+      }
+      &.prestamo { 
+        background-color: #FF9800;
+        &::after { content: "P"; }
+      }
+      &.devuelto { 
+        background-color: #2196F3;
+        &::after { content: "D"; }
+      }
+    }
+  }
+}
+.grid-cols-7 .text-sm {
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: center;
+  color: #555;
+}
+.flex.items-center.justify-end {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background-color: #f9f9f9;
+  border-radius: 6px;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  .flex.items-center {
+    background-color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    .w-4.h-4 {
+      border-radius: 4px;
+    }
+    .text-xs {
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+  }
+}
+// ESTILOS RESPONSIVOS
+@media (max-width: 768px) {
+  .heatmap-month {
+    max-width: 100%;
+    padding: 0.5rem;
+    overflow: hidden;  
+  }
+  .small-day-cell {
+    min-height: 50px;
+    &:hover .movement-indicators .movement-dot {
+      padding: 0 3px;
+      font-size: 0.6rem;
+    }
+  }
+  .flex.items-center.justify-end {
+    justify-content: center;
+  }
+}
+@media (max-width: 576px) {
+  .small-day-cell {
+    min-height: 40px;
+    .day-number {
+      font-size: 0.75rem;
+      top: 3px;
+      left: 5px;
+    }
+    .day-count {
+      font-size: 0.9rem;
+    }
+    .movement-indicators {
+      gap: 2px;
+      .movement-dot {
+        width: 6px;
+        height: 6px;
+      }
+    }
+    &:hover .movement-indicators .movement-dot {
+      height: 14px;
+      font-size: 0.55rem;
+    }
+  }
+  .actions {
+    flex-wrap: wrap;
+    .p-button {
+      margin-bottom: 0.5rem;
+    }
+  }
+}
+// UTILIDADES ADICIONALES
+.text-center { text-align: center; }
+.w-full { width: 100%; }
+.rounded-lg { border-radius: 0.5rem; }
+.rounded-md { border-radius: 0.375rem; }
+.flex { display: flex; }
+.items-center { align-items: center; }
+.justify-center { justify-content: center; }
+.justify-end { justify-content: flex-end; }
+.justify-between { justify-content: space-between; }
+.relative { position: relative; }
+// ESTILOS PARA EL ESTADO DE CARGA
+.p-skeleton {
+  margin-bottom: 8px;
+}
+// ESTILOS PARA MENSAJES DE ADVERTENCIA
+.text-gray-500 {
+  color: #6b7280;
+}
+.my-4 {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+.bg-white {
+  background-color: white;
+}
+// ESTILOS PARA EL DIÁLOGO VACÍO
+.p-dialog {
+  &.p-component {
+    min-height: 100px;
+  }
+}
+// Arreglar el problema de diálogo vacío
+.p-3 {
+  padding: 0.5rem;
+}
+// Tabla de detalle
+.overflow-x-auto {
+  overflow-x: auto;
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.5rem;
+    th {
+      background-color: #f3f4f6;
+      font-weight: 600;
+      text-align: left;
+      color: #374151;
+    }
+    td, th {
+      padding: 0.625rem 0.75rem;
+      border: 1px solid #e5e7eb;
+    }
+    tr:hover {
+      background-color: #f9fafb;
+    }
+  }
+}
+/* Estilo para el encabezado del mes */
+.calendar-header {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #2c3e50;
+  text-align: center;
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+  border-bottom: 2px solid #e0e0e0;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+  text-transform: uppercase;
+}
+/* Estilo para los días de la semana */
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+.weekday {
+  font-family: 'Arial', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  color: #5a6268;
+  text-transform: uppercase;
+  padding: 5px 0;
+}
+/* Estilo para los números de los días */
+.day-number {
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  font-size: 1rem;
+  color: #333;
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  line-height: 1;
+}
