@@ -10,7 +10,7 @@ import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
-import { SkeletonSimpleComponent } from '../../shared/components/skeleton-simple.component';
+import { SkeletonSimpleComponent } from '../../shared/components/skeleton/skeleton-simple.component';
 
 @Component({
   selector: 'app-inventario',
