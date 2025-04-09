@@ -1,7 +1,10 @@
+<div class="loading flex justify-center items-center" *ngIf="loadingEdit">
+    <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+</div>
 <div class="flex flex-col md:flex-row gap-2">    
     <div class="flex flex-col w-full gap-2">
         <p-card header="Agregar compra">
-            <p class="m-0">Agrege los datos necesarios para agregar la compra.</p>
+            <p class="mt-0 mb-2">Agrege los datos necesarios para agregar la compra.</p>
             <form [formGroup]="fb_adquisicion" >
                 <div class="flex flex-col gap-2 w-full">
                     <div class="flex flex-col sm:flex-row w-full gap-2">

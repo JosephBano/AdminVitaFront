@@ -25,6 +25,8 @@ import { MagnitudService } from '../../../services/magnitud.service';
 import { ComprasService } from '../../../services/compras.service';
 import { SolicitudCrearCompra } from '../../../../../domain/response/Compra.model';
 import { DetalleCompraService } from '../../../services/detalleCompra.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { SkeletonCompletePageComponent } from "../../../shared/components/skeleton/skeleton-complete-page.component";
 
 @Component({
   selector: 'app-agregar-adquisicion',
@@ -41,12 +43,12 @@ import { DetalleCompraService } from '../../../services/detalleCompra.service';
     DatePickerModule,
     SelectModule,
     FloatLabelModule,
-    InputNumberModule, 
+    InputNumberModule,
     TableModule,
     NgFor,
     NgIf,
-    DividerModule
-  ],
+    DividerModule,
+],
   standalone: true,
   templateUrl: './agregar-adquisicion.component.html',
   styleUrl: './agregar-adquisicion.component.scss'
@@ -83,6 +85,8 @@ export class AgregarAdquisicionComponent implements OnInit {
 
   iconValidarDocumento: string = 'pi pi-search';
 
+  loadingEdit: boolean = false;
+
   loadingMagnitudes: boolean = false;
   constructor(
     private validacionService: ValidacionService,
@@ -91,9 +95,40 @@ export class AgregarAdquisicionComponent implements OnInit {
     private magnitudService: MagnitudService,
     private compraService: ComprasService,
     private detalleCompraService : DetalleCompraService,
+    private router: Router,
+    private route: ActivatedRoute
   ) { }
   ngOnInit(): void {
-    this.detalleCols = HeadersTables.DetalleFacturaList;
+    const id = this.route.snapshot.paramMap.get('factura');
+    if(id){
+      this.loadingEdit = true;
+      this.compraService.getCompraDetallada(id).subscribe({
+        next: (response) => {
+          console.log('Compra detallada:', response);
+          this.fb_adquisicion.patchValue({
+            codigo: response.numeroFactura,
+            doc_proveedor: response.documento,
+            id_proveedor: response.idProveedor
+          });
+          this.validarDocumentoProveedor();
+          this.detallesCompra = response.detallesCompra;
+          this.loadingEdit = false;
+          this.fb_adquisicion.get('codigo')?.disable();
+          this.fb_adquisicion.get('doc_proveedor')?.disable();
+        },
+        error: (err) => {
+          console.error(err);
+          this.toastr.error(err.error.mensaje, 'Error al cargar la compra');
+          this.router.navigate(['notFound404']);
+        }
+      })
+    }
+    this.detalleCols = HeadersTables.DetalleFacturaList; 
+    this.getData();
+    this.initFormGroups();
+    this.detalleCompraHandler();
+  }
+  initFormGroups(){
     this.fb_adquisicion = new FormGroup({
       codigo: new FormControl<string | null>(null, [Validators.required, Validators.minLength(6)]),
       doc_proveedor: new FormControl<string | null>(null, [Validators.required, Validators.minLength(10), Validators.maxLength(16)]),
@@ -111,8 +146,6 @@ export class AgregarAdquisicionComponent implements OnInit {
       this.fb_adquisicion.patchValue({id_proveedor: null});;
       this.iconValidarDocumento = 'pi pi-search';
     });
-    this.getData();
-    this.detalleCompraHandler();
   }
   getData(){
     this.itemService.getItemsList().subscribe({
@@ -167,6 +200,7 @@ export class AgregarAdquisicionComponent implements OnInit {
       }
     })
   }
+
   addDetalleCompra() {
     if (this.fb_detalleAdquisicion.invalid) {
       this.toastr.error('Todos los campos son obligatorios!', 'Error');
@@ -301,7 +335,7 @@ export class AgregarAdquisicionComponent implements OnInit {
       });
     }
   }
-cargarTodasMagnitudes() {
+  cargarTodasMagnitudes() {
   this.magnitudService.getMagnitudes().subscribe({
     next: (response) => {
       this.magnitudes = response;
@@ -310,93 +344,93 @@ cargarTodasMagnitudes() {
       this.toastr.info('Este ítem no posee una magnitud asociada', 'Info');
     }
   });
-}
-isMagnitudDisabled(): boolean {
+  }
+  isMagnitudDisabled(): boolean {
   const magnitudControl = this.fb_detalleAdquisicion?.get('id_magnitud');
   return magnitudControl ? magnitudControl.disabled : false;
-}
+  }
   detalleCompraHandler() {
     this.subtotal = this.detallesCompra.reduce((acc, item) => acc + item.subtotal, 0);
     this.total = this.subtotal + (this.subtotal * this.iva) - this.descuento;
   }
-onFileSelect(event: any) {
-   if (event.files && event.files.length > 0) {
-     this.uploadedFile = event.files[0];
-     this.toastr.success('Archivo seleccionado correctamente', 'Éxito');
-   }
-  }
-crearCompra() {
-  if (this.fb_adquisicion.invalid) {
-    this.toastr.error('Por favor complete todos los campos requeridos', 'Error');
-    return;
-  }
-  if (!this.fb_adquisicion.get('id_proveedor')?.value) {
-    this.toastr.error('Debe validar el proveedor antes de continuar', 'Error');
-    return;
-  }
-  if (this.detallesCompra.length === 0) {
-    this.toastr.warning('Debe agregar al menos un detalle a la compra', 'Advertencia');
-    return;
-  }
-  const solicitud: SolicitudCrearCompra = {
-    idProveedor: this.fb_adquisicion.get('id_proveedor')?.value,
-    numeroFactura: this.fb_adquisicion.get('codigo')?.value,
-    archivo: this.uploadedFile
-  };
-  this.toastr.info('Procesando su solicitud...', 'Creando Compra');
-  this.compraService.crearCompra(solicitud).subscribe({
-    next: (respuestaCompra) => {
-      console.log('Compra creada:', respuestaCompra);
-      if (respuestaCompra && respuestaCompra.idCompra) {
-        const idCompra = respuestaCompra.idCompra;
-        this.detallesCompraPeticion.forEach(detalle => {
-          detalle.idCompra = idCompra;
-        });
-        console.log('Detalles de compra a guardar:', this.detallesCompraPeticion);
-        this.detalleCompraService.createUpdateDetalleCompra(this.detallesCompraPeticion).subscribe({
-          next: (respuestaDetalles) => {
-            console.log('Detalles de compra guardados:', respuestaDetalles);
-            this.toastr.success('Compra y sus detalles creados exitosamente', 'Éxito');
-            this.limpiarFormulario();
-          },
-          error: (errorDetalles) => {
-            console.error('Error al crear los detalles de la compra', errorDetalles);
-            this.toastr.error(errorDetalles.error?.mensaje || 'Error al guardar los detalles', 'Error');
-          }
-        });
-      } else {
-        this.toastr.warning('La compra se creó pero no se pudo obtener su ID', 'Advertencia');
-      }
-    },
-    error: (errorCompra) => {
-      console.error('Error al crear la compra', errorCompra);
-      this.toastr.error(errorCompra.error?.mensaje || 'Error al crear la compra', 'Error');
+  onFileSelect(event: any) {
+    if (event.files && event.files.length > 0) {
+      this.uploadedFile = event.files[0];
+      this.toastr.success('Archivo seleccionado correctamente', 'Éxito');
     }
-  });
-}  
-limpiarFormulario() {
-  this.fb_adquisicion.reset();
-  this.fb_detalleAdquisicion.reset();
-  this.detallesCompra = [];
-  this.detallesCompraPeticion = [];
-  this.uploadedFile = null;
-  if (this.fileUpload) {
-    this.fileUpload.clear(); 
-    console.log('FileUpload component cleared');
-  } else {
-    console.warn('FileUpload component not found');
   }
-  this.iconValidarDocumento = 'pi pi-search';
-  this.subtotal = 0.00;
-  this.total = 0.00;
-  this.resumen = {
-    nombre: '',
-    razonSocial: '',
-    email: '',
-    telefono: '',
-    celular: '',
-    direccion: '',
-  };
-  this.detalleCompraHandler();
-}
+  crearCompra() {
+    if (this.fb_adquisicion.invalid) {
+      this.toastr.error('Por favor complete todos los campos requeridos', 'Error');
+      return;
+    }
+    if (!this.fb_adquisicion.get('id_proveedor')?.value) {
+      this.toastr.error('Debe validar el proveedor antes de continuar', 'Error');
+      return;
+    }
+    if (this.detallesCompra.length === 0) {
+      this.toastr.warning('Debe agregar al menos un detalle a la compra', 'Advertencia');
+      return;
+    }
+    const solicitud: SolicitudCrearCompra = {
+      idProveedor: this.fb_adquisicion.get('id_proveedor')?.value,
+      numeroFactura: this.fb_adquisicion.get('codigo')?.value,
+      archivo: this.uploadedFile
+    };
+    this.toastr.info('Procesando su solicitud...', 'Creando Compra');
+    this.compraService.crearCompra(solicitud).subscribe({
+      next: (respuestaCompra) => {
+        console.log('Compra creada:', respuestaCompra);
+        if (respuestaCompra && respuestaCompra.idCompra) {
+          const idCompra = respuestaCompra.idCompra;
+          this.detallesCompraPeticion.forEach(detalle => {
+            detalle.idCompra = idCompra;
+          });
+          console.log('Detalles de compra a guardar:', this.detallesCompraPeticion);
+          this.detalleCompraService.createUpdateDetalleCompra(this.detallesCompraPeticion).subscribe({
+            next: (respuestaDetalles) => {
+              console.log('Detalles de compra guardados:', respuestaDetalles);
+              this.toastr.success('Compra y sus detalles creados exitosamente', 'Éxito');
+              this.limpiarFormulario();
+            },
+            error: (errorDetalles) => {
+              console.error('Error al crear los detalles de la compra', errorDetalles);
+              this.toastr.error(errorDetalles.error?.mensaje || 'Error al guardar los detalles', 'Error');
+            }
+          });
+        } else {
+          this.toastr.warning('La compra se creó pero no se pudo obtener su ID', 'Advertencia');
+        }
+      },
+      error: (errorCompra) => {
+        console.error('Error al crear la compra', errorCompra);
+        this.toastr.error(errorCompra.error?.mensaje || 'Error al crear la compra', 'Error');
+      }
+    });
+  }  
+  limpiarFormulario() {
+    this.fb_adquisicion.reset();
+    this.fb_detalleAdquisicion.reset();
+    this.detallesCompra = [];
+    this.detallesCompraPeticion = [];
+    this.uploadedFile = null;
+    if (this.fileUpload) {
+      this.fileUpload.clear(); 
+      console.log('FileUpload component cleared');
+    } else {
+      console.warn('FileUpload component not found');
+    }
+    this.iconValidarDocumento = 'pi pi-search';
+    this.subtotal = 0.00;
+    this.total = 0.00;
+    this.resumen = {
+      nombre: '',
+      razonSocial: '',
+      email: '',
+      telefono: '',
+      celular: '',
+      direccion: '',
+    };
+    this.detalleCompraHandler();
+  }
 }
