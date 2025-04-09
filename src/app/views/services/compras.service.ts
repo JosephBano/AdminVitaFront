@@ -41,4 +41,7 @@ export class ComprasService {
       }
     );
   }
+  getCompraDetallada(factura: string): Observable<any> {
+    return this.http.get<any>(`${this.apiURL}/GetCompraDetallada/${factura}`);
+  }
 }
