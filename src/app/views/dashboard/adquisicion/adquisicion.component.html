@@ -55,7 +55,7 @@
                 <ng-template #normalData>
                     <p>{{ rowData[col.field] }}</p>
                     <div *ngIf="col.field =='actions'" class="flex justify-start w-full gap-2"> 
-                        <p-button icon="pi pi-pen-to-square" [rounded]="true" [text]="true" [raised]="true" severity="secondary" />
+                        <p-button icon="pi pi-pen-to-square" (click)="redirectEditPage(rowData['numeroFactura'])" [rounded]="true" [text]="true" [raised]="true" severity="secondary" />
                         <p-button icon="pi pi-expand" [rounded]="true" [text]="true" [raised]="true" severity="secondary" />
                         <p-button icon="pi pi-download" [rounded]="true" [text]="true" [raised]="true" severity="secondary" (click)="DownloadFile(rowData['idAdjunto'])" />
                     </div>
