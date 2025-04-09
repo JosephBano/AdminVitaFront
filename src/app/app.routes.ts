@@ -8,6 +8,7 @@ import { InventarioComponent } from './views/dashboard/inventario/inventario.com
 import { AdquisicionComponent } from './views/dashboard/adquisicion/adquisicion.component';
 import { NotfoundComponent } from './views/notfound/notfound.component';
 import { AgregarAdquisicionComponent } from './views/dashboard/adquisicion/agregar-adquisicion/agregar-adquisicion.component';
+import { DashboardMecanicaComponent } from './views/dashboard-mecanica/dashboard-mecanica.component';
 
 export const appRoutes: Routes = [
     {   path: '', component: LoginComponent },
@@ -22,6 +23,7 @@ export const appRoutes: Routes = [
                 { path: 'agregar', component: AgregarAdquisicionComponent}
             ]}
         ]},
+    {   path: 'panel-mecanica', component: DashboardMecanicaComponent},
     {   path: 'notFound404', component: NotfoundComponent}, 
     {   path: '**', redirectTo: 'notFound404', pathMatch: 'full'   },
 ];
