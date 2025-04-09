@@ -27,7 +27,7 @@ import { LicenciaService } from '../../services/licencia.service';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { DividerModule } from 'primeng/divider';
 import { FileUpload } from 'primeng/fileupload';
-import { SkeletonSimpleComponent } from '../../shared/components/skeleton-simple.component';
+import { SkeletonSimpleComponent } from '../../shared/components/skeleton/skeleton-simple.component';
 import { formatDate } from '@angular/common';
 import { TipoVehiculoService } from '../../services/tipo-vehiculo.service';
 import { ImageModule } from 'primeng/image';
