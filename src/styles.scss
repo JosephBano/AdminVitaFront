@@ -1,11 +1,36 @@
-/* You can add global styles to this file, and also import other style files */
+/* Configuración global de estilos */
 @use "assets/layout/layout";
 @use "primeicons/primeicons.css";
 @use "../node_modules/ngx-toastr/toastr.css";
+
+/* Directivas de Tailwind */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Variables de tema para claro/oscuro */
+:root {
+  --primary: #10b981; /* emerald-500 */
+  --surface: #ffffff;
+  --text: #1f2937;
+  --background: #f3f4f6;
+}
+
+.app-dark {
+  --primary: #10b981;
+  --surface: #1e293b;
+  --text: #f8fafc;
+  --background: #0f172a;
+}
+
+/* Estilos globales de body */
+body {
+  background-color: var(--background);
+  color: var(--text);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Estilos existentes para toasts */
 .toast-warning {
   background-color: #ffc44d !important;
   color: white !important;
@@ -15,6 +40,7 @@
   font-size: 14px;
   text-justify: center !important;
 }
+
 .toast-error {
   background-color: #ff684d !important;
   color: white !important;
@@ -24,6 +50,7 @@
   font-size: 14px;
   text-justify: center !important;
 }
+
 .toast-success {
   background-color: #bbff4d !important;
   color: white !important;
@@ -33,9 +60,12 @@
   font-size: 14px;
   text-justify: center !important;
 }
+
+/* Estilos para componentes PrimeNG */
 .p-datepicker, .p-iconfield {
   width: 100%;
 }
+
 .borde-contenedor {
   border: 1px solid var(--p-inputtext-border-color);
   border-radius: 7px;

@@ -1,0 +1,85 @@
+/* Estilos para Dark Mode */
+:host ::ng-deep .dark-theme {
+    /* Ajustes para la tabla en dark mode */
+    .p-datatable {
+      .p-datatable-thead > tr > th {
+        background-color: #0d182e;
+        color: #f8f9fa;
+        border-color: #383838;
+      }
+      
+      .p-datatable-tbody > tr {
+        background-color: #1a2439;
+        color: #f8f9fa;
+        border-color: #fefefe;
+        
+        &:nth-child(even) {
+          background-color: #242424;
+        }
+        
+        &:hover {
+          background-color: #2a2a2a;
+        }
+        
+        > td {
+          border-color: #383838;
+        }
+      }
+      
+      .p-paginator {
+        background-color: #1e1e1e;
+        color: #f8f9fa;
+        border-color: #383838;
+        
+        .p-paginator-element {
+          color: #253858;
+        }
+      }
+      
+      /* Ajustes para filtros y dropdowns */
+      .p-dropdown, .p-inputtext {
+        background-color: #2d2d2d;
+        color: #f8f9fa;
+        border-color: #383838;
+      }
+      
+      /* Iconos en dark mode */
+      .pi {
+        color: #f8f9fa;
+      }
+      
+      /* Asegurar que los tags mantienen sus colores pero son visibles */
+       .p-tag {
+    color: white !important; /* Forzar color de texto blanco para todos los tags */
+    
+    &.p-tag-success { 
+      background-color: #2e7d32; 
+    }
+    &.p-tag-warning { 
+      background-color: #ed6c02; 
+    }
+    &.p-tag-danger { 
+      background-color: #c62828; 
+    }
+    &.p-tag-info { 
+      background-color: #0277bd; 
+    }
+    &.p-tag-secondary { 
+      background-color: #455a64; 
+    }
+  }
+    }
+    
+    /* Ajustes para el panel de filtro */
+    .p-column-filter-overlay {
+      background-color: #1e1e1e;
+      color: #f8f9fa;
+      border-color: #383838;
+    }
+    
+    /* Ajuste para la card contenedora */
+    .card {
+      background-color: #141f34;
+      color: #f8f9fa;
+    }
+  }
