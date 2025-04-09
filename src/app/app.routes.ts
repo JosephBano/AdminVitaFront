@@ -19,7 +19,8 @@ export const appRoutes: Routes = [
             { path: 'Inventario', component: InventarioComponent},
             { path: 'Adquisiciones', children: [
                 { path: '', component:AdquisicionComponent},
-                { path: 'agregar', component: AgregarAdquisicionComponent}
+                { path: 'agregar', component: AgregarAdquisicionComponent},
+                { path: 'editar/:factura', component: AgregarAdquisicionComponent},
             ]}
         ]},
     {   path: 'notFound404', component: NotfoundComponent}, 
