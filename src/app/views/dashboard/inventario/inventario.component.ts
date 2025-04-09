@@ -14,7 +14,6 @@ import { SkeletonSimpleComponent } from '../../shared/components/skeleton/skelet
 import { ChipModule } from 'primeng/chip';
 import { TooltipModule } from 'primeng/tooltip';
 import { CalendarModule } from 'primeng/calendar';
-
 interface MovimientoItem {
   codigo: string;
   nombre: string;
@@ -25,7 +24,6 @@ interface MovimientoItem {
   idMagnitud: number;
   nombreMagnitud: string;
 }
-
 interface Month {
   value: string;
   label: string;
@@ -33,7 +31,6 @@ interface Month {
   year: number;
   month: number;
 }
-
 interface Day {
   date: Date;
   dateStr: string;
@@ -42,12 +39,10 @@ interface Day {
   count: number;
   movimientos?: MovimientoItem[]; 
 }
-
 interface MonthData {
   month: Month;
   days: Day[];
 }
-
 @Component({
   selector: 'app-inventario',
   providers: [DatePipe], 
@@ -318,64 +313,64 @@ export class InventarioComponent implements OnInit {
     this.selectedMonths = [mesValor];
     this.processCalendarData();
   }
-limpiarFiltroMes() {
-  console.log('Limpiando filtro y mostrando solo el mes actual');
-  this.configurarMesActual();
-  const fechaActual = new Date();
-  const año = fechaActual.getFullYear();
-  const mes = fechaActual.getMonth() + 1; // JavaScript meses son 0-11
-  const mesActualValor = `${año}-${mes.toString().padStart(2, '0')}`;
-  console.log('Filtrando por mes actual:', mesActualValor);
-  this.selectedMonths = [mesActualValor];
-  this.mostrandoTodosLosMeses = false;
-  this.processCalendarData();
-}
-getTooltipContent(day: Day): string {
-  if (!day.movimientos || day.movimientos.length === 0) {
-    return `<div class="tooltip-title">${this.datePipe.transform(day.date, 'dd/MM/yyyy')}</div>
-            <div>No hay movimientos</div>`;
+  limpiarFiltroMes() {
+    console.log('Limpiando filtro y mostrando solo el mes actual');
+    this.configurarMesActual();
+    const fechaActual = new Date();
+    const año = fechaActual.getFullYear();
+    const mes = fechaActual.getMonth() + 1; // JavaScript meses son 0-11
+    const mesActualValor = `${año}-${mes.toString().padStart(2, '0')}`;
+    console.log('Filtrando por mes actual:', mesActualValor);
+    this.selectedMonths = [mesActualValor];
+    this.mostrandoTodosLosMeses = false;
+    this.processCalendarData();
   }
-  let content = `<div class="tooltip-title">${this.datePipe.transform(day.date, 'dd/MM/yyyy')}</div>`;
-  content += `<div class="tooltip-summary">`;
-  const summary = {
-    ingreso: 0,
-    egreso: 0,
-    prestamo: 0,
-    devuelto: 0
-  };
-  day.movimientos.forEach(mov => {
-    switch(mov.movimiento) {
-      case 0: summary.ingreso++; break;
-      case 1: summary.egreso++; break;
-      case 2: summary.prestamo++; break;
-      case 3: summary.devuelto++; break;
+  getTooltipContent(day: Day): string {
+    if (!day.movimientos || day.movimientos.length === 0) {
+      return `<div class="tooltip-title">${this.datePipe.transform(day.date, 'dd/MM/yyyy')}</div>
+              <div>No hay movimientos</div>`;
     }
-  });
-  if (summary.ingreso > 0) content += `<div class="tooltip-item"><span class="tooltip-dot ingreso"></span>Ingresos: ${summary.ingreso}</div>`;
-  if (summary.egreso > 0) content += `<div class="tooltip-item"><span class="tooltip-dot egreso"></span>Egresos: ${summary.egreso}</div>`;
-  if (summary.prestamo > 0) content += `<div class="tooltip-item"><span class="tooltip-dot prestamo"></span>Préstamos: ${summary.prestamo}</div>`;
-  if (summary.devuelto > 0) content += `<div class="tooltip-item"><span class="tooltip-dot devuelto"></span>Devoluciones: ${summary.devuelto}</div>`;
-  content += `</div>`;
-  content += `<div style="margin-top: 6px; font-weight: 500;">Total: ${day.count} movimiento(s)</div>`;
-  return content;
-}
-getMovimientosSummary(movimientos: MovimientoItem[]): any[] {
-  if (!movimientos || movimientos.length === 0) return [];
-  const types = new Set(movimientos.map(m => m.movimiento));
-  return Array.from(types).map(tipo => ({ tipo }));
-}
-getTipoMovimiento(tipo: number): string {
-  switch(tipo) {
-    case 0: return 'Ingreso';
-    case 1: return 'Egreso';
-    case 2: return 'Préstamo';
-    case 3: return 'Devolución';
-    default: return 'Desconocido';
+    let content = `<div class="tooltip-title">${this.datePipe.transform(day.date, 'dd/MM/yyyy')}</div>`;
+    content += `<div class="tooltip-summary">`;
+    const summary = {
+      ingreso: 0,
+      egreso: 0,
+      prestamo: 0,
+      devuelto: 0
+    };
+    day.movimientos.forEach(mov => {
+      switch(mov.movimiento) {
+        case 0: summary.ingreso++; break;
+        case 1: summary.egreso++; break;
+        case 2: summary.prestamo++; break;
+        case 3: summary.devuelto++; break;
+      }
+    });
+    if (summary.ingreso > 0) content += `<div class="tooltip-item"><span class="tooltip-dot ingreso"></span>Ingresos: ${summary.ingreso}</div>`;
+    if (summary.egreso > 0) content += `<div class="tooltip-item"><span class="tooltip-dot egreso"></span>Egresos: ${summary.egreso}</div>`;
+    if (summary.prestamo > 0) content += `<div class="tooltip-item"><span class="tooltip-dot prestamo"></span>Préstamos: ${summary.prestamo}</div>`;
+    if (summary.devuelto > 0) content += `<div class="tooltip-item"><span class="tooltip-dot devuelto"></span>Devoluciones: ${summary.devuelto}</div>`;
+    content += `</div>`;
+    content += `<div style="margin-top: 6px; font-weight: 500;">Total: ${day.count} movimiento(s)</div>`;
+    return content;
   }
-}
-showDayDetail(day: Day): void {
-  if (!day.movimientos || day.movimientos.length === 0) return;
-  this.selectedDate = day.date;
-  this.selectedDayMovimientos = day.movimientos;
-}
+  getMovimientosSummary(movimientos: MovimientoItem[]): any[] {
+    if (!movimientos || movimientos.length === 0) return [];
+    const types = new Set(movimientos.map(m => m.movimiento));
+    return Array.from(types).map(tipo => ({ tipo }));
+  }
+  getTipoMovimiento(tipo: number): string {
+    switch(tipo) {
+      case 0: return 'Ingreso';
+      case 1: return 'Egreso';
+      case 2: return 'Préstamo';
+      case 3: return 'Devolución';
+      default: return 'Desconocido';
+    }
+  }
+  showDayDetail(day: Day): void {
+    if (!day.movimientos || day.movimientos.length === 0) return;
+    this.selectedDate = day.date;
+    this.selectedDayMovimientos = day.movimientos;
+  }
 }
