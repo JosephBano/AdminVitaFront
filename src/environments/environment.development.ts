@@ -22,6 +22,7 @@ export const environment = {
     conversionUnidades: '/ConversionUnidades',
     cliente: '/Clientes',
     reporte: '/Reportes',
+    ordenMecanico: '/OrdenMecanico',
 };
 
 export const ivaCalculo = {

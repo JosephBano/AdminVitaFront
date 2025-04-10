@@ -1,4 +1,27 @@
 <app-themed-layout [isDarkMode]="isDarkModeEnabled">
+    <!-- Sección del PickList para mecánicos -->
+    <div class="card mb-3">
+        <h5>Filtrar por Mecánicos</h5>
+        <p-pickList 
+            [source]="todosMecanicos" 
+            [target]="mecanicosFiltrados" 
+            sourceHeader="Mecánicos Disponibles" 
+            targetHeader="Mecánicos Seleccionados"
+            [responsive]="true"
+            filterBy="nombre"
+            (onMoveToTarget)="onMecanicosChange($event)"
+            (onMoveToSource)="onMecanicosChange($event)"
+            (onMoveAllToTarget)="onMecanicosChange($event)"
+            (onMoveAllToSource)="onMecanicosChange($event)"
+            [sourceStyle]="{'height':'250px'}" 
+            [targetStyle]="{'height':'250px'}">
+            <ng-template let-mecanico pTemplate="item">
+                <div>{{mecanico.nombre}} {{mecanico.apellidos}}</div>
+            </ng-template>
+        </p-pickList>
+    </div>
+
+    <!-- Tabla de Órdenes de Trabajo -->
     <div class="card" style="margin-bottom: 0;">
         <p-table 
             #dt1
@@ -61,6 +84,12 @@
                     </td>
                 </tr>
             </ng-template>
+            
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td [attr.colspan]="cols.length" class="text-center">No se encontraron órdenes de trabajo.</td>
+                </tr>
+            </ng-template>
         </p-table>
     </div>
-  </app-themed-layout>
+</app-themed-layout>
