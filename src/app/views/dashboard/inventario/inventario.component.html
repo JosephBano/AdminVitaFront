@@ -21,7 +21,7 @@
             </p-iconfield>
             <div class="flex gap-2 justify-end">
                 <p-button (click)="OnExportButton()" severity="secondary" icon="pi pi-file-export" label="Exportar"></p-button>
-                <p-button class="w-full sm:min-w-48" fluid icon="pi pi-plus" label="Agregar Item"></p-button>
+                <p-button (click)="openDialogAddItem()" class="w-full sm:min-w-48" fluid icon="pi pi-plus" label="Agregar Item"></p-button>
             </div>
         </div>
     </ng-template>
@@ -75,7 +75,9 @@
             Movimiento de Inventario: {{ itemCodigo || 'Sin código' }} - {{ itemNombre || 'Sin nombre' }}
         </div>
     </ng-template>
-    <app-skeleton-simple *ngIf="loadingMovimientosDialog"/>
+    <div class="m-8" *ngIf="loadingMovimientosDialog">
+        <app-skeleton-simple/>
+    </div>
     <div class="p-3" *ngIf="!loadingMovimientosDialog">
         <!-- Información del ítem -->
         <div class="bg-white rounded-lg">
@@ -258,8 +260,81 @@
 header="Crear Item" 
 [modal]="true" 
 [(visible)]="visibleCrearItem" 
-[breakpoints]="{ '1199px': '75vw', '575px': '90vw' }" 
-[style]="{ width: '75vw' }"
-[closeOnEscape]="false"> 
-    
+[breakpoints]="{ '1199px': '70vw', '575px': '95vw' }" 
+[style]="{ width: '30vw' }"
+[closeOnEscape]="false"
+[closable]="false"> 
+    <div class="card mt-0">
+        <form class="flex flex-col gap-2" [formGroup]="fb_item">
+            <label>Tipo de Item*</label>
+            <div class="flex flex-col md:flex-row gap-4">
+                <div *ngFor="let tipo of tiposItem" class="field-checkbox">
+                    <p-radiobutton [inputId]="tipo.key" [value]="tipo" formControlName="idTipoItem" />
+                    <label [for]="tipo.key" class="ml-2">{{ tipo.name }}</label>
+                </div>    
+            </div>
+            <p-divider class="my-0"></p-divider>
+            <p-floatlabel variant="on" class="w-full">
+                <input 
+                    type="text" 
+                    pInputText 
+                    formControlName="nombre" 
+                    class="w-full" 
+                    [ngClass]="{'ng-invalid ng-dirty': fb_item.get('nombre')?.invalid && fb_item.get('nombre')?.touched}">
+                <label>Nombre Item*</label>
+            </p-floatlabel>
+            <p-floatlabel variant="on" class="w-full">
+                <input 
+                    type="text" 
+                    pInputText 
+                    formControlName="descripcion" 
+                    class="w-full">
+                <label>Descripción Item</label>
+            </p-floatlabel>
+            <p-select 
+            *ngIf="this.isntTool"
+            formControlName="idMagnitud" 
+            [options]="magnitudes" 
+            optionValue="idMagnitud" 
+            optionLabel="nombre" 
+            fluid 
+            placeholder="Magnitud" 
+            class="w-full"
+            [showClear]="true" />
+            <p-floatlabel variant="on" class="w-full">
+                <p-inputnumber
+                    [min]="0" 
+                    mode="currency" 
+                    currency="USD" 
+                    formControlName="valorUnitario" 
+                    class="w-full" 
+                    [ngClass]="{'ng-invalid ng-dirty': fb_item.get('valorUnitario')?.invalid && fb_item.get('valorUnitario')?.touched}"/>
+                <label>Valor Unitario*</label>
+            </p-floatlabel>
+            <p-floatlabel variant="on" class="w-full" *ngIf="this.isntTool">
+                <p-inputnumber
+                    mode="decimal" 
+                    [min]="0" 
+                    [maxFractionDigits]="2"
+                    formControlName="stockMin" 
+                    class="w-full" 
+                    [ngClass]="{'ng-invalid ng-dirty': fb_item.get('stockMin')?.invalid && fb_item.get('stockMin')?.touched}"/>
+                <label>StockMínimo*</label>
+            </p-floatlabel>
+            <p-floatlabel variant="on" class="w-full" *ngIf="this.isntTool">
+                <p-inputnumber
+                    mode="decimal" 
+                    [min]="0" 
+                    [maxFractionDigits]="2"
+                    formControlName="stockIdeal"
+                    class="w-full" 
+                    [ngClass]="{'ng-invalid ng-dirty': fb_item.get('stockIdeal')?.invalid && fb_item.get('stockIdeal')?.touched}"/>
+                <label>Stock Ideal*</label>
+            </p-floatlabel>
+        </form>
+        <div class="flex flex-row justify-between mt-4 gap-4 w-full">
+            <p-button label="Cancelar" fluid (click)="closeDialogCrearItem()" class="w-full" severity="secondary" />
+            <p-button label="Crear" fluid (click)="crearteItem()" [disabled]="fb_item.invalid" class="w-full" />
+        </div>
+    </div>
 </p-dialog>

@@ -52,6 +52,14 @@ export class AppMenu {
                         ]
                     },
                 ]
+            },
+            {
+                label: 'Personas',
+                items: [
+                    { label: 'Gestión Administrativo', icon: 'pi pi-fw pi-user', routerLink: ['/panel/persons/Usuario'] },
+                    { label: 'Gestión Mecánico', icon: 'pi pi-fw pi-wrench', routerLink: ['/panel/persons/Mecanico'] },
+                    { label: 'Gestión Proveedor', icon: 'pi pi-fw pi-box', routerLink: ['/panel/persons/Proveedor'] },
+                ]
             }
         ];
     }

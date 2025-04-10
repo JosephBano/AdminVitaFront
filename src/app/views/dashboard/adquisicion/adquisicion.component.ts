@@ -179,5 +179,7 @@ OnExportButton() {
   }
 }
   showDialogAdd(){}
-  showDialogEdit(){}
+  redirectEditPage(factura: string) {
+    this.router.navigate([`panel/Adquisiciones/editar/${factura}`]);
+  }
 }

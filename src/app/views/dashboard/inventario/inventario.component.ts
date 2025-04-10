@@ -8,24 +8,20 @@ import { ButtonModule } from 'primeng/button';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormGroup, FormsModule, ReactiveFormsModule, FormControl, Validators } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
-import { SkeletonSimpleComponent } from '../../shared/components/skeleton-simple.component';
+import { SkeletonSimpleComponent } from '../../shared/components/skeleton/skeleton-simple.component';
 import { ChipModule } from 'primeng/chip';
 import { TooltipModule } from 'primeng/tooltip';
 import { CalendarModule } from 'primeng/calendar';
-
-interface MovimientoItem {
-  codigo: string;
-  nombre: string;
-  fechaMovimiento: string;
-  movimiento: number;
-  cantidad: number;
-  stock: number;
-  idMagnitud: number;
-  nombreMagnitud: string;
-}
-
+import { MagnitudService } from '../../services/magnitud.service';
+import { RadioButton } from 'primeng/radiobutton';
+import { Select } from 'primeng/select';
+import { Divider } from 'primeng/divider';
+import { FloatLabel } from 'primeng/floatlabel';
+import { InputNumber } from 'primeng/inputnumber';
+import { MovimientoItem } from '../../../../domain/response/Movimiento.model';
+import { CreateUpdateItemRequest } from '../../../../domain/request/Item.model';
 interface Month {
   value: string;
   label: string;
@@ -33,7 +29,6 @@ interface Month {
   year: number;
   month: number;
 }
-
 interface Day {
   date: Date;
   dateStr: string;
@@ -42,12 +37,10 @@ interface Day {
   count: number;
   movimientos?: MovimientoItem[]; 
 }
-
 interface MonthData {
   month: Month;
   days: Day[];
 }
-
 @Component({
   selector: 'app-inventario',
   providers: [DatePipe], 
@@ -66,7 +59,12 @@ interface MonthData {
     SkeletonSimpleComponent,
     ChipModule,
     TooltipModule,
-    CalendarModule
+    CalendarModule,
+    RadioButton,
+    Select,
+    Divider,
+    FloatLabel,
+    InputNumber
   ],
   templateUrl: './inventario.component.html',
   styleUrl: './inventario.component.scss'
@@ -81,6 +79,11 @@ export class InventarioComponent implements OnInit {
 
   colsMovimientos!: Column[];
   movimientos: any[] = [];
+  magnitudes: any[] = [];
+  tiposItem: any[] = [];
+
+  fb_item!: FormGroup;
+  isntTool: boolean = true;
 
   visibleMovimientos: boolean = false;
   visibleCrearItem: boolean = false;
@@ -103,16 +106,15 @@ export class InventarioComponent implements OnInit {
 
   constructor( 
     private itemService: ItemService,
-    private datePipe: DatePipe
+    private datePipe: DatePipe,
+    private magnitudService: MagnitudService,
   ){}
 
   ngOnInit(): void {
     this.initData();
     this.configurarMesActual();
   }
-  initData(){
-    this.cols = HeadersTables.InventarioList; 
-    this.colsMovimientos = HeadersTables.MovimientosItemList;
+  getItems(){
     this.itemService.getItemsList().subscribe({
       next: (response) => {
         this.Items = response;
@@ -120,7 +122,35 @@ export class InventarioComponent implements OnInit {
       },
       error: (err) => console.error(err)
     })
-    
+  }
+  initData(){
+    this.cols = HeadersTables.InventarioList; 
+    this.colsMovimientos = HeadersTables.MovimientosItemList;
+    this.getItems();
+    this.magnitudService.getMagnitudes().subscribe({
+      next: (response) => {
+        this.magnitudes = response;
+      },
+      error: (err) => console.error(err)
+    })
+    this.tiposItem = [
+        { name: 'Repuesto', key: 1},
+        { name: 'Insumo', key: 2},
+        { name: 'Herramienta', key: 3},
+    ];
+    this.fb_item = new FormGroup({
+      idTipoItem: new FormControl<number | null>(null, [Validators.required]),
+      idMagnitud: new FormControl<number | null>(null),
+      nombre: new FormControl<string | null>(null, [Validators.required]),
+      descripcion: new FormControl<string | null>(null),
+      valorUnitario: new FormControl<number | null>(null, [Validators.required]),
+      stockMin: new FormControl<number | null>(null, [Validators.required]),
+      stockIdeal: new FormControl<number | null>(null, [Validators.required]),
+    });    
+    this.fb_item.get('idTipoItem')?.valueChanges.subscribe((value) => {
+      this.resetForm();
+      this.isToolRequired(value);
+    })
   }
   showMovimientosItem(codigo: number) {
     this.visibleMovimientos = true;
@@ -149,6 +179,58 @@ export class InventarioComponent implements OnInit {
   filterGlobal(event: Event, dt: any) {
     const inputValue = (event.target as HTMLInputElement)?.value || '';
     dt.filterGlobal(inputValue, 'contains');
+  }
+  openDialogAddItem(){
+    this.visibleCrearItem = true;
+    this.isntTool = true;
+  }
+  closeDialogCrearItem(){
+    this.visibleCrearItem = false;
+    this.fb_item.reset();
+  }
+  isToolRequired(value:any) {
+    if(!value) return;
+    const tipoItem = value.key || null;
+    this.isntTool = tipoItem == 1 || tipoItem == 2; // Repuesto o Insumo    
+    if (!this.isntTool) {
+      this.fb_item.get('stockMin')?.setValue(0);
+      this.fb_item.get('stockIdeal')?.setValue(0);
+    }
+  }
+  resetForm(){
+    this.fb_item.get('idMagnitud')?.setValue(null);
+    this.fb_item.get('nombre')?.setValue(null);
+    this.fb_item.get('descripcion')?.setValue(null);
+    this.fb_item.get('valorUnitario')?.setValue(null);
+    this.fb_item.get('stockMin')?.setValue(null);
+    this.fb_item.get('stockIdeal')?.setValue(null);
+  }
+  crearteItem(){
+    const item: CreateUpdateItemRequest = {
+      idItem: 0,
+      idTipoItem: this.fb_item.value.idTipoItem.key,
+      idMagnitud: this.fb_item.value.idMagnitud,
+      nombre: this.fb_item.value.nombre,
+      descripcion: this.fb_item.value.descripcion,
+      valorUnitario: this.fb_item.value.valorUnitario,
+      stockMin: this.fb_item.value.stockMin || 0,
+      stockIdeal: this.fb_item.value.stockIdeal || 0, 
+    }
+
+    this.itemService.createUpdateItem(item).subscribe({
+      next: (response) => {
+        console.log('Item creado/actualizado:', response);
+        this.visibleCrearItem = false;
+        this.fb_item.reset();
+        this.getItems();
+      }, 
+      error: (err) => {
+        console.error('Error al crear item:', err);
+        this.visibleCrearItem = false;
+        this.fb_item.reset();
+      }
+    });
+    
   }
   exportCSV() {
     if (!this.dt5) {
@@ -318,64 +400,64 @@ export class InventarioComponent implements OnInit {
     this.selectedMonths = [mesValor];
     this.processCalendarData();
   }
-limpiarFiltroMes() {
-  console.log('Limpiando filtro y mostrando solo el mes actual');
-  this.configurarMesActual();
-  const fechaActual = new Date();
-  const año = fechaActual.getFullYear();
-  const mes = fechaActual.getMonth() + 1; // JavaScript meses son 0-11
-  const mesActualValor = `${año}-${mes.toString().padStart(2, '0')}`;
-  console.log('Filtrando por mes actual:', mesActualValor);
-  this.selectedMonths = [mesActualValor];
-  this.mostrandoTodosLosMeses = false;
-  this.processCalendarData();
-}
-getTooltipContent(day: Day): string {
-  if (!day.movimientos || day.movimientos.length === 0) {
-    return `<div class="tooltip-title">${this.datePipe.transform(day.date, 'dd/MM/yyyy')}</div>
-            <div>No hay movimientos</div>`;
+  limpiarFiltroMes() {
+    console.log('Limpiando filtro y mostrando solo el mes actual');
+    this.configurarMesActual();
+    const fechaActual = new Date();
+    const año = fechaActual.getFullYear();
+    const mes = fechaActual.getMonth() + 1; // JavaScript meses son 0-11
+    const mesActualValor = `${año}-${mes.toString().padStart(2, '0')}`;
+    console.log('Filtrando por mes actual:', mesActualValor);
+    this.selectedMonths = [mesActualValor];
+    this.mostrandoTodosLosMeses = false;
+    this.processCalendarData();
   }
-  let content = `<div class="tooltip-title">${this.datePipe.transform(day.date, 'dd/MM/yyyy')}</div>`;
-  content += `<div class="tooltip-summary">`;
-  const summary = {
-    ingreso: 0,
-    egreso: 0,
-    prestamo: 0,
-    devuelto: 0
-  };
-  day.movimientos.forEach(mov => {
-    switch(mov.movimiento) {
-      case 0: summary.ingreso++; break;
-      case 1: summary.egreso++; break;
-      case 2: summary.prestamo++; break;
-      case 3: summary.devuelto++; break;
+  getTooltipContent(day: Day): string {
+    if (!day.movimientos || day.movimientos.length === 0) {
+      return `<div class="tooltip-title">${this.datePipe.transform(day.date, 'dd/MM/yyyy')}</div>
+              <div>No hay movimientos</div>`;
     }
-  });
-  if (summary.ingreso > 0) content += `<div class="tooltip-item"><span class="tooltip-dot ingreso"></span>Ingresos: ${summary.ingreso}</div>`;
-  if (summary.egreso > 0) content += `<div class="tooltip-item"><span class="tooltip-dot egreso"></span>Egresos: ${summary.egreso}</div>`;
-  if (summary.prestamo > 0) content += `<div class="tooltip-item"><span class="tooltip-dot prestamo"></span>Préstamos: ${summary.prestamo}</div>`;
-  if (summary.devuelto > 0) content += `<div class="tooltip-item"><span class="tooltip-dot devuelto"></span>Devoluciones: ${summary.devuelto}</div>`;
-  content += `</div>`;
-  content += `<div style="margin-top: 6px; font-weight: 500;">Total: ${day.count} movimiento(s)</div>`;
-  return content;
-}
-getMovimientosSummary(movimientos: MovimientoItem[]): any[] {
-  if (!movimientos || movimientos.length === 0) return [];
-  const types = new Set(movimientos.map(m => m.movimiento));
-  return Array.from(types).map(tipo => ({ tipo }));
-}
-getTipoMovimiento(tipo: number): string {
-  switch(tipo) {
-    case 0: return 'Ingreso';
-    case 1: return 'Egreso';
-    case 2: return 'Préstamo';
-    case 3: return 'Devolución';
-    default: return 'Desconocido';
+    let content = `<div class="tooltip-title">${this.datePipe.transform(day.date, 'dd/MM/yyyy')}</div>`;
+    content += `<div class="tooltip-summary">`;
+    const summary = {
+      ingreso: 0,
+      egreso: 0,
+      prestamo: 0,
+      devuelto: 0
+    };
+    day.movimientos.forEach(mov => {
+      switch(mov.movimiento) {
+        case 0: summary.ingreso++; break;
+        case 1: summary.egreso++; break;
+        case 2: summary.prestamo++; break;
+        case 3: summary.devuelto++; break;
+      }
+    });
+    if (summary.ingreso > 0) content += `<div class="tooltip-item"><span class="tooltip-dot ingreso"></span>Ingresos: ${summary.ingreso}</div>`;
+    if (summary.egreso > 0) content += `<div class="tooltip-item"><span class="tooltip-dot egreso"></span>Egresos: ${summary.egreso}</div>`;
+    if (summary.prestamo > 0) content += `<div class="tooltip-item"><span class="tooltip-dot prestamo"></span>Préstamos: ${summary.prestamo}</div>`;
+    if (summary.devuelto > 0) content += `<div class="tooltip-item"><span class="tooltip-dot devuelto"></span>Devoluciones: ${summary.devuelto}</div>`;
+    content += `</div>`;
+    content += `<div style="margin-top: 6px; font-weight: 500;">Total: ${day.count} movimiento(s)</div>`;
+    return content;
   }
-}
-showDayDetail(day: Day): void {
-  if (!day.movimientos || day.movimientos.length === 0) return;
-  this.selectedDate = day.date;
-  this.selectedDayMovimientos = day.movimientos;
-}
+  getMovimientosSummary(movimientos: MovimientoItem[]): any[] {
+    if (!movimientos || movimientos.length === 0) return [];
+    const types = new Set(movimientos.map(m => m.movimiento));
+    return Array.from(types).map(tipo => ({ tipo }));
+  }
+  getTipoMovimiento(tipo: number): string {
+    switch(tipo) {
+      case 0: return 'Ingreso';
+      case 1: return 'Egreso';
+      case 2: return 'Préstamo';
+      case 3: return 'Devolución';
+      default: return 'Desconocido';
+    }
+  }
+  showDayDetail(day: Day): void {
+    if (!day.movimientos || day.movimientos.length === 0) return;
+    this.selectedDate = day.date;
+    this.selectedDayMovimientos = day.movimientos;
+  }
 }

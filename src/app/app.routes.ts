@@ -9,6 +9,9 @@ import { AdquisicionComponent } from './views/dashboard/adquisicion/adquisicion.
 import { NotfoundComponent } from './views/notfound/notfound.component';
 import { AgregarAdquisicionComponent } from './views/dashboard/adquisicion/agregar-adquisicion/agregar-adquisicion.component';
 import { DashboardMecanicaComponent } from './views/dashboard-mecanica/dashboard-mecanica.component';
+import { UsuarioComponent } from './views/dashboard/persona/usuario/usuario.component';
+import { MecanicoComponent } from './views/dashboard/persona/mecanico/mecanico.component';
+import { ProveedorComponent } from './views/dashboard/persona/proveedor/proveedor.component';
 
 export const appRoutes: Routes = [
     {   path: '', component: LoginComponent },
@@ -20,10 +23,15 @@ export const appRoutes: Routes = [
             { path: 'Inventario', component: InventarioComponent},
             { path: 'Adquisiciones', children: [
                 { path: '', component:AdquisicionComponent},
-                { path: 'agregar', component: AgregarAdquisicionComponent}
-            ]}
+                { path: 'agregar', component: AgregarAdquisicionComponent},
+                { path: 'editar/:factura', component: AgregarAdquisicionComponent},
+            ]},
+            {path: 'persons', redirectTo: 'persons/Usuario', pathMatch: 'full'},
+            {path: 'persons/Usuario', component: UsuarioComponent},
+            {path: 'persons/Mecanico', component: MecanicoComponent},
+            {path: 'persons/Proveedor', component: ProveedorComponent},
         ]},
     {   path: 'panel-mecanica', component: DashboardMecanicaComponent},
     {   path: 'notFound404', component: NotfoundComponent}, 
-    {   path: '**', redirectTo: 'notFound404', pathMatch: 'full'   },
+    {   path: '**', redirectTo: 'notFound404', pathMatch: 'full'},
 ];

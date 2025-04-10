@@ -10,8 +10,11 @@ import { CreateUpdateDetalleCompraRequest, DetalleCompra, DetalleCompraResponse 
   providedIn: 'root'
 })
 export class DetalleCompraService {
+  
   private apiURL = `${environment.domain}${environment.apiEndpoint}${environment.detalleCompra}`;
+  
   constructor(private http: HttpClient, private auth: AuthService) { }
+
   createUpdateDetalleCompra(detallesCompra: DetalleCompra[]): Observable<DetalleCompraResponse> {
     const headers = this.auth.getAuthHeaders();
     const request: CreateUpdateDetalleCompraRequest = {
