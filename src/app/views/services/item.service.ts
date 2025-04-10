@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../auth/service/auth.service';
 import { Observable } from 'rxjs';
 import { Item } from '../../../domain/response/Item.model';
+import { CreateUpdateItemRequest } from '../../../domain/request/Item.model';
 
 @Injectable({
   providedIn: 'root'
@@ -21,5 +22,8 @@ export class ItemService {
   getMovimientosXItems(id: number): Observable<any>{
     const headers = this.auth.getAuthHeaders();
     return this.http.get<any>(`${this.apiURL}/GetMovimientoItem/${id}`, { headers });
+  }
+  createUpdateItem(item: CreateUpdateItemRequest): Observable<any> {
+    return this.http.post<any>(`${this.apiURL}/CreateUpdateItem`, item);
   }
 }

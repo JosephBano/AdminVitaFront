@@ -8,22 +8,20 @@ import { ButtonModule } from 'primeng/button';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormGroup, FormsModule, ReactiveFormsModule, FormControl, Validators } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { SkeletonSimpleComponent } from '../../shared/components/skeleton/skeleton-simple.component';
 import { ChipModule } from 'primeng/chip';
 import { TooltipModule } from 'primeng/tooltip';
 import { CalendarModule } from 'primeng/calendar';
-interface MovimientoItem {
-  codigo: string;
-  nombre: string;
-  fechaMovimiento: string;
-  movimiento: number;
-  cantidad: number;
-  stock: number;
-  idMagnitud: number;
-  nombreMagnitud: string;
-}
+import { MagnitudService } from '../../services/magnitud.service';
+import { RadioButton } from 'primeng/radiobutton';
+import { Select } from 'primeng/select';
+import { Divider } from 'primeng/divider';
+import { FloatLabel } from 'primeng/floatlabel';
+import { InputNumber } from 'primeng/inputnumber';
+import { MovimientoItem } from '../../../../domain/response/Movimiento.model';
+import { CreateUpdateItemRequest } from '../../../../domain/request/Item.model';
 interface Month {
   value: string;
   label: string;
@@ -61,7 +59,12 @@ interface MonthData {
     SkeletonSimpleComponent,
     ChipModule,
     TooltipModule,
-    CalendarModule
+    CalendarModule,
+    RadioButton,
+    Select,
+    Divider,
+    FloatLabel,
+    InputNumber
   ],
   templateUrl: './inventario.component.html',
   styleUrl: './inventario.component.scss'
@@ -76,6 +79,11 @@ export class InventarioComponent implements OnInit {
 
   colsMovimientos!: Column[];
   movimientos: any[] = [];
+  magnitudes: any[] = [];
+  tiposItem: any[] = [];
+
+  fb_item!: FormGroup;
+  isntTool: boolean = true;
 
   visibleMovimientos: boolean = false;
   visibleCrearItem: boolean = false;
@@ -98,16 +106,15 @@ export class InventarioComponent implements OnInit {
 
   constructor( 
     private itemService: ItemService,
-    private datePipe: DatePipe
+    private datePipe: DatePipe,
+    private magnitudService: MagnitudService,
   ){}
 
   ngOnInit(): void {
     this.initData();
     this.configurarMesActual();
   }
-  initData(){
-    this.cols = HeadersTables.InventarioList; 
-    this.colsMovimientos = HeadersTables.MovimientosItemList;
+  getItems(){
     this.itemService.getItemsList().subscribe({
       next: (response) => {
         this.Items = response;
@@ -115,7 +122,35 @@ export class InventarioComponent implements OnInit {
       },
       error: (err) => console.error(err)
     })
-    
+  }
+  initData(){
+    this.cols = HeadersTables.InventarioList; 
+    this.colsMovimientos = HeadersTables.MovimientosItemList;
+    this.getItems();
+    this.magnitudService.getMagnitudes().subscribe({
+      next: (response) => {
+        this.magnitudes = response;
+      },
+      error: (err) => console.error(err)
+    })
+    this.tiposItem = [
+        { name: 'Repuesto', key: 1},
+        { name: 'Insumo', key: 2},
+        { name: 'Herramienta', key: 3},
+    ];
+    this.fb_item = new FormGroup({
+      idTipoItem: new FormControl<number | null>(null, [Validators.required]),
+      idMagnitud: new FormControl<number | null>(null),
+      nombre: new FormControl<string | null>(null, [Validators.required]),
+      descripcion: new FormControl<string | null>(null),
+      valorUnitario: new FormControl<number | null>(null, [Validators.required]),
+      stockMin: new FormControl<number | null>(null, [Validators.required]),
+      stockIdeal: new FormControl<number | null>(null, [Validators.required]),
+    });    
+    this.fb_item.get('idTipoItem')?.valueChanges.subscribe((value) => {
+      this.resetForm();
+      this.isToolRequired(value);
+    })
   }
   showMovimientosItem(codigo: number) {
     this.visibleMovimientos = true;
@@ -144,6 +179,58 @@ export class InventarioComponent implements OnInit {
   filterGlobal(event: Event, dt: any) {
     const inputValue = (event.target as HTMLInputElement)?.value || '';
     dt.filterGlobal(inputValue, 'contains');
+  }
+  openDialogAddItem(){
+    this.visibleCrearItem = true;
+    this.isntTool = true;
+  }
+  closeDialogCrearItem(){
+    this.visibleCrearItem = false;
+    this.fb_item.reset();
+  }
+  isToolRequired(value:any) {
+    if(!value) return;
+    const tipoItem = value.key || null;
+    this.isntTool = tipoItem == 1 || tipoItem == 2; // Repuesto o Insumo    
+    if (!this.isntTool) {
+      this.fb_item.get('stockMin')?.setValue(0);
+      this.fb_item.get('stockIdeal')?.setValue(0);
+    }
+  }
+  resetForm(){
+    this.fb_item.get('idMagnitud')?.setValue(null);
+    this.fb_item.get('nombre')?.setValue(null);
+    this.fb_item.get('descripcion')?.setValue(null);
+    this.fb_item.get('valorUnitario')?.setValue(null);
+    this.fb_item.get('stockMin')?.setValue(null);
+    this.fb_item.get('stockIdeal')?.setValue(null);
+  }
+  crearteItem(){
+    const item: CreateUpdateItemRequest = {
+      idItem: 0,
+      idTipoItem: this.fb_item.value.idTipoItem.key,
+      idMagnitud: this.fb_item.value.idMagnitud,
+      nombre: this.fb_item.value.nombre,
+      descripcion: this.fb_item.value.descripcion,
+      valorUnitario: this.fb_item.value.valorUnitario,
+      stockMin: this.fb_item.value.stockMin || 0,
+      stockIdeal: this.fb_item.value.stockIdeal || 0, 
+    }
+
+    this.itemService.createUpdateItem(item).subscribe({
+      next: (response) => {
+        console.log('Item creado/actualizado:', response);
+        this.visibleCrearItem = false;
+        this.fb_item.reset();
+        this.getItems();
+      }, 
+      error: (err) => {
+        console.error('Error al crear item:', err);
+        this.visibleCrearItem = false;
+        this.fb_item.reset();
+      }
+    });
+    
   }
   exportCSV() {
     if (!this.dt5) {
