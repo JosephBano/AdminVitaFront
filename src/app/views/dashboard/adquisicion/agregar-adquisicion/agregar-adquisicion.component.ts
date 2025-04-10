@@ -104,7 +104,6 @@ export class AgregarAdquisicionComponent implements OnInit {
       this.loadingEdit = true;
       this.compraService.getCompraDetallada(id).subscribe({
         next: (response) => {
-          console.log('Compra detallada:', response);
           this.fb_adquisicion.patchValue({
             codigo: response.numeroFactura,
             doc_proveedor: response.documento,
