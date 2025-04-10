@@ -3,8 +3,7 @@ export interface Column {
     header?: string;
     sort?: boolean;
     type?: string;
-  }
-
+}
 export const HeadersTables = {
   OrdenesTrabajoList: [
     { field: 'codigo', header: 'Código', sort: false, type: '' },
@@ -126,4 +125,18 @@ export const HeadersTables = {
     { field: 'stock', header: 'Stock'},
     { field: 'nombreMagnitud', header: 'Magnitud'}
   ]
+}
+export const HeadersTablesPersons = {
+  PersonasList: [
+    { field: 'codigo', header: 'Código'},
+    { field: 'nombre', header: 'Nombre Completo'},
+    { field: 'razonSocial', header: 'Razón Social'},
+    { field: 'tipoPersona', header: 'Persona'},
+    { field: 'documento', header: 'Documento'},
+    { field: 'email', header: 'Email'},
+    { field: 'celular', header: 'Celular'},
+    { field: 'telefono', header: 'Teléfono'},
+    { field: 'direccion', header: 'Dirección'},
+    { field: 'actions', header: 'Acciones'}
+  ],
 }

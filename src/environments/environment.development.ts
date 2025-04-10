@@ -22,6 +22,7 @@ export const environment = {
     conversionUnidades: '/ConversionUnidades',
     cliente: '/Clientes',
     reporte: '/Reportes',
+    usuarios: '/Usuarios',
     ordenMecanico: '/OrdenMecanico',
 };
 
