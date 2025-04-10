@@ -1,0 +1,95 @@
+<app-themed-layout [isDarkMode]="isDarkModeEnabled">
+    <!-- Sección del PickList para mecánicos -->
+    <div class="card mb-3">
+        <h5>Filtrar por Mecánicos</h5>
+        <p-pickList 
+            [source]="todosMecanicos" 
+            [target]="mecanicosFiltrados" 
+            sourceHeader="Mecánicos Disponibles" 
+            targetHeader="Mecánicos Seleccionados"
+            [responsive]="true"
+            filterBy="nombre"
+            (onMoveToTarget)="onMecanicosChange($event)"
+            (onMoveToSource)="onMecanicosChange($event)"
+            (onMoveAllToTarget)="onMecanicosChange($event)"
+            (onMoveAllToSource)="onMecanicosChange($event)"
+            [sourceStyle]="{'height':'250px'}" 
+            [targetStyle]="{'height':'250px'}">
+            <ng-template let-mecanico pTemplate="item">
+                <div>{{mecanico.nombre}} {{mecanico.apellidos}}</div>
+            </ng-template>
+        </p-pickList>
+    </div>
+
+    <!-- Tabla de Órdenes de Trabajo -->
+    <div class="card" style="margin-bottom: 0;">
+        <p-table 
+            #dt1
+            [columns]="cols" 
+            [value]="ordenes" 
+            [paginator]="true"
+            [rows]="5"
+            [loading]="loading"
+            [tableStyle]="{ 'min-width': '50rem' }"
+            [rowsPerPageOptions]="[5, 10, 20]"
+            stripedRows
+        >
+            <ng-template pTemplate="header" let-columns>
+                <tr>
+                    <th [class]="{'min-width:15rem':col.sort}" [pSortableColumn]="col.field" *ngFor="let col of columns">
+                        <div class="flex items-center">
+                            {{ col.header }}
+                            <p-sortIcon *ngIf="col.sort" [field]="col.field"></p-sortIcon>
+                            <p-columnFilter [type]="col.type" *ngIf="col.sort === true" [field]="col.field" display="menu" />
+    
+                            <p-columnFilter field="estado" *ngIf="col.field === 'estado'" matchMode="equals" display="menu">
+                                <ng-template pTemplate="filter" let-filter="filterCallback">
+                                    <p-dropdown [(ngModel)]="selectedEstadoFilter" [options]="estado" (onChange)="filter(selectedEstadoFilter)" placeholder="Seleccione un estado" optionLabel="name" optionValue="code">
+                                        <ng-template let-option pTemplate="item">
+                                            <p-tag [value]="option.name" [severity]="getSeverityEstado(option.code)"/>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </ng-template>
+                            </p-columnFilter>
+    
+                            <p-columnFilter field="prioridad" *ngIf="col.field === 'prioridad'" matchMode="equals" display="menu">
+                                <ng-template pTemplate="filter" let-filter="filterCallback">
+                                    <p-dropdown [(ngModel)]="selectedPrioridadFilter" [options]="prioridad" (onChange)="filter(selectedPrioridadFilter)" placeholder="Seleccione una prioridad" optionLabel="name" optionValue="code">
+                                        <ng-template let-option pTemplate="item">
+                                            <p-tag [value]="option.name" [severity]="getSeverityPrioridad(option.code)"/>
+                                        </ng-template>
+                                    </p-dropdown>
+                                </ng-template>
+                            </p-columnFilter>
+                        </div>
+                    </th>
+                </tr>
+            </ng-template>
+            
+            <ng-template pTemplate="body" let-rowData let-columns="columns">
+                <tr>
+                    <td *ngFor="let col of columns">
+                        <ng-container *ngIf="col.field === 'estado' || col.field === 'prioridad'; else normalData">
+                            <p-tag *ngIf="col.field === 'estado'" [value]="GetEstado(rowData[col.field])" [severity]="getSeverityEstado(rowData[col.field])"></p-tag>
+                            <p-tag *ngIf="col.field === 'prioridad'" [value]="GetPrioridad(rowData[col.field])" [severity]="getSeverityPrioridad(rowData[col.field])"></p-tag>
+                        </ng-container>
+    
+                        <ng-template #normalData>
+                            {{ rowData[col.field] }}
+                        </ng-template>
+                        <div *ngIf="col.field =='actions'" class="flex justify-start w-full gap-2"> 
+                            <p-button icon="pi pi-pen-to-square"  />
+                            <p-button icon="pi pi-expand" />
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+            
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td [attr.colspan]="cols.length" class="text-center">No se encontraron órdenes de trabajo.</td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </div>
+</app-themed-layout>

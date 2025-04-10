@@ -1,0 +1,258 @@
+<div class="dashboard-container">
+    <!-- Cuadrante 1: Reporte de Órdenes de Trabajo -->
+    <div class="dashboard-quadrant">
+        <div class="quadrant-header">
+          <h3>Reporte de Órdenes de Trabajo por Semana</h3>
+        </div>
+        <div class="quadrant-content">
+          <!-- Filtro de fechas -->
+          <div class="filter-container">
+            <div class="date-filter">
+              <label class="date-label">Seleccione cualquier día para ver la semana</label>
+              <div class="input-group">
+                <p-calendar [(ngModel)]="fechaSeleccionada" 
+                          [showIcon]="true" 
+                          dateFormat="dd/mm/yy" 
+                          [showWeek]="true"
+                          styleClass="w-100"
+                          placeholder="Seleccione una fecha" 
+                          (onSelect)="seleccionarSemana()"></p-calendar>
+              </div>
+              <div class="week-info" *ngIf="fechaInicio && fechaFin">
+                Semana: {{ fechaInicio | date:'dd/MM/yyyy' }} - {{ fechaFin | date:'dd/MM/yyyy' }}
+              </div>
+            </div>
+            <div class="actions">
+              <p-button label="Aplicar" 
+                      icon="pi pi-filter" 
+                      styleClass="p-button-sm"
+                      (onClick)="aplicarFiltro()" 
+                      [disabled]="!fechaSeleccionada"></p-button>
+              <p-button label="Limpiar" 
+                      icon="pi pi-times" 
+                      styleClass="p-button-outlined p-button-sm" 
+                      (onClick)="limpiarFiltros()"></p-button>
+            </div>
+          </div>
+          
+          <!-- Resumen de totales -->
+          <div class="summary-cards">
+            <div class="summary-card summary-card-active">
+              <div class="summary-title">Órdenes Activas</div>
+              <div class="summary-value">{{ reporteData.totalOrdenesActivo }}</div>
+            </div>
+            <div class="summary-card summary-card-completed">
+              <div class="summary-title">Órdenes Finalizadas</div>
+              <div class="summary-value">{{ reporteData.totalOrdenesFinalizado }}</div>
+            </div>
+            <div class="summary-card summary-card-fse">
+              <div class="summary-title">Órdenes FSE</div>
+              <div class="summary-value">{{ reporteData.totalOrdenesFSE }}</div>
+            </div>
+            <div class="summary-card summary-card-canceled">
+              <div class="summary-title">Órdenes Anuladas</div>
+              <div class="summary-value">{{ reporteData.totalOrdenesAnuladas }}</div>
+            </div>
+          </div>
+          
+          <!-- Gráfica -->
+          <div class="chart-container" *ngIf="!loading">
+            <p-chart type="line" [data]="OrdenesData" [options]="OrdenesOptions" height="250px" width="100%" ></p-chart>
+          </div>
+          <div class="spinner-container" *ngIf="loading">
+            <p-progressSpinner></p-progressSpinner>
+          </div>
+        </div>
+      </div>
+    <!-- Cuadrante 2: Reporte de Movimientos de Inventario -->
+<div class="dashboard-quadrant">
+    <div class="quadrant-header">
+      <h3>Reporte de Movimientos de Inventario</h3>
+    </div>
+    <div class="quadrant-content">
+      <!-- Filtro de fechas para Kardex -->
+      <div class="filter-container">
+        <div class="date-filter">
+          <label class="date-label">Rango de fechas para movimientos</label>
+          <div class="input-group flex align-items-center">
+            <p-calendar [(ngModel)]="kardexFechaInicio" 
+                      [showIcon]="true" 
+                      dateFormat="dd/mm/yy"
+                      placeholder="Fecha inicio" 
+                      class="mr-2"></p-calendar>
+            <span class="mx-1">-</span>
+            <p-calendar [(ngModel)]="kardexFechaFin" 
+                      [showIcon]="true" 
+                      dateFormat="dd/mm/yy"
+                      placeholder="Fecha fin"
+                      class="ml-2"></p-calendar>
+          </div>
+          <div class="week-info" *ngIf="kardexFechaInicio && kardexFechaFin">
+            Movimientos: {{ kardexFechaInicio | date:'dd/MM/yyyy' }} - {{ kardexFechaFin | date:'dd/MM/yyyy' }}
+          </div>
+        </div>
+        <div class="actions">
+          <p-button label="Aplicar" 
+                  icon="pi pi-filter" 
+                  styleClass="p-button-sm"
+                  (onClick)="aplicarFiltroKardex()" 
+                  [disabled]="!kardexFechaInicio || !kardexFechaFin"></p-button>
+          <p-button label="Limpiar" 
+                  icon="pi pi-times" 
+                  styleClass="p-button-outlined p-button-sm" 
+                  (onClick)="limpiarFiltrosKardex()"></p-button>
+        </div>
+      </div>
+      
+      <!-- Gráfica de Kardex -->
+      <div class="chart-container kardex-chart" *ngIf="!loading">
+        <p-chart type="polarArea" 
+               [data]="KardexData" 
+               [options]="KardexOptions" 
+               height="350px" 
+               width="100%"></p-chart>
+      </div>
+      <div class="spinner-container" *ngIf="loading">
+        <p-progressSpinner></p-progressSpinner>
+      </div>
+    </div>
+  </div>
+
+    <!-- Cuadrante 3: Disponible para otra gráfica -->
+    <div class="dashboard-quadrant">
+        <div class="quadrant-header">
+          <h3>Unidades de Trabajo por Mecánico</h3>
+        </div>
+        <div class="quadrant-content">
+          <div style="width: 100%; height: 100%; background-color: #f9f9f9; display: flex; flex-direction: column; justify-content: flex-start; align-items: stretch; border-radius: var(--border-radius); padding: 1rem;">
+            <div class="chart-header">
+                <div class="chart-column mechanic-name">Mecánico</div>
+                <div class="chart-column bar-column">Progreso</div>
+                <div class="chart-column percentage-column">Cantidad</div>
+              </div>
+            <div class="spinner-container" *ngIf="loadingMechanics">
+              <p-progressSpinner></p-progressSpinner>
+            </div>
+            
+            <div class="chart-row" *ngFor="let mechanic of mechanics">
+                <!-- Columna para el nombre -->
+                <div class="chart-column mechanic-name">
+                  {{mechanic.nombre}} {{mechanic.apellidos}}
+                </div>
+                
+                <!-- Columna para la barra de progreso -->
+                <div class="chart-column bar-column">
+                  <div class="bar-container">
+                    <div class="bar" [style.width.%]="getBarWidth(mechanic)"></div>
+                  </div>
+                </div>
+                
+                <!-- Columna para el porcentaje -->
+                <div class="chart-column percentage-column">
+                  {{mechanic.totalUnidadesTiempo}} - {{getPercentage(mechanic)}}
+                </div>
+              </div>
+          </div>
+        </div>
+      </div>
+ <!-- Cuadrante 4: Dividido en 2 secciones horizontales -->
+<div class="dashboard-quadrant">
+  <div class="quadrant-content quadrant-split">
+    <!-- Primera sección horizontal del cuadrante 4 -->
+    <div class="split-section">
+      <div class="quadrant-header">
+        <h3 class="section-title">Artículos más adquiridos y utilizados</h3>
+        <div class="toggle-buttons compact">
+          <p-button label="Ingresos" 
+                    styleClass="p-button-sm toggle-btn" 
+                    [outlined]="activeItemsTab !== 'ingresos'"
+                    (onClick)="activeItemsTab = 'ingresos'"></p-button>
+          <p-button label="Egresos" 
+                    styleClass="p-button-sm toggle-btn" 
+                    [outlined]="activeItemsTab !== 'egresos'"
+                    (onClick)="activeItemsTab = 'egresos'"></p-button>
+        </div>
+      </div>
+      <div class="section-content">
+        <div class="data-table-container">
+          <div class="spinner-container" *ngIf="loadingTopItems">
+            <p-progressSpinner [style]="{width: '30px', height: '30px'}"></p-progressSpinner>
+          </div>
+          
+          <!-- Tabla de TopItems -->
+          <table class="data-table" *ngIf="!loadingTopItems">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Descripción</th>
+                <th>Stock</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of getActiveTopItems()">
+                <td>{{item.codigo}}</td>
+                <td class="item-name">{{item.nombre}}</td>
+                <td class="text-right">{{item.stock}}</td>
+              </tr>
+              <tr *ngIf="getActiveTopItems().length === 0">
+                <td colspan="3" class="no-data">No hay datos disponibles</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Segunda sección horizontal del cuadrante 4 -->
+    <div class="split-section">
+      <div class="quadrant-header">
+        <h3>Información de vehículos</h3>
+      </div>
+      <div class="section-content">
+        <div class="data-table-container">
+          <!-- Spinner mientras carga -->
+          <div class="spinner-container" *ngIf="loadingVehiculos">
+            <p-progressSpinner [style]="{width: '30px', height: '30px'}"></p-progressSpinner>
+          </div>
+          
+          <!-- Tabla de vehículos -->
+          <table class="data-table" *ngIf="!loadingVehiculos">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Placa</th>
+                <th>Último año matriculación</th>
+                <th>Último año RTV</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let vehiculo of paginatedVehiculos">
+                <td>{{vehiculo.numeroVehiculo}}</td>
+                <td>{{vehiculo.placa}}</td>
+                <td class="text-center">{{vehiculo.ultimoAnioMatriculacion || 'N/A'}}</td>
+                <td class="text-center">{{vehiculo.ultimoAnioRTV || 'N/A'}}</td>
+                <td>
+                  <span [ngClass]="getEstadoClass(vehiculo.estado)">
+                    {{getEstadoTexto(vehiculo.estado)}}
+                  </span>
+                </td>
+              </tr>
+              <tr *ngIf="vehiculos.length === 0">
+                <td colspan="5" class="no-data">No hay vehículos disponibles</td>
+              </tr>
+            </tbody>
+          </table>
+      
+          <!-- Paginador -->
+          <p-paginator *ngIf="!loadingVehiculos && vehiculos.length > vehiculosRows"
+                      [rows]="vehiculosRows"
+                      [totalRecords]="vehiculos.length"
+                      (onPageChange)="onPageChange($event)"
+                      [rowsPerPageOptions]="[3, 5, 10]"></p-paginator>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>

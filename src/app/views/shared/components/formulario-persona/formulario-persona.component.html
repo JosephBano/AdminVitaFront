@@ -1,0 +1,127 @@
+<form [formGroup]="form_persona">
+    <div class="w-full">
+        <div class="flex gap-2 mt-2">
+            <p-floatlabel variant="on" class="w-full">
+                <input 
+                pInputText 
+                formControlName="documento" 
+                class="w-full" 
+                [ngClass]="{'ng-invalid ng-dirty': form_persona.get('documento')?.invalid && form_persona.get('documento')?.touched}">
+                <label>CI/RUC/Pasaporte*</label>
+            </p-floatlabel>
+            <p-button [icon]="iconValidarDocumento" aria-label="Validar documento" [disabled]="form_persona.get('documento')?.invalid" (onClick)="validarDocumento()">
+                <p-progress-spinner *ngIf="iconValidarDocumento === ''" ariaLabel="loading" [style]="{ width: '15px', height: '15px' }"/>
+            </p-button>
+        </div>
+        <div *ngIf="form_persona.get('documento')?.invalid && form_persona.get('documento')?.touched" class="text-red-500 text-sm mt-2">
+            <span *ngIf="form_persona.get('documento')?.errors?.['required']">El documento es obligatorio</span>
+            <span *ngIf="form_persona.get('documento')?.errors?.['minlength']">Debe tener al menos 10 caracteres.</span>
+            <span *ngIf="form_persona.get('documento')?.errors?.['maxlength']">Debe tener máximo 16 caracteres.</span>
+        </div>
+        <ng-container *ngIf="validarExistePersona">
+            <div class="mb-2 mt-4">
+                <label>Tipo Persona</label>
+                <div class="flex gap-4">
+                    <div *ngFor="let tipo of tipoPersona" class="field-checkbox">
+                        <p-radiobutton [inputId]="tipo.key" [value]="tipo" formControlName="tipoPersona" />
+                        <label [for]="tipo.key" class="ml-2">{{ tipo.name }}</label>
+                    </div>
+                </div>
+            </div>
+            <p-divider/>
+            <div class="flex flex-col gap-2">
+                <p-floatlabel variant="on" class="w-full" *ngIf="form_persona.get('tipoPersona')?.value?.key !== null">
+                    <input 
+                    pInputText 
+                    formControlName="nombre" 
+                    class="w-full" 
+                    [ngClass]="{'ng-invalid ng-dirty': form_persona.get('nombre')?.invalid && form_persona.get('nombre')?.touched}">
+                    <label>{{form_persona.get('tipoPersona')?.value?.key === 'E' ? 'Institución':'Nombres'}}</label>
+                </p-floatlabel>
+                <p-floatlabel variant="on" class="w-full" *ngIf="form_persona.get('tipoPersona')?.value?.key !== 'E' && form_persona.get('tipoPersona')?.value?.key !== null">
+                    <input 
+                    pInputText 
+                    formControlName="apellidos" 
+                    class="w-full" 
+                    [ngClass]="{'ng-invalid ng-dirty': form_persona.get('apellidos')?.invalid && form_persona.get('apellidos')?.touched}">
+                    <label>Apellido</label>
+                </p-floatlabel>
+                <p-floatlabel variant="on" class="w-full" *ngIf="form_persona.get('tipoPersona')?.value?.key === 'E'">
+                    <input 
+                    pInputText 
+                    formControlName="razonSocial" 
+                    class="w-full" 
+                    [ngClass]="{'ng-invalid ng-dirty': form_persona.get('razonSocial')?.invalid && form_persona.get('razonSocial')?.touched}">
+                    <label>Razón Social</label>
+                </p-floatlabel>
+                <p-floatlabel variant="on" class="w-full" *ngIf="form_persona.get('tipoPersona')?.value?.key !== null">
+                    <input 
+                    pInputText 
+                    formControlName="email" 
+                    class="w-full" 
+                    [ngClass]="{'ng-invalid ng-dirty': form_persona.get('email')?.invalid && form_persona.get('email')?.touched}">
+                    <label>Email</label>
+                </p-floatlabel>
+                <p-floatlabel variant="on" class="w-full" *ngIf="form_persona.get('tipoPersona')?.value?.key !== null">
+                    <input 
+                    pInputText 
+                    formControlName="celular" 
+                    class="w-full" 
+                    [ngClass]="{'ng-invalid ng-dirty': form_persona.get('celular')?.invalid && form_persona.get('celular')?.touched}">
+                    <label>Celular</label>
+                </p-floatlabel>
+                <p-floatlabel variant="on" class="w-full" *ngIf="form_persona.get('tipoPersona')?.value?.key !== null">
+                    <input 
+                    pInputText 
+                    formControlName="telefono" 
+                    class="w-full" 
+                    [ngClass]="{'ng-invalid ng-dirty': form_persona.get('telefono')?.invalid && form_persona.get('telefono')?.touched}">
+                    <label>Teléfono</label>
+                </p-floatlabel>
+                <p-floatlabel variant="on" class="w-full" *ngIf="form_persona.get('tipoPersona')?.value?.key !== null">
+                    <input 
+                    pInputText 
+                    formControlName="direccion" 
+                    class="w-full" 
+                    [ngClass]="{'ng-invalid ng-dirty': form_persona.get('direccion')?.invalid && form_persona.get('direccion')?.touched}">
+                    <label>Dirección</label>
+                </p-floatlabel>
+                <p-floatlabel variant="on" class="w-full" *ngIf="form_persona.get('tipoPersona')?.value?.key !== 'E' && form_persona.get('tipoPersona')?.value?.key !== null">
+                    <p-datepicker formControlName="fecha_nacimiento" dateFormat="dd/mm/yy" showIcon iconDisplay="input" />
+                    <label>Cumpleaños</label>
+                </p-floatlabel>
+                <div class="my-2" *ngIf="form_persona.get('tipoPersona')?.value?.key !== 'E' && form_persona.get('tipoPersona')?.value?.key !== null">
+                    <label>Género</label>
+                    <div class="flex flex-wrap gap-4">
+                        <div *ngFor="let gender of generosPersona" class="field-checkbox">
+                            <p-radiobutton [inputId]="gender.key" [value]="gender" formControlName="genero" />
+                            <label [for]="gender.key" class="ml-2">{{ gender.name }}</label>
+                        </div>
+                    </div>
+                </div>
+                <p-floatlabel variant="on" class="w-full" *ngIf="form_persona.get('tipoPersona')?.value?.key === 'E'">
+                    <input 
+                    pInputText 
+                    formControlName="representanteLegal" 
+                    class="w-full" 
+                    [ngClass]="{'ng-invalid ng-dirty': form_persona.get('representanteLegal')?.invalid && form_persona.get('representanteLegal')?.touched}">
+                    <label>Representante Legal</label>
+                </p-floatlabel>
+                <div class="my-2" *ngIf="form_persona.get('tipoPersona')?.value?.key === 'E'">
+                    <label>Obligada a Contabilidad</label>
+                    <div class="flex flex-wrap gap-4">
+                        <div *ngFor="let bool of booleanRadio" class="field-checkbox">
+                            <p-radiobutton [inputId]="bool.key" [value]="bool" formControlName="obligadaContabilidad" />
+                            <label [for]="bool.key" class="ml-2">{{ bool.name }}</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-between max-h-12 gap-4">
+                    <p-button pButton fluid label="Cancelar" severity="secondary" (onClick)="closeDialog()"/>
+                    <p-button type="submit" pButton fluid label="Crear" [disabled]="form_persona.invalid" (click)="crearPersonaHandler()"/>
+                </div>
+            </div>
+        </ng-container>
+        <p-button *ngIf="!validarExistePersona" class="mt-4 max-h-12" pButton fluid label="Cancelar" severity="secondary" (onClick)="closeDialog()"/>
+    </div>
+</form>

@@ -1,0 +1,340 @@
+<div class="card" style="margin-bottom: 0;"> <!--CONTENIDO PRINCIPAL-->
+    <p-table 
+    #dt5
+    [columns]="cols" 
+    [value]="Items" 
+    [paginator]="true"
+    [rows]="5"
+    [loading]="loading"
+    [tableStyle]="{ 'min-width': '50rem' }"
+    [rowsPerPageOptions]="[5, 10, 20]"
+    stripedRows
+    >
+    <ng-template #caption>
+        <div class="flex flex-col-reverse sm:flex-row sm:justify-between gap-2 w-full">
+            <p-button label="Limpiar" severity="secondary" icon="pi pi-filter-slash" (click)="clear(dt5)" />
+            <p-iconfield iconPosition="left" class="mr-1">
+                <p-inputicon>
+                    <i class="pi pi-search"></i>
+                </p-inputicon>
+                <input pInputText type="text" class="w-full" (input)="filterGlobal($event, dt5)" placeholder="Busca por una palabra clave" />
+            </p-iconfield>
+            <div class="flex gap-2 justify-end">
+                <p-button (click)="OnExportButton()" severity="secondary" icon="pi pi-file-export" label="Exportar"></p-button>
+                <p-button (click)="openDialogAddItem()" class="w-full sm:min-w-48" fluid icon="pi pi-plus" label="Agregar Item"></p-button>
+            </div>
+        </div>
+    </ng-template>
+    <ng-template #header let-columns>
+        <tr>
+            <th [class]="{'min-width:15rem':col.sort}" [pSortableColumn]="col.field" *ngFor="let col of columns">
+                <div class="flex items-center w-full">
+                    {{ col.header }}
+                    <p-columnFilter [type]="col.type" *ngIf="col.sort === true" [field]="col.field" display="menu" />
+                </div>
+            </th>
+        </tr>
+        
+    </ng-template>
+    <ng-template #body let-rowData let-columns="columns">
+        <tr>
+            <td  *ngFor="let col of columns">
+                <ng-container 
+                *ngIf="col.field === 'stock' 
+                || col.field === 'stockMin' 
+                || col.field === 'stockIdeal'
+                || col.field === 'magnitud' 
+                || col.field === 'valorUnitario';
+                else normalData">
+                    <p *ngIf="col.field === 'stock'">{{rowData[col.field]}}</p>
+                    <p *ngIf="col.field === 'stockMin'">{{rowData[col.field]}}</p>
+                    <p *ngIf="col.field === 'stockIdeal'">{{rowData[col.field]}}</p>
+                    <p *ngIf="col.field === 'magnitud'">{{rowData['nombreMagnitud']}}</p>
+                    <p *ngIf="col.field === 'valorUnitario'">{{rowData[col.field] | currency:'USD':'symbol-narrow'}}</p>
+                </ng-container>
+                <ng-template #normalData>
+                    <p>{{ rowData[col.field] }}</p>
+                    <div *ngIf="col.field =='actions'" class="flex justify-center w-full gap-2"> 
+                        <p-button icon="pi pi-arrow-right-arrow-left" [rounded]="true" [text]="true" (onClick)="showMovimientosItem(rowData['idItem'])" [raised]="true" severity="secondary" />
+                    </div>
+                </ng-template>
+            </td>
+        </tr>
+    </ng-template>
+    </p-table>
+</div>
+
+<p-dialog 
+[modal]="true" 
+[(visible)]="visibleMovimientos" 
+[breakpoints]="{ '1199px': '75vw', '575px': '90vw' }" 
+[style]="{ width: '75vw' }"
+[closeOnEscape]="false"> 
+    <ng-template pTemplate="header">
+        <div class="text-xl font-bold" style="color: #444;">
+            Movimiento de Inventario: {{ itemCodigo || 'Sin código' }} - {{ itemNombre || 'Sin nombre' }}
+        </div>
+    </ng-template>
+    <div class="m-8" *ngIf="loadingMovimientosDialog">
+        <app-skeleton-simple/>
+    </div>
+    <div class="p-3" *ngIf="!loadingMovimientosDialog">
+        <!-- Información del ítem -->
+        <div class="bg-white rounded-lg">
+            <div *ngIf="!movimientos || movimientos.length === 0" class="text-center my-4">
+                <p class="text-gray-500">No hay datos de movimientos disponibles.</p>
+            </div>
+            
+            <!-- Selector de mes con calendario - VERSIÓN COMPACTA -->
+            <div class="filter-container compact-filter" *ngIf="movimientos && movimientos.length > 0">
+                <div class="filter-content">
+                    <!-- Filtro de fecha -->
+                    <div class="date-control">
+                        <label class="date-label">Fecha:</label>
+                        <div class="date-input-container">
+                            <p-calendar [(ngModel)]="fechaSeleccionada"
+                                    [showIcon]="true"
+                                    dateFormat="dd/mm/yy"
+                                    styleClass="compact-calendar"
+                                    placeholder="Seleccionar"
+                                    (onSelect)="seleccionarMes()"></p-calendar>
+                            <span class="month-info" *ngIf="fechaInicio && fechaFin">
+                                {{ fechaInicio | date:'dd/MM/yy' }} - {{ fechaFin | date:'dd/MM/yy' }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- Botones de acción -->
+                    <div class="filter-actions">
+                        <p-button label="Aplicar"
+                                icon="pi pi-filter"
+                                styleClass="p-button-sm"
+                                (onClick)="aplicarFiltroMes()"
+                                [disabled]="!fechaSeleccionada"></p-button>
+                        <p-button label="Limpiar"
+                                icon="pi pi-calendar"
+                                styleClass="p-button-outlined p-button-sm"
+                                (onClick)="limpiarFiltroMes()"></p-button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Debug para comprobar datos -->
+            <div *ngIf="!calendarData || calendarData.length === 0" class="text-center my-4">
+                <p class="text-gray-500">No hay datos de calendario para mostrar.</p>
+            </div>
+            
+            <!-- Visualización del heatmap -->
+            <div *ngFor="let monthData of calendarData" class="mb-3 heatmap-month">
+                <h3 class="calendar-header">{{ monthData.month.label | uppercase }}</h3>
+                
+                <!-- Encabezados de días de la semana -->
+                <div class="calendar-weekdays">
+                    <div *ngFor="let day of weekdays" class="weekday">
+                        {{ day }}
+                    </div>
+                </div>
+                
+                <!-- Cuadrícula de días -->
+                <div class="grid grid-cols-7 gap-2">
+                    <!-- Espacios vacíos para ajustar el primer día del mes -->
+                    <div *ngFor="let empty of generateEmptySpaces(monthData.days && monthData.days[0]?.dayOfWeek || 0)" class="w-full">
+                    </div>
+                    
+                    <!-- Días del mes -->
+                    <div
+                    *ngFor="let day of monthData.days"
+                    class="small-day-cell rounded-md flex flex-col items-center justify-center relative"
+                    [style.background-color]="getColor(day.count)"
+                    [pTooltip]="getTooltipContent(day)"
+                    [escape]="false"
+                    tooltipPosition="top"
+                    tooltipStyleClass="custom-tooltip"
+                    (click)="showDayDetail(day)"
+                    >
+                    <div class="day-number">{{ day.day }}</div>
+                    <div *ngIf="day.count > 0" class="day-count">{{ day.count }}</div>
+                        <div *ngIf="day.movimientos && day.movimientos.length > 0" class="movement-indicators">
+                            <span *ngFor="let mov of getMovimientosSummary(day.movimientos)" 
+                                class="movement-dot"
+                                [ngClass]="{
+                                    'ingreso': mov.tipo === 0,
+                                    'egreso': mov.tipo === 1,
+                                    'prestamo': mov.tipo === 2,
+                                    'devuelto': mov.tipo === 3
+                                }">
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Leyenda de colores -->
+            <div class="flex items-center justify-end mt-4">
+                <div>
+                    <span class="text-xs mr-2">Número Movimientos Por Día:</span>
+                </div>
+                <div class="flex items-center mr-4">
+                    <div class="w-4 h-4 mr-1 rounded" style="background-color: #e4f0ff"></div>
+                    <span class="text-xs">0</span>
+                </div>
+                <div class="flex items-center mr-4">
+                    <div class="w-4 h-4 mr-1 rounded" style="background-color: #bdd8ff"></div>
+                    <span class="text-xs">1-2</span>
+                </div>
+                <div class="flex items-center mr-4">
+                    <div class="w-4 h-4 mr-1 rounded" style="background-color: #91baff"></div>
+                    <span class="text-xs">3-5</span>
+                </div>
+                <div class="flex items-center">
+                    <div class="w-4 h-4 mr-1 rounded" style="background-color: #4285f4"></div>
+                    <span class="text-xs">6+</span>
+                </div>
+            </div>
+            
+            <!-- Leyenda de tipos de movimientos -->
+            <div class="flex items-center justify-end mt-2">
+                <div>
+                    <span class="text-xs mr-2">Color Movimientos:</span>
+                </div>
+                <div class="flex items-center mr-4">
+                    <div class="w-4 h-4 mr-1 rounded" style="background-color: #4CAF50"></div>
+                    <span class="text-xs">Ingreso</span>
+                </div>
+                <div class="flex items-center mr-4">
+                    <div class="w-4 h-4 mr-1 rounded" style="background-color: #F44336"></div>
+                    <span class="text-xs">Egreso</span>
+                </div>
+                <div class="flex items-center mr-4">
+                    <div class="w-4 h-4 mr-1 rounded" style="background-color: #FF9800"></div>
+                    <span class="text-xs">Préstamo</span>
+                </div>
+                <div class="flex items-center">
+                    <div class="w-4 h-4 mr-1 rounded" style="background-color: #2196F3"></div>
+                    <span class="text-xs">Devuelto</span>
+                </div>
+            </div>
+            
+            <!-- Detalle de movimientos del día seleccionado -->
+            <div *ngIf="selectedDayMovimientos && selectedDayMovimientos.length > 0" class="mt-4">
+                <h4 class="text-lg font-medium mb-2">Detalle de movimientos: {{ selectedDate | date:'dd/MM/yyyy' }}</h4>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white border">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="py-2 px-3 border-b text-left">Hora</th>
+                                <th class="py-2 px-3 border-b text-left">Tipo</th>
+                                <th class="py-2 px-3 border-b text-right">Cantidad</th>
+                                <th class="py-2 px-3 border-b text-right">Stock resultante</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let mov of selectedDayMovimientos">
+                                <td class="py-2 px-3 border-b">{{ mov.fechaMovimiento | date:'HH:mm' }}</td>
+                                <td class="py-2 px-3 border-b">
+                                    <span [ngClass]="{
+                                        'bg-green-100 text-green-800': mov.movimiento === 0,
+                                        'bg-red-100 text-red-800': mov.movimiento === 1,
+                                        'bg-orange-100 text-orange-800': mov.movimiento === 2,
+                                        'bg-blue-100 text-blue-800': mov.movimiento === 3
+                                    }" class="px-2 py-1 rounded text-xs">
+                                        {{ getTipoMovimiento(mov.movimiento) }}
+                                    </span>
+                                </td>
+                                <td class="py-2 px-3 border-b text-right" [ngClass]="{'text-red-600': mov.cantidad < 0}">
+                                    {{ mov.cantidad }}
+                                </td>
+                                <td class="py-2 px-3 border-b text-right">
+                                    {{ mov.stock }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</p-dialog>
+
+<p-dialog 
+header="Crear Item" 
+[modal]="true" 
+[(visible)]="visibleCrearItem" 
+[breakpoints]="{ '1199px': '70vw', '575px': '95vw' }" 
+[style]="{ width: '30vw' }"
+[closeOnEscape]="false"
+[closable]="false"> 
+    <div class="card mt-0">
+        <form class="flex flex-col gap-2" [formGroup]="fb_item">
+            <label>Tipo de Item*</label>
+            <div class="flex flex-col md:flex-row gap-4">
+                <div *ngFor="let tipo of tiposItem" class="field-checkbox">
+                    <p-radiobutton [inputId]="tipo.key" [value]="tipo" formControlName="idTipoItem" />
+                    <label [for]="tipo.key" class="ml-2">{{ tipo.name }}</label>
+                </div>    
+            </div>
+            <p-divider class="my-0"></p-divider>
+            <p-floatlabel variant="on" class="w-full">
+                <input 
+                    type="text" 
+                    pInputText 
+                    formControlName="nombre" 
+                    class="w-full" 
+                    [ngClass]="{'ng-invalid ng-dirty': fb_item.get('nombre')?.invalid && fb_item.get('nombre')?.touched}">
+                <label>Nombre Item*</label>
+            </p-floatlabel>
+            <p-floatlabel variant="on" class="w-full">
+                <input 
+                    type="text" 
+                    pInputText 
+                    formControlName="descripcion" 
+                    class="w-full">
+                <label>Descripción Item</label>
+            </p-floatlabel>
+            <p-select 
+            *ngIf="this.isntTool"
+            formControlName="idMagnitud" 
+            [options]="magnitudes" 
+            optionValue="idMagnitud" 
+            optionLabel="nombre" 
+            fluid 
+            placeholder="Magnitud" 
+            class="w-full"
+            [showClear]="true" />
+            <p-floatlabel variant="on" class="w-full">
+                <p-inputnumber
+                    [min]="0" 
+                    mode="currency" 
+                    currency="USD" 
+                    formControlName="valorUnitario" 
+                    class="w-full" 
+                    [ngClass]="{'ng-invalid ng-dirty': fb_item.get('valorUnitario')?.invalid && fb_item.get('valorUnitario')?.touched}"/>
+                <label>Valor Unitario*</label>
+            </p-floatlabel>
+            <p-floatlabel variant="on" class="w-full" *ngIf="this.isntTool">
+                <p-inputnumber
+                    mode="decimal" 
+                    [min]="0" 
+                    [maxFractionDigits]="2"
+                    formControlName="stockMin" 
+                    class="w-full" 
+                    [ngClass]="{'ng-invalid ng-dirty': fb_item.get('stockMin')?.invalid && fb_item.get('stockMin')?.touched}"/>
+                <label>StockMínimo*</label>
+            </p-floatlabel>
+            <p-floatlabel variant="on" class="w-full" *ngIf="this.isntTool">
+                <p-inputnumber
+                    mode="decimal" 
+                    [min]="0" 
+                    [maxFractionDigits]="2"
+                    formControlName="stockIdeal"
+                    class="w-full" 
+                    [ngClass]="{'ng-invalid ng-dirty': fb_item.get('stockIdeal')?.invalid && fb_item.get('stockIdeal')?.touched}"/>
+                <label>Stock Ideal*</label>
+            </p-floatlabel>
+        </form>
+        <div class="flex flex-row justify-between mt-4 gap-4 w-full">
+            <p-button label="Cancelar" fluid (click)="closeDialogCrearItem()" class="w-full" severity="secondary" />
+            <p-button label="Crear" fluid (click)="crearteItem()" [disabled]="fb_item.invalid" class="w-full" />
+        </div>
+    </div>
+</p-dialog>
