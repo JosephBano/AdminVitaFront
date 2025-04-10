@@ -23,6 +23,7 @@ export const environment = {
     cliente: '/Clientes',
     reporte: '/Reportes',
     usuarios: '/Usuarios',
+    ordenMecanico: '/OrdenMecanico',
 };
 
 export const ivaCalculo = {

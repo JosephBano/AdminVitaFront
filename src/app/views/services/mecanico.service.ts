@@ -23,4 +23,8 @@ export class MecanicoService {
     const headers = this.auth.getAuthHeaders();
     return this.http.get<ManoDeObra[]>(`${environment.domain}${environment.apiEndpoint}${environment.ordenesTrabajo}/ObtenerManoDeObra/${code}`,{ headers })
   }
+  getMecanicos(): Observable<any[]> {
+    const headers = this.auth.getAuthHeaders();
+    return this.http.get<any[]>(`${this.apiUrl}/GetMecanicos`, { headers });
+  }
 }

@@ -1,85 +1,247 @@
 /* Estilos para Dark Mode */
 :host ::ng-deep .dark-theme {
-    /* Ajustes para la tabla en dark mode */
-    .p-datatable {
-      .p-datatable-thead > tr > th {
-        background-color: #0d182e;
-        color: #f8f9fa;
-        border-color: #383838;
-      }
+  /* Ajuste para todas las tarjetas */
+  .card {
+    background-color: #141f34;
+    color: #f8f9fa;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+  
+  /* Estilos para el PickList */
+  .p-picklist {
+    .p-picklist-header {
+      background-color: #0d182e;
+      color: #f8f9fa;
+      border-color: #383838;
+    }
+    
+    .p-picklist-list-wrapper {
+      background-color: #1a2439;
+      border-color: #383838;
+    }
+    
+    .p-picklist-list {
+      border-color: #383838;
       
-      .p-datatable-tbody > tr {
-        background-color: #1a2439;
+      .p-picklist-item {
         color: #f8f9fa;
-        border-color: #fefefe;
-        
-        &:nth-child(even) {
-          background-color: #242424;
-        }
         
         &:hover {
           background-color: #2a2a2a;
         }
         
-        > td {
-          border-color: #383838;
+        &.p-highlight {
+          background-color: #213458;
+          color: #ffffff;
         }
       }
-      
-      .p-paginator {
-        background-color: #1e1e1e;
-        color: #f8f9fa;
-        border-color: #383838;
-        
-        .p-paginator-element {
-          color: #253858;
-        }
-      }
-      
-      /* Ajustes para filtros y dropdowns */
-      .p-dropdown, .p-inputtext {
+    }
+    
+    .p-picklist-filter-container {
+      .p-inputtext {
         background-color: #2d2d2d;
         color: #f8f9fa;
         border-color: #383838;
+        
+        &::placeholder {
+          color: rgba(248, 249, 250, 0.6);
+        }
       }
       
-      /* Iconos en dark mode */
-      .pi {
+      .p-picklist-filter-icon {
         color: #f8f9fa;
       }
-      
-      /* Asegurar que los tags mantienen sus colores pero son visibles */
-       .p-tag {
-    color: white !important; /* Forzar color de texto blanco para todos los tags */
+    }
     
-    &.p-tag-success { 
-      background-color: #2e7d32; 
-    }
-    &.p-tag-warning { 
-      background-color: #ed6c02; 
-    }
-    &.p-tag-danger { 
-      background-color: #c62828; 
-    }
-    &.p-tag-info { 
-      background-color: #0277bd; 
-    }
-    &.p-tag-secondary { 
-      background-color: #455a64; 
+    .p-picklist-buttons {
+      .p-button {
+        background-color: #213458;
+        border-color: #213458;
+        color: #f8f9fa;
+        
+        &:hover {
+          background-color: #2d4a7a;
+          border-color: #2d4a7a;
+        }
+        
+        .p-button-icon {
+          color: #f8f9fa;
+        }
+      }
     }
   }
-    }
-    
-    /* Ajustes para el panel de filtro */
-    .p-column-filter-overlay {
-      background-color: #1e1e1e;
+
+  /* Ajustes para la tabla en dark mode */
+  .p-datatable {
+    .p-datatable-header {
+      background-color: #0d182e;
       color: #f8f9fa;
       border-color: #383838;
     }
     
-    /* Ajuste para la card contenedora */
-    .card {
-      background-color: #141f34;
+    .p-datatable-thead > tr > th {
+      background-color: #0d182e;
+      color: #f8f9fa;
+      border-color: #383838;
+    }
+    
+    .p-datatable-tbody > tr {
+      background-color: #1a2439;
+      color: #f8f9fa;
+      border-color: #383838;
+      
+      &:nth-child(even) {
+        background-color: #242424;
+      }
+      
+      &:hover {
+        background-color: #2a2a2a;
+      }
+      
+      > td {
+        border-color: #383838;
+      }
+    }
+    
+    .p-datatable-emptymessage td {
+      background-color: #1a2439;
       color: #f8f9fa;
     }
+    
+    .p-paginator {
+      background-color: #1e1e1e;
+      color: #f8f9fa;
+      border-color: #383838;
+      
+      .p-paginator-element {
+        color: #f8f9fa;
+        
+        &:not(.p-highlight):hover {
+          background-color: #2d2d2d;
+        }
+        
+        &.p-highlight {
+          background-color: #213458;
+        }
+      }
+      
+      .p-dropdown {
+        .p-dropdown-label {
+          color: #f8f9fa;
+        }
+      }
+    }
+    
+    /* Ajustes para filtros y dropdowns */
+    .p-dropdown, .p-inputtext {
+      background-color: #2d2d2d;
+      color: #f8f9fa;
+      border-color: #383838;
+    }
+    
+    .p-column-filter-menu-button {
+      color: #f8f9fa;
+      
+      &:hover {
+        background-color: #2d2d2d;
+      }
+    }
+    
+    /* Iconos en dark mode */
+    .pi {
+      color: #f8f9fa;
+    }
+    
+    /* Asegurar que los tags mantienen sus colores pero son visibles */
+    .p-tag {
+      color: white !important; /* Forzar color de texto blanco para todos los tags */
+      font-weight: 500;
+      text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+      
+      &.p-tag-success { 
+        background-color: #2e7d32; 
+      }
+      &.p-tag-warning { 
+        background-color: #ed6c02; 
+      }
+      &.p-tag-danger { 
+        background-color: #c62828; 
+      }
+      &.p-tag-info { 
+        background-color: #0277bd; 
+      }
+      &.p-tag-secondary { 
+        background-color: #455a64; 
+      }
+    }
   }
+  
+  /* Ajustes para el panel de filtro */
+  .p-column-filter-overlay {
+    background-color: #1e1e1e;
+    color: #f8f9fa;
+    border-color: #383838;
+    
+    .p-column-filter-row {
+      border-color: #383838;
+    }
+    
+    .p-dropdown-items {
+      .p-dropdown-item {
+        color: #f8f9fa;
+        
+        &:hover {
+          background-color: #2a2a2a;
+        }
+      }
+    }
+  }
+  
+  /* Ajustes para los botones */
+  .p-button {
+    &.p-button-text, &.p-button-outlined {
+      color: #f8f9fa;
+      
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+      
+      .p-button-icon {
+        color: #f8f9fa;
+      }
+    }
+  }
+  
+  /* Ajustes para mejorar el contraste en dropdowns */
+  .p-dropdown-panel {
+    background-color: #1e1e1e;
+    border-color: #383838;
+    
+    .p-dropdown-items {
+      .p-dropdown-item {
+        color: #f8f9fa;
+        
+        &:hover {
+          background-color: #2a2a2a;
+        }
+        
+        &.p-highlight {
+          background-color: #213458;
+          color: #ffffff;
+        }
+      }
+    }
+  }
+}
+
+/* Ajuste específico para que los encabezados de PickList sean legibles */
+:host ::ng-deep .p-picklist-header {
+  padding: 0.75rem;
+  font-weight: 600;
+}
+
+/* Ajuste específico para h5 dentro de tarjetas en dark mode */
+:host ::ng-deep .dark-theme .card h5 {
+  color: #f8f9fa;
+  margin-bottom: 1rem;
+}
