@@ -9,10 +9,11 @@ import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { Column, HeadersTablesPersons } from '../../../shared/util/tables';
-import { UsuarioService } from '../../../services/models/usuario.service';
+import { UsuarioService } from '../../../services/usuario.service';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { CrearPersonaComponent } from "./crear-persona/crear-persona.component";
+import { SharedService } from '../service/shared.service';
 
 @Component({
   selector: 'app-gestion-personas',
@@ -46,10 +47,14 @@ export class GestionPersonasComponent implements OnInit{
   constructor(
     private usuarioService: UsuarioService,
     private router: Router,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private sharedService: SharedService,
   ) {}
   ngOnInit(): void {
     this.initData();
+    this.sharedService.estado$.subscribe(valor => {
+      this.visibleDialogAdd = valor;
+    });
   }
   initData() {
     this.cols = HeadersTablesPersons.PersonasList;
@@ -70,7 +75,7 @@ export class GestionPersonasComponent implements OnInit{
     }
   }
   showDialogAdd() {
-    this.visibleDialogAdd = true;
+    this.sharedService.cambiarEstado(true);
   }
   showDialogEdit(code:string){
 
