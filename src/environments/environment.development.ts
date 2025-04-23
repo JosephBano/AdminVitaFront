@@ -24,8 +24,6 @@ export const environment = {
     reporte: '/Reportes',
     usuarios: '/Usuarios',
     ordenMecanico: '/OrdenMecanico',
+    impuesto: '/Impuesto'
 };
 
-export const ivaCalculo = {
-    IVA: 0.15
-}

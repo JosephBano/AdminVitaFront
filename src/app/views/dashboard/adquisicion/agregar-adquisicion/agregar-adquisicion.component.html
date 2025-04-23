@@ -126,6 +126,26 @@
                                         />
                                     <label>Valor</label>    
                                 </p-floatlabel>  
+                                <p-dropdown 
+                                    [options]="impuestos"
+                                    [(ngModel)]="impuestoSeleccionado"
+                                    [ngModelOptions]="{standalone: true}"
+                                    optionLabel="nombre"
+                                    placeholder="Seleccionar impuesto"
+                                    [showClear]="false"
+                                    (onChange)="onImpuestoChange($event)"
+                                    styleClass="w-full sm:max-w-64">
+                                    <ng-template pTemplate="selectedItem">
+                                        <div class="flex align-items-center gap-2" *ngIf="impuestoSeleccionado">
+                                        <div>{{ impuestoSeleccionado.nombre }} ({{ impuestoSeleccionado.porcentaje }}%)</div>
+                                        </div>
+                                    </ng-template>
+                                    <ng-template let-impuesto pTemplate="item">
+                                        <div class="flex align-items-center gap-2">
+                                        <div>{{ impuesto.nombre }} ({{ impuesto.porcentaje }}%)</div>
+                                        </div>
+                                    </ng-template>
+                                </p-dropdown>
                             </div>
                             <div class="sm:w-24">
                                 <p-button label="Crear" (onClick)="addDetalleCompra()" severity="success" fluid/>
@@ -137,15 +157,15 @@
                     <div *ngIf="detallesCompra.length === 0" class="flex justify-center w-full">
                         <p> No hay detalles agregados. </p>
                     </div>
-                    <p-table  stripedRows *ngIf="detallesCompra.length !== 0" min="0" [columns]="detalleCols" [value]="detallesCompra" >
-                        <ng-template #header let-columns>
+                    <p-table stripedRows *ngIf="detallesCompra.length !== 0" [columns]="detalleCols" [value]="detallesCompra">
+                        <ng-template pTemplate="header" let-columns>
                             <tr>
                                 <th *ngFor="let col of columns">
                                     {{ col.header }}
                                 </th>
                             </tr>
                         </ng-template>
-                        <ng-template #body let-rowData let-columns="columns">
+                        <ng-template pTemplate="body" let-rowData let-columns="columns">
                             <tr>
                                 <td *ngFor="let col of columns">
                                     <ng-container *ngIf="col.field === 'codigo'">
@@ -159,12 +179,19 @@
                                     </ng-container>
                                     <ng-container *ngIf="col.field === 'magnitud' || col.field === 'cantidad'">
                                         <div class="text-center">
-                                            {{rowData[col.field] }}
+                                            {{rowData[col.field]}}
                                         </div>
                                     </ng-container>
-                                    <div *ngIf="col.field =='actions'" class="flex justify-center w-full gap-2"> 
-                                        <p-button icon="pi pi-trash" [rounded]="true" [text]="true" (click)="deleteDetalleCompra(rowData['codigo'])" [raised]="true" severity="danger" />
-                                    </div>
+                                    <ng-container *ngIf="col.field === 'actions'">
+                                        <div class="flex justify-center w-full gap-2"> 
+                                            <p-button icon="pi pi-trash" 
+                                                [rounded]="true" 
+                                                [text]="true" 
+                                                (click)="deleteDetalleCompra(rowData)" 
+                                                [raised]="true" 
+                                                severity="danger" />
+                                        </div>
+                                    </ng-container>
                                 </td>
                             </tr>
                         </ng-template>
