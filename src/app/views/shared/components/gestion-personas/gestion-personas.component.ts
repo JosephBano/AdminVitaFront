@@ -9,9 +9,10 @@ import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { Column, HeadersTablesPersons } from '../../../shared/util/tables';
-import { UsuarioService } from '../../../services/usuario.service';
+import { UsuarioService } from '../../../services/models/usuario.service';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
+import { CrearPersonaComponent } from "./crear-persona/crear-persona.component";
 
 @Component({
   selector: 'app-gestion-personas',
@@ -24,8 +25,9 @@ import { ToastrService } from 'ngx-toastr';
     InputIcon,
     TagModule,
     SelectModule,
-    DropdownModule
-    ],
+    DropdownModule,
+    CrearPersonaComponent
+],
   standalone: true,
   templateUrl: './gestion-personas.component.html',
   styleUrl: './gestion-personas.component.scss'
@@ -36,6 +38,10 @@ export class GestionPersonasComponent implements OnInit{
   cols: Column[] = [];
   personas: any[] = [];
   loading: boolean = true;
+
+  visibleDialogAdd: boolean = false;
+  visibleDialogEdit: boolean = false;
+  visibleDialogDisable: boolean = false;
   
   constructor(
     private usuarioService: UsuarioService,
@@ -64,7 +70,7 @@ export class GestionPersonasComponent implements OnInit{
     }
   }
   showDialogAdd() {
-
+    this.visibleDialogAdd = true;
   }
   showDialogEdit(code:string){
 
@@ -74,7 +80,7 @@ export class GestionPersonasComponent implements OnInit{
   }
   getFullName(code:string) {
     const persona = this.personas.find((p) => p.codigo === code);
-    return persona ? `${persona.nombre} ${persona.apellidos}` : persona.nombre;
+    return persona.apellidos ? `${persona.nombre} ${persona.apellidos}` : persona.nombre;
   }
   filterGlobal(event: Event, dt: any) { //filtro para barra de busqueda
     const inputValue = (event.target as HTMLInputElement)?.value || '';
