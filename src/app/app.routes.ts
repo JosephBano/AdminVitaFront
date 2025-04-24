@@ -12,9 +12,11 @@ import { DashboardMecanicaComponent } from './views/dashboard-mecanica/dashboard
 import { UsuarioComponent } from './views/dashboard/persona/usuario.component';
 import { MecanicoComponent } from './views/dashboard/persona/mecanico.component';
 import { ProveedorComponent } from './views/dashboard/persona/proveedor.component';
+import { StartComponent } from './views/start/start.component';
 
 export const appRoutes: Routes = [
-    {   path: '', component: LoginComponent },
+    {   path: '', component: StartComponent },
+    {   path: 'login', component: LoginComponent },
     {   path: 'panel', component: AppLayout,
         children: [
             { path: '', component: HomeComponent},
