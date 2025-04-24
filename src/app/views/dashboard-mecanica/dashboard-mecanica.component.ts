@@ -67,16 +67,8 @@ export class DashboardMecanicaComponent implements OnInit {
     private mecanicoService: MecanicoService,
     private ordenMecanicoService: OrdenMecanicoService,
   ) {}
-  onThemeChanged(isDarkMode: boolean): void {
-    console.log('Dashboard recibió isDarkMode:', isDarkMode);
-    this.isDarkModeEnabled = isDarkMode;
-    localStorage.setItem('dashboard-mecanica-theme', isDarkMode ? 'dark' : 'light');
-  }
+
   ngOnInit(): void {
-    const savedTheme = localStorage.getItem('dashboard-mecanica-theme');
-    if (savedTheme) {
-      this.isDarkModeEnabled = savedTheme === 'dark';
-    }
     this.cols = HeadersTables.OrdenesTrabajoList as TableColumn[];
     this.estado = EstadosOTs;
     this.prioridad = PrioridadesOT;
@@ -97,7 +89,6 @@ export class DashboardMecanicaComponent implements OnInit {
       }
     });
   }
-
   cargarOrdenes(): void {
     this.loading = true;
     const idMecanicosSeleccionados = this.mecanicosFiltrados.length > 0 

@@ -17,48 +17,6 @@ import { StyleClassModule } from 'primeng/styleclass';
             </a>
         </div>
     </div>`,
-    styles: [`
-        /* Estilos para el modo claro (default) */
-        .layout-topbar {
-            background-color: rgb(255, 255, 255);
-            color: #1f2937;
-            border-bottom: 1px solid #e5e7eb;
-            transition: background-color 0.3s, color 0.3s, border-color 0.3s;
-        }
-        
-        /* Estilos específicos para botones en modo claro */
-        .layout-topbar .layout-topbar-action {
-            color: #4B5563;
-            background-color: transparent;
-            border-radius: 6px;
-            padding: 0.5rem;
-            margin: 0 0.2rem;
-            transition: background-color 0.2s, color 0.2s;
-        }
-        
-        .layout-topbar .layout-topbar-action:hover {
-            background-color: rgba(0, 0, 0, 0.05);
-            color: #111827;
-        }
-        
-        .layout-topbar .pi {
-            color: #4B5563;
-            font-size: 1.2rem;
-        }
-        
-        .layout-topbar .layout-topbar-logo span {
-            color: #d4af37;
-            font-weight: 600;
-            margin-left: 0.5rem;
-        }
-        
-        /* Asegura que el botón de toggle sea visible */
-        .layout-topbar .theme-toggle-wrapper button {
-            color: #4B5563;
-            background-color: #f3f4f6;
-            padding: 0.5rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-    `]
+    styles: []
 })
 export class AppTopbarMec {}
