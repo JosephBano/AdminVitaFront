@@ -24,7 +24,8 @@ import { ProgressSpinner } from 'primeng/progressspinner';
     RippleModule, 
     NgIf, 
     NgClass,
-    ProgressSpinner],
+    ProgressSpinner
+  ],
 
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss'

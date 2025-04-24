@@ -1,6 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { ThemedLayoutComponent } from '../../layout/component/app.themed-layout';
 import { ordenTrabajoList } from '../../../domain/response/OrdenTrabajoResponse.model';
 import { OrdenTrabajoService } from '../services/orden-trabajo.service';
 import { EstadosOTs, EstadosVehiculo, genericT, PrioridadesOT } from '../shared/util/genericData';
@@ -13,8 +12,8 @@ import { DropdownModule } from 'primeng/dropdown';
 import { FormsModule } from '@angular/forms';
 import { MecanicoService } from '../services/mecanico.service';
 import { PickListModule } from 'primeng/picklist';
-import { HttpParams } from '@angular/common/http';
 import { OrdenMecanicoService } from '../services/ordenMecanico.service';
+import { AppTopbarMec } from "../../layout/component/app.topbarMec";
 
 interface TableColumn {
   field: string;
@@ -33,7 +32,6 @@ interface Mecanico {
   selector: 'app-dashboard-mecanica',
   standalone: true,
   imports: [
-    ThemedLayoutComponent,  
     CommonModule,
     TableModule,
     ButtonModule,
@@ -41,8 +39,9 @@ interface Mecanico {
     TagModule,
     DropdownModule,
     FormsModule,
-    PickListModule
-  ],
+    PickListModule,
+    AppTopbarMec
+],
   providers: [DatePipe, MecanicoService, OrdenMecanicoService],
   templateUrl: './dashboard-mecanica.component.html',
   styleUrls: ['./dashboard-mecanica.component.scss']
