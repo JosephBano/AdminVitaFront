@@ -14,6 +14,8 @@ import { MecanicoService } from '../services/mecanico.service';
 import { PickListModule } from 'primeng/picklist';
 import { OrdenMecanicoService } from '../services/ordenMecanico.service';
 import { AppTopbarMec } from "../../layout/component/app.topbarMec";
+import { IconField } from 'primeng/iconfield';
+import { InputIcon } from 'primeng/inputicon';
 
 interface TableColumn {
   field: string;
@@ -40,7 +42,9 @@ interface Mecanico {
     DropdownModule,
     FormsModule,
     PickListModule,
-    AppTopbarMec
+    AppTopbarMec,
+    IconField,
+    InputIcon,
 ],
   providers: [DatePipe, MecanicoService, OrdenMecanicoService],
   templateUrl: './dashboard-mecanica.component.html',
