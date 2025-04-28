@@ -74,4 +74,17 @@ export class AdjuntoService {
   getImagenUrl(ruta: string): string {
     return this.getArchivoUrl(ruta);
   }
+  eliminarAdjuntoCompleto(idAdjunto: number): Observable<boolean> {
+    return this.http.delete<boolean>(`${this.apiUrl}/DeleteAdjuntoAndUpdateCompra/${idAdjunto}`);
+  }
+createAdjunto(file: File, idVehiculo?: number): Observable<any> {
+  const headers = this.auth.getAuthHeaders();
+  const formData = new FormData();
+  formData.append('file', file, file.name);
+  if (idVehiculo !== undefined && idVehiculo !== null) {
+    formData.append('idVehiculo', idVehiculo.toString());
+  }
+  headers.delete('Content-Type');
+  return this.http.post<any>(`${this.apiUrl}/CreateAdjunto`, formData, { headers });
+}
 }
