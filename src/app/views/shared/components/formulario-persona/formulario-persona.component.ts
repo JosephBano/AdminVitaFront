@@ -12,9 +12,10 @@ import { IconFieldModule } from 'primeng/iconfield';
 import { DividerModule } from 'primeng/divider';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { DatePicker } from 'primeng/datepicker';
-import { Cliente, Propietario } from '../../../../../domain/request/Cliente.model';
+import { Cliente, Persona, Propietario } from '../../../../../domain/request/Cliente.model';
 import { PropietarioService } from '../../../services/propietario.service';
 import { response } from 'express';
+import { Router } from '@angular/router';
 
 
 @Component({
@@ -37,7 +38,7 @@ import { response } from 'express';
 })
 export class FormularioPersonaComponent implements OnInit {
   @Input() initialData: any;
-  @Input() personaVariante: 'persona' | 'mecanico' | 'proveedor' | 'cliente' | 'usuario' | 'propietario' = 'persona'; // O cualquier lógica que necesites
+  @Input() personaVariante: 'persona' | 'mecanico' | 'proveedor' | 'cliente' | 'user' | 'propietario' = 'persona'; // O cualquier lógica que necesites
   @Output() formSubmitted = new EventEmitter<any>();
   
   form_persona!: FormGroup;
@@ -54,6 +55,7 @@ export class FormularioPersonaComponent implements OnInit {
     private validacionService: ValidacionService,
     private propietarioService: PropietarioService,
     private toastr: ToastrService,
+    private router: Router,
   ) { }
 
   ngOnInit(): void {
@@ -144,6 +146,24 @@ export class FormularioPersonaComponent implements OnInit {
     this.formSubmitted.emit(true);
   }
   crearPersonaHandler(){
+    const tipoDOC = identificarDocumento(this.form_persona.get('documento')?.value)
+    const nuevaPersona: Persona = {
+      nombre: this.form_persona.get('nombre')?.value,
+      tipoPersona: this.form_persona.get('tipoPersona')?.value.key,
+      tipoDocumento: tipoDOC == 'undefined' ? undefined:tipoDOC,
+      documento: this.form_persona.get('documento')?.value,
+      email: this.form_persona.get('email')?.value,
+      celular: this.form_persona.get('celular')?.value,
+      telefono: this.form_persona.get('telefono')?.value,
+      direccion: this.form_persona.get('direccion')?.value,
+      apellidos: this.form_persona.get('apellidos')?.value,
+      fechaNacimiento: parseFecha(this.form_persona.get('fecha_nacimiento')?.value),
+      genero: this.form_persona.get('genero')?.value.key,
+      razonSocial: this.form_persona.get('razonSocial')?.value,
+      representanteLegalNombre: this.form_persona.get('representanteLegal')?.value,
+      obligadaContabilidad: this.form_persona.get('obligadaContabilidad')?.value,
+      esLocal: false,
+    };
     switch(this.personaVariante){
       case 'persona':
         console.log('Persona');
@@ -155,30 +175,14 @@ export class FormularioPersonaComponent implements OnInit {
         console.log('Proveedor');
         break;
       case 'propietario':
-        const tipoDOC = identificarDocumento(this.form_persona.get('documento')?.value)
-        const nuevoCliente: Propietario = {
-          nombre: this.form_persona.get('nombre')?.value,
-          tipoPersona: this.form_persona.get('tipoPersona')?.value.key,
-          tipoDocumento: tipoDOC == 'undefined' ? undefined:tipoDOC,
-          documento: this.form_persona.get('documento')?.value,
-          email: this.form_persona.get('email')?.value,
-          celular: this.form_persona.get('celular')?.value,
-          telefono: this.form_persona.get('telefono')?.value,
-          direccion: this.form_persona.get('direccion')?.value,
-          apellidos: this.form_persona.get('apellidos')?.value,
-          fechaNacimiento: parseFecha(this.form_persona.get('fecha_nacimiento')?.value),
-          genero: this.form_persona.get('genero')?.value.key,
-          razonSocial: this.form_persona.get('razonSocial')?.value,
-          representanteLegalNombre: this.form_persona.get('representanteLegal')?.value,
-          obligadaContabilidad: this.form_persona.get('obligadaContabilidad')?.value,
-          esLocal: false,
-          idVehiculo: this.initialData
-        };
+        nuevaPersona.idVehiculo = this.initialData;
+        nuevaPersona.esLocal = false;
 
-        this.propietarioService.registrarPropietario(nuevoCliente).subscribe({
+        this.propietarioService.registrarPropietario(nuevaPersona).subscribe({
           next: (response) => {
             console.log(response);
             this.toastr.success('Se ha cambiado el propietario exitosamente!', 'Tarea Exitosa')
+            this.router.navigate(['/panel/Vehiculos']);
           },
           error: (err) =>{
             console.log(err);
@@ -186,13 +190,14 @@ export class FormularioPersonaComponent implements OnInit {
           }
         })
         break;
-      case 'usuario':
+      case 'user':
+        nuevaPersona.contrasenia = this.form_persona.get('documento')?.value;
+        nuevaPersona.idRol = 1;
         console.log('Usuario');
         break;
     }
     this.formSubmitted.emit(true);
   };
-
   disabledOptions(){
     this.form_persona.get('tipoPersona')?.disable();
     this.form_persona.get('nombre')?.disable();

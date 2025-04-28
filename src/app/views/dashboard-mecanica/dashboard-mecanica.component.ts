@@ -1,6 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { ThemedLayoutComponent } from '../../layout/component/app.themed-layout';
 import { ordenTrabajoList } from '../../../domain/response/OrdenTrabajoResponse.model';
 import { OrdenTrabajoService } from '../services/orden-trabajo.service';
 import { EstadosOTs, EstadosVehiculo, genericT, PrioridadesOT } from '../shared/util/genericData';
@@ -13,8 +12,10 @@ import { DropdownModule } from 'primeng/dropdown';
 import { FormsModule } from '@angular/forms';
 import { MecanicoService } from '../services/mecanico.service';
 import { PickListModule } from 'primeng/picklist';
-import { HttpParams } from '@angular/common/http';
 import { OrdenMecanicoService } from '../services/ordenMecanico.service';
+import { AppTopbarMec } from "../../layout/component/app.topbarMec";
+import { IconField } from 'primeng/iconfield';
+import { InputIcon } from 'primeng/inputicon';
 
 interface TableColumn {
   field: string;
@@ -33,7 +34,6 @@ interface Mecanico {
   selector: 'app-dashboard-mecanica',
   standalone: true,
   imports: [
-    ThemedLayoutComponent,  
     CommonModule,
     TableModule,
     ButtonModule,
@@ -41,8 +41,11 @@ interface Mecanico {
     TagModule,
     DropdownModule,
     FormsModule,
-    PickListModule
-  ],
+    PickListModule,
+    AppTopbarMec,
+    IconField,
+    InputIcon,
+],
   providers: [DatePipe, MecanicoService, OrdenMecanicoService],
   templateUrl: './dashboard-mecanica.component.html',
   styleUrls: ['./dashboard-mecanica.component.scss']
@@ -68,16 +71,8 @@ export class DashboardMecanicaComponent implements OnInit {
     private mecanicoService: MecanicoService,
     private ordenMecanicoService: OrdenMecanicoService,
   ) {}
-  onThemeChanged(isDarkMode: boolean): void {
-    console.log('Dashboard recibió isDarkMode:', isDarkMode);
-    this.isDarkModeEnabled = isDarkMode;
-    localStorage.setItem('dashboard-mecanica-theme', isDarkMode ? 'dark' : 'light');
-  }
+
   ngOnInit(): void {
-    const savedTheme = localStorage.getItem('dashboard-mecanica-theme');
-    if (savedTheme) {
-      this.isDarkModeEnabled = savedTheme === 'dark';
-    }
     this.cols = HeadersTables.OrdenesTrabajoList as TableColumn[];
     this.estado = EstadosOTs;
     this.prioridad = PrioridadesOT;
@@ -98,7 +93,6 @@ export class DashboardMecanicaComponent implements OnInit {
       }
     });
   }
-
   cargarOrdenes(): void {
     this.loading = true;
     const idMecanicosSeleccionados = this.mecanicosFiltrados.length > 0 

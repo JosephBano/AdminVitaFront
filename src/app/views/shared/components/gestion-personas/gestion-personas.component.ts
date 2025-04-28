@@ -12,6 +12,8 @@ import { Column, HeadersTablesPersons } from '../../../shared/util/tables';
 import { UsuarioService } from '../../../services/usuario.service';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
+import { CrearPersonaComponent } from "./crear-persona/crear-persona.component";
+import { SharedService } from '../service/shared.service';
 
 @Component({
   selector: 'app-gestion-personas',
@@ -24,8 +26,9 @@ import { ToastrService } from 'ngx-toastr';
     InputIcon,
     TagModule,
     SelectModule,
-    DropdownModule
-    ],
+    DropdownModule,
+    CrearPersonaComponent
+],
   standalone: true,
   templateUrl: './gestion-personas.component.html',
   styleUrl: './gestion-personas.component.scss'
@@ -36,14 +39,22 @@ export class GestionPersonasComponent implements OnInit{
   cols: Column[] = [];
   personas: any[] = [];
   loading: boolean = true;
+
+  visibleDialogAdd: boolean = false;
+  visibleDialogEdit: boolean = false;
+  visibleDialogDisable: boolean = false;
   
   constructor(
     private usuarioService: UsuarioService,
     private router: Router,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private sharedService: SharedService,
   ) {}
   ngOnInit(): void {
     this.initData();
+    this.sharedService.estado$.subscribe(valor => {
+      this.visibleDialogAdd = valor;
+    });
   }
   initData() {
     this.cols = HeadersTablesPersons.PersonasList;
@@ -64,7 +75,7 @@ export class GestionPersonasComponent implements OnInit{
     }
   }
   showDialogAdd() {
-
+    this.sharedService.cambiarEstado(true);
   }
   showDialogEdit(code:string){
 
@@ -74,7 +85,7 @@ export class GestionPersonasComponent implements OnInit{
   }
   getFullName(code:string) {
     const persona = this.personas.find((p) => p.codigo === code);
-    return persona ? `${persona.nombre} ${persona.apellidos}` : persona.nombre;
+    return persona.apellidos ? `${persona.nombre} ${persona.apellidos}` : persona.nombre;
   }
   filterGlobal(event: Event, dt: any) { //filtro para barra de busqueda
     const inputValue = (event.target as HTMLInputElement)?.value || '';
