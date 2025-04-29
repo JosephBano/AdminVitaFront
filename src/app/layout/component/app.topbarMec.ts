@@ -17,6 +17,10 @@ import { StyleClassModule } from 'primeng/styleclass';
             </a>
         </div>
     </div>`,
-    styles: []
+    styles: [`
+    svg {
+        height: 40px !important;
+    }
+    `]
 })
 export class AppTopbarMec {}

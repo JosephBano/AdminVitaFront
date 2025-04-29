@@ -14,6 +14,7 @@ import { MecanicoComponent } from './views/dashboard/persona/mecanico.component'
 import { ProveedorComponent } from './views/dashboard/persona/proveedor.component';
 import { StartComponent } from './views/start/start.component';
 import { AgregarOrdenTrabajoMecanicoComponent } from './views/dashboard-mecanica/OrdenTrabajoMecanico/agregar-orden-trabajo-mecanico/agregar-orden-trabajo-mecanico.component';
+import { OrdenTrabajoMecanicaComponent } from './views/dashboard-mecanica/orden-trabajo-mecanica/orden-trabajo-mecanica.component';
 
 export const appRoutes: Routes = [
     {   path: '', component: StartComponent },
@@ -33,12 +34,12 @@ export const appRoutes: Routes = [
             {path: 'persons/Usuario', component: UsuarioComponent},
             {path: 'persons/Mecanico', component: MecanicoComponent},
             {path: 'persons/Proveedor', component: ProveedorComponent},
-
-            {path: 'mecanica', children: [
-                { path: '', component: DashboardMecanicaComponent },
-                { path: 'agregar-orden', component: AgregarOrdenTrabajoMecanicoComponent }
-            ]}
         ]},
+    {path: 'mecanica', children: [
+        { path: '', component: DashboardMecanicaComponent },
+        { path: 'agregar-orden', component: AgregarOrdenTrabajoMecanicoComponent },
+        { path: 'orden-trabajo-:id', component: OrdenTrabajoMecanicaComponent },
+    ]},
     {   path: 'notFound404', component: NotfoundComponent}, 
     {   path: '**', redirectTo: 'notFound404', pathMatch: 'full'},
 ];
