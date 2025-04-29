@@ -16,6 +16,7 @@ import { OrdenMecanicoService } from '../services/ordenMecanico.service';
 import { AppTopbarMec } from "../../layout/component/app.topbarMec";
 import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
+import { DividerModule } from 'primeng/divider';
 
 interface TableColumn {
   field: string;
@@ -45,6 +46,7 @@ interface Mecanico {
     AppTopbarMec,
     IconField,
     InputIcon,
+    DividerModule
 ],
   providers: [DatePipe, MecanicoService, OrdenMecanicoService],
   templateUrl: './dashboard-mecanica.component.html',
@@ -132,9 +134,6 @@ export class DashboardMecanicaComponent implements OnInit {
       },
     });
   }
-  onMecanicosChange(event: any): void {
-    this.cargarOrdenes();
-  }
   formatDate(dateString: string): string {
     if(dateString === 'Vacío') return 'Vacío';
     // Usar DatePipe para formatear la fecha
@@ -145,6 +144,20 @@ export class DashboardMecanicaComponent implements OnInit {
     const inputValue = (event.target as HTMLInputElement)?.value || '';
     dt.filterGlobal(inputValue, 'contains');
   }
+  filterMecHandler(mec: any) {
+    const index1 = this.todosMecanicos.indexOf(mec);
+    const index2 = this.mecanicosFiltrados.indexOf(mec);
+  
+    if (index1 !== -1) {
+      this.todosMecanicos.splice(index1, 1);
+      this.mecanicosFiltrados.push(mec);
+    } else if (index2 !== -1) {
+      this.mecanicosFiltrados.splice(index2, 1);
+      this.todosMecanicos.push(mec);
+    } else {
+      console.warn('El valor no se encuentra en ninguno de los dos arreglos.');
+    }
+    this.cargarOrdenes();  }
   clear(table: Table) {
     table.clear();
   }

@@ -1,5 +1,5 @@
 <app-topbarMec></app-topbarMec>
-<div class="card" style="margin-bottom: 0;">
+<div class="card" style="margin: 5rem 1rem 0;">
     <p-table 
         #dt1
         [columns]="cols" 
@@ -12,6 +12,26 @@
         stripedRows
     >
     <ng-template #caption>
+        <div class="flex flex-wrap gap-2 mb-4">  <!--Filtro x mecanicos-->
+            <p-divider align="left" class="m-0!"><b class="font-normal">Mecánicos</b></p-divider>
+            <ng-container *ngFor="let mec of todosMecanicos">
+                <div (click)="filterMecHandler(mec)"
+                class="flex gap-2 items-center px-4 py-1 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-800 hover:text-white transition duration-200 ease-in-out">
+                    <i class="pi pi-user-plus"></i>
+                    <p>{{mec.nombre}}</p>
+                </div>
+            </ng-container>
+            <ng-container *ngIf="mecanicosFiltrados.length > 0">
+                <p-divider align="left"><b class="font-normal">Mecánicos filtrados</b></p-divider>
+                <ng-container *ngFor="let mec of mecanicosFiltrados">
+                    <div (click)="filterMecHandler(mec)" 
+                    class="flex gap-2 items-center px-4 py-1 bg-lime-400 rounded-lg cursor-pointer hover:bg-lime-800 hover:text-white transition duration-200 ease-in-out">
+                        <i class="pi pi-user-minus"></i>
+                        <p>{{mec.nombre}}</p>
+                    </div>
+                </ng-container>
+            </ng-container>
+        </div>
         <div class="flex flex-col-reverse sm:flex-row sm:justify-between gap-2 !border-0 w-full">
             <p-button label="Limpiar" severity="secondary" icon="pi pi-filter-slash" (click)="clear(dt1)" />
             <p-iconfield iconPosition="left" class="mr-1">
@@ -31,7 +51,6 @@
                 <th [class]="{'min-width:15rem':col.sort}" [pSortableColumn]="col.field" *ngFor="let col of columns">
                     <div class="flex items-center">
                         {{ col.header }}
-                        <p-sortIcon *ngIf="col.sort" [field]="col.field"></p-sortIcon>
                         <p-columnFilter [type]="col.type" *ngIf="col.sort === true" [field]="col.field" display="menu" />
 
                         <p-columnFilter field="estado" *ngIf="col.field === 'estado'" matchMode="equals" display="menu">
