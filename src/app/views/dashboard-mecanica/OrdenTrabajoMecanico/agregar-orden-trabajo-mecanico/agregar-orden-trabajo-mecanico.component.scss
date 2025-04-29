@@ -1,0 +1,506 @@
+/* user-header.component.css */
+.header-container {
+    display: flex;
+    align-items: center;
+    background-color: #f0f2f5;
+    padding: 0.8rem 1.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  .home-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 3rem;
+    height: 3rem;
+    background-color: #1f295b;
+    border-radius: 0.5rem;
+    margin-right: 1.5rem;
+  }
+  
+  .home-icon svg {
+    width: 1.8rem;
+    height: 1.8rem;
+    color: white;
+  }
+  
+  .user-info {
+    flex: 1;
+    color: #333;
+    font-size: 1.2rem;
+    font-weight: 500;
+  }
+/* blocks.component.css - Estilos para bloques que siguen el mismo estilo del header */
+
+/* Contenedor principal del bloque */
+.block-container {
+    border: 1px solid #e1e4e8;
+    border-radius: 0.5rem;
+    background-color: #f0f2f5;
+    color: #333;
+    margin-bottom: 1rem;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  /* Título del bloque */
+  .block-title {
+    background-color: #1f295b;
+    color: #fff;
+    text-align: center;
+    padding: 0.8rem 0;
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 500;
+    border-bottom: 1px solid #e1e4e8;
+  }
+  
+  /* Contenido interno del bloque */
+  .block-content {
+    padding: 1.2rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  
+  /* Grupo de input con label */
+  .input-group {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+  
+  .input-group label {
+    display: block;
+    margin-bottom: 0.6rem;
+    font-size: 0.95rem;
+    color: #444;
+    font-weight: 500;
+  }
+  
+  /* Contenedor para input y botón en línea */
+  .input-with-button {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  
+  /* Estilos para inputs */
+  input, select {
+    background-color: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 0.4rem;
+    padding: 0.6rem 0.8rem;
+    color: #333;
+    flex: 1;
+    min-width: 200px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  input:focus, select:focus {
+    outline: none;
+    border-color: #1f295b;
+    box-shadow: 0 0 0 2px rgba(31, 41, 91, 0.1);
+  }
+  
+  input::placeholder {
+    color: #9ca3af;
+  }
+  
+  /* Estilo para botones */
+  .validar-btn, .action-btn, .secondary-btn {
+    border: none;
+    border-radius: 0.4rem;
+    padding: 0.6rem 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  .validar-btn {
+    background-color: #1f295b;
+    color: white;
+  }
+  
+  .validar-btn:hover {
+    background-color: #293775;
+  }
+  
+  .action-btn {
+    background-color: #e5e7eb;
+    color: #1f295b;
+    border: 1px solid #d2d5db;
+  }
+  
+  .action-btn:hover {
+    background-color: #d5d8e1;
+  }
+  
+  .secondary-btn {
+    background-color: #f3f4f6;
+    color: #4b5563;
+    border: 1px solid #e5e7eb;
+  }
+  
+  .secondary-btn:hover {
+    background-color: #e5e7eb;
+  }
+  
+  /* Sección de información */
+  .info-section {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-top: 1rem;
+  }
+  
+  .info-item {
+    flex: 1;
+  }
+  
+  .info-item p {
+    margin: 0.5rem 0;
+    color: #4b5563;
+    font-size: 0.95rem;
+  }
+  
+  .info-item strong {
+    font-weight: 600;
+    color: #1f295b;
+  }
+  
+  /* Contenedor de acciones */
+  .actions {
+    display: flex;
+    justify-content: flex-end;
+    padding-left: 1rem;
+  }
+  
+  /* Estilo para el select */
+  .select-wrapper {
+    position: relative;
+    display: inline-block;
+    flex: 1;
+    min-width: 200px;
+  }
+  
+  select {
+    appearance: none;
+    width: 100%;
+    padding-right: 2rem;
+  }
+  
+  .select-arrow {
+    position: absolute;
+    right: 0.8rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    font-size: 0.75rem;
+    color: #6b7280;
+  }
+  /* servicio-realizar.component.css */
+/* servicio-realizar.component.css - Ajustado al tema general */
+.service-container {
+    border: 1px solid #e1e4e8;
+    border-radius: 0.5rem;
+    background-color: #f0f2f5;
+    color: #333;
+    margin-bottom: 1rem;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  .service-title {
+    background-color: #1f295b;
+    color: #fff;
+    text-align: center;
+    padding: 0.8rem 0;
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 500;
+    border-bottom: 1px solid #e1e4e8;
+  }
+  
+  .service-content {
+    padding: 1.2rem;
+  }
+  
+  /* Grid de formulario */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  @media (min-width: 768px) {
+    .form-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  /* Grupos de formulario */
+  .form-group {
+    margin-bottom: 0.8rem;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 0.6rem;
+    font-size: 0.95rem;
+    color: #444;
+    font-weight: 500;
+  }
+  
+  /* Campos de entrada del servicio */
+  .service-container input,
+  .service-container select,
+  .service-container textarea {
+    background-color: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 0.4rem;
+    padding: 0.6rem 0.8rem;
+    color: #333;
+    width: 100%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  .service-container input:focus,
+  .service-container select:focus,
+  .service-container textarea:focus {
+    outline: none;
+    border-color: #1f295b;
+    box-shadow: 0 0 0 2px rgba(31, 41, 91, 0.1);
+  }
+  
+  .service-container textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+  
+  /* Select con flecha personalizada */
+  .service-container .select-wrapper {
+    position: relative;
+    display: block;
+  }
+  
+  .service-container select {
+    appearance: none;
+    padding-right: 2rem;
+  }
+  
+  .service-container .select-arrow {
+    position: absolute;
+    right: 0.8rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    font-size: 0.75rem;
+    color: #6b7280;
+  }
+  
+  /* Input con unidad */
+  .service-container .input-with-unit {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  
+  .service-container .input-with-unit input {
+    flex: 1;
+    padding-right: 2.5rem;
+  }
+  
+  .service-container .unit {
+    position: absolute;
+    right: 0.8rem;
+    color: #6b7280;
+    pointer-events: none;
+  }
+  
+  /* Date picker personalizado */
+  .service-container .date-input {
+    position: relative;
+    display: flex;
+  }
+  
+  .service-container .date-input input {
+    flex: 1;
+    padding-right: 2.5rem;
+  }
+  
+  .service-container .calendar-button {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 2.5rem;
+    background: none;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #6b7280;
+  }
+  
+  .service-container .calendar-button:hover {
+    color: #1f295b;
+  }
+  
+  /* Sección de imágenes */
+  .service-container .image-section-title {
+    text-align: center;
+    margin: 1.2rem 0;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #1f295b;
+  }
+  
+  .service-container .image-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.2rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Cajas de subida de imágenes */
+  .service-container .image-upload-box {
+    background-color: #e5e7eb;
+    border: 1px dashed #d1d5db;
+    border-radius: 0.4rem;
+    padding: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    min-height: 200px;
+  }
+  
+  .service-container .image-upload-box h4 {
+    margin-top: 0;
+    margin-bottom: 0.9rem;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #1f295b;
+  }
+  
+  .service-container .image-icons {
+    display: flex;
+    justify-content: center;
+    gap: 0.9rem;
+    margin-bottom: 0.9rem;
+  }
+  
+  .service-container .icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    color: #6b7280;
+  }
+  
+  .service-container .drop-text {
+    margin: 0.3rem 0;
+    color: #6b7280;
+    font-size: 0.9rem;
+  }
+  
+  .service-container .or-text {
+    font-size: 0.9rem;
+    color: #9ca3af;
+    margin: 0.3rem 0;
+  }
+  
+  .service-container .browse-text {
+    color: #1f295b;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  
+  .service-container .browse-text:hover {
+    color: #293775;
+  }
+  
+  /* Caja con imagen ya cargada */
+  .service-container .with-image {
+    padding: 0.6rem;
+  }
+  
+  .service-container .uploaded-image {
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+    border-radius: 0.3rem;
+  }
+  
+  .service-container .uploaded-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  /* Botones de acción */
+  .service-container .action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.9rem;
+    margin-top: 1.2rem;
+  }
+  
+  .service-container .btn-cancel,
+  .service-container .btn-create {
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 0.4rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .service-container .btn-cancel {
+    background-color: #f3f4f6;
+    color: #4b5563;
+    border: 1px solid #e5e7eb;
+  }
+  
+  .service-container .btn-cancel:hover {
+    background-color: #e5e7eb;
+  }
+  
+  .service-container .btn-create {
+    background-color: #1f295b;
+    color: white;
+  }
+  
+  .service-container .btn-create:hover {
+    background-color: #293775;
+  }
+  
+  /* Media queries para hacer el formulario responsive */
+  @media (max-width: 768px) {
+    .service-container .image-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .service-container .action-buttons {
+      flex-direction: column;
+    }
+    
+    .service-container .btn-cancel,
+    .service-container .btn-create {
+      width: 100%;
+    }
+  }

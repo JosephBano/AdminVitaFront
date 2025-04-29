@@ -3,7 +3,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
-import { FileUpload } from 'primeng/fileupload';
+import { FileUpload, FileUploadModule } from 'primeng/fileupload';
 import { FloatLabel } from 'primeng/floatlabel';
 import { InputTextModule } from 'primeng/inputtext';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
@@ -29,6 +29,13 @@ import { SkeletonCompletePageComponent } from "../../../shared/components/skelet
 import { DropdownModule } from 'primeng/dropdown';
 import { ImpuestoService } from '../../../services/impuesto.service';
 import { catchError, forkJoin, map } from 'rxjs';
+import { ArchivosService } from '../../../services/archivos.service';
+import { DomSanitizer, SafeResourceUrl} from '@angular/platform-browser';
+import { ImageModule } from 'primeng/image';
+import { DialogModule } from 'primeng/dialog';
+import { AdjuntoService } from '../../../services/adjunto.service';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService } from 'primeng/api';
 
 @Component({
   selector: 'app-agregar-adquisicion',
@@ -37,8 +44,7 @@ import { catchError, forkJoin, map } from 'rxjs';
     CardModule,
     FormsModule,
     ReactiveFormsModule,
-    FileUpload,
-    FloatLabel,
+    FileUploadModule,
     InputTextModule,
     ButtonModule,
     ProgressSpinnerModule,
@@ -47,16 +53,21 @@ import { catchError, forkJoin, map } from 'rxjs';
     FloatLabelModule,
     InputNumberModule,
     TableModule,
-    NgFor,
-    NgIf,
     DividerModule,
-    DropdownModule
+    DropdownModule,
+    ImageModule,DialogModule,
+    ConfirmDialogModule,
+],
+providers: [
+  ConfirmationService
 ],
   standalone: true,
   templateUrl: './agregar-adquisicion.component.html',
   styleUrl: './agregar-adquisicion.component.scss'
 })
 export class AgregarAdquisicionComponent implements OnInit {
+
+  public isEditMode: boolean = false;
 
   @ViewChild('fu') fileUpload!: FileUpload;
   magnitudOrigenItem: any = null;
@@ -72,7 +83,12 @@ export class AgregarAdquisicionComponent implements OnInit {
   fb_detalleAdquisicion!: FormGroup;
 
   uploadedFile: File | null = null;
-  
+  uploadedFiles: any[] = []; 
+  existingFileInfo: any = null;
+  existingFileUrl: string | null = null;
+  archivoUrl: SafeResourceUrl | null = null;
+  tipoArchivo: string = '';
+  displayImage: boolean = false; 
   resumen = {
     nombre: '',
     razonSocial: '',
@@ -85,6 +101,7 @@ export class AgregarAdquisicionComponent implements OnInit {
   iva: number = 0.00;
   descuento: number = 0.00;
   total: number = 0.00;
+  impuestoTotal: number = 0;
 
   iconValidarDocumento: string = 'pi pi-search';
 
@@ -103,12 +120,16 @@ export class AgregarAdquisicionComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private impuestoService: ImpuestoService,
+    private archivosService: ArchivosService,
+    private sanitizer: DomSanitizer,
+    private adjuntoService: AdjuntoService,
+    private confirmationService: ConfirmationService,
   ) { }
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('factura');
+    this.isEditMode = !!id;
     if(id){
       this.loadingEdit = true;
-      // En el método donde consumes getCompraDetallada
 this.compraService.getCompraDetallada(id).subscribe({
   next: (response) => {
     console.log('Compra detallada:', response);
@@ -118,7 +139,10 @@ this.compraService.getCompraDetallada(id).subscribe({
       id_proveedor: response.idProveedor || null
     });
     this.validarDocumentoProveedor();
-    
+    if (response.adjunto) {
+      this.existingFileInfo = response.adjunto;
+      this.obtenerYMostrarArchivo(response.adjunto.ruta);
+    }
     // Transform the details to match the expected format and include idImpuesto
     this.detallesCompra = response.detallesCompra.map((detalle: any) => {
       return {
@@ -156,7 +180,8 @@ this.compraService.getCompraDetallada(id).subscribe({
     this.loadingEdit = false;
     this.fb_adquisicion.get('codigo')?.disable();
     this.fb_adquisicion.get('doc_proveedor')?.disable();
-  },
+  }
+  ,
   error: (err) => {
     console.error(err);
     this.toastr.error(err.error.mensaje, 'Error al cargar la compra');
@@ -227,9 +252,55 @@ this.compraService.getCompraDetallada(id).subscribe({
       }
     })
   }
-  onUpload(event:any) {
-    this.uploadedFile = event.files[0];
-    console.log('Archivo subido:', this.uploadedFile);
+  
+  onUpload(event: any) {
+    try {
+      if (event.originalEvent) {
+        event.originalEvent.preventDefault();
+      }
+      this.toastr.success('Archivo preparado para ser enviado', 'Éxito');
+      console.log('Archivo listo para subir:', this.uploadedFile);
+    } catch (error) {
+      console.error('Error en onUpload:', error);
+      this.toastr.error('Error al procesar el archivo', 'Error');
+    }
+  }
+  obtenerYMostrarArchivo(ruta: string) {
+    if (!ruta) return;
+    const fileName = ruta.split('/').pop() || '';
+    this.existingFileUrl = ruta; // Guardar la ruta para posible descarga
+    this.archivosService.getArchivo(fileName).subscribe({
+      next: (blob: Blob) => {
+        const file = new File(
+          [blob], 
+          this.existingFileInfo.nombre, 
+          { type: blob.type }
+        );
+        this.uploadedFile = file;
+        this.uploadedFiles = [{
+          name: this.existingFileInfo.nombre,
+          size: blob.size,
+          type: blob.type || this.getTipoMIME(this.existingFileInfo.tipoArchivo)
+        }];
+        if (file.type.startsWith('image/')) {
+          this.existingFileUrl = URL.createObjectURL(blob);
+        }
+        console.log('Archivo cargado correctamente:', file.name);
+      },
+      error: (error: any) => {
+        console.error('Error al cargar el archivo:', error);
+        this.toastr.error('No se pudo cargar el archivo adjunto', 'Error');
+      }
+    });
+  }
+  getTipoMIME(tipoArchivo: string): string {
+    switch(tipoArchivo.toLowerCase()) {
+      case 'pdf': return 'application/pdf';
+      case 'jpg':
+      case 'jpeg': return 'image/jpeg';
+      case 'png': return 'image/png';
+      default: return 'application/octet-stream';
+    }
   }
   validarDocumentoProveedor() {
     this.iconValidarDocumento = ''
@@ -276,17 +347,10 @@ this.compraService.getCompraDetallada(id).subscribe({
         return;
       }
     }
-  
-    // Obtener valores del formulario
-    // Modificado para que sea null en lugar de 0 cuando no hay valor
     const idMagnitudSeleccionada = this.fb_detalleAdquisicion.get('id_magnitud')?.value || null;
     const cantidadIngresada = this.fb_detalleAdquisicion.get('cantidad')?.value;
-    
-    // Verificar si necesitamos hacer conversión de unidades
     if (this.magnitudOrigenItem && idMagnitudSeleccionada && idMagnitudSeleccionada !== this.magnitudOrigenItem.idMagnitud) {
-      // Si la magnitud seleccionada es diferente a la magnitud origen, hacer conversión
       this.toastr.info('Realizando conversión de unidades...', 'Procesando');
-      
       this.magnitudService.convertirUnidad(
         idMagnitudSeleccionada, 
         cantidadIngresada, 
@@ -294,7 +358,6 @@ this.compraService.getCompraDetallada(id).subscribe({
       ).subscribe({
         next: (respuesta) => {
           console.log('Resultado de conversión:', respuesta);
-          // Usar el resultado de la conversión para crear el detalle de compra
           this.crearDetalleCompra(respuesta.unidadDestino, idMagnitudSeleccionada);
         },
         error: (error) => {
@@ -303,37 +366,50 @@ this.compraService.getCompraDetallada(id).subscribe({
         }
       });
     } else {
-      // No se necesita conversión, usar la cantidad directamente
       this.crearDetalleCompra(cantidadIngresada, idMagnitudSeleccionada);
     }
   }
   crearDetalleCompra(cantidadFinal: number, idMagnitudSeleccionada: number | null) {
     const cantidadOriginal = this.fb_detalleAdquisicion.get('cantidad')?.value;
     const valorUnitario = this.fb_detalleAdquisicion.get('valorUnitario')?.value || this.selectedItem.valorUnitario;
-
+    let idCompraActual = 0;
+    if (this.isEditMode) {
+      if (this.detallesCompraPeticion && this.detallesCompraPeticion.length > 0) {
+        idCompraActual = this.detallesCompraPeticion[0].idCompra;
+      } 
+      else {
+        const idFromUrl = this.route.snapshot.paramMap.get('factura');
+        if (idFromUrl) {
+          idCompraActual = parseInt(idFromUrl);
+        }
+      }
+    }
+    if (!this.impuestoSeleccionado && this.impuestos.length > 0) {
+      this.impuestoSeleccionado = this.impuestos.find(imp => imp.idImpuesto === 4) || this.impuestos[0];
+    }
     const detalleCompraPeticion = {
       idDetalleCompra: null,
-      idCompra: 0, 
+      idCompra: idCompraActual,  
       idItem: this.selectedItem.idItem,
       idMagnitud: idMagnitudSeleccionada, 
       cantidad: cantidadFinal, 
-      cantidadBase : cantidadOriginal,
+      cantidadBase: cantidadOriginal,
       valorUnitario: valorUnitario,
-      idImpuesto: this.impuestoSeleccionado.idImpuesto
+      idImpuesto: this.impuestoSeleccionado?.idImpuesto || 4  
     };
-    
     const detalleCompra = {
       codigo: this.selectedItem.codigo,
       description: this.selectedItem.nombre + ' - ' + this.selectedItem.descripcion,
       magnitud: idMagnitudSeleccionada ? 
         this.magnitudes.find(magnitud => magnitud.idMagnitud === idMagnitudSeleccionada)?.nombre : 
         'N/A',
-      cantidad: this.fb_detalleAdquisicion.get('cantidad')?.value, 
-      cantidadConvertida: cantidadFinal !== this.fb_detalleAdquisicion.get('cantidad')?.value ? 
+      cantidad: cantidadOriginal, 
+      cantidadConvertida: cantidadFinal !== cantidadOriginal ? 
         `(${cantidadFinal} ${this.magnitudOrigenItem?.unidad})` : '',
       cantidadBase: cantidadOriginal,
       valorUnitario: valorUnitario,
       subtotal: cantidadOriginal * valorUnitario,
+      idImpuesto: this.impuestoSeleccionado?.idImpuesto || 4  
     };
     
     this.detallesCompraPeticion.push(detalleCompraPeticion);
@@ -441,73 +517,213 @@ this.compraService.getCompraDetallada(id).subscribe({
   }
   detalleCompraHandler() {
     this.subtotal = this.detallesCompra.reduce((acc, item) => acc + item.subtotal, 0);
-    
-    // Si los detalles tienen impuestos calculados, usarlos
-    const impuestoCalculado = this.detallesCompra.reduce((acc, item) => acc + (item.impuestoCalculado || 0), 0);
-    
-    if (impuestoCalculado > 0) {
-      // Si hay impuestos calculados por detalle, usarlos directamente
-      this.total = this.subtotal + impuestoCalculado - this.descuento;
-    } else {
-      // Si no, usar el porcentaje general de IVA
-      this.total = this.subtotal + (this.subtotal * this.iva) - this.descuento;
-    }
+    this.impuestoTotal = this.detallesCompra.reduce((acc, item) => {
+      if (item.impuestoCalculado !== undefined) {
+        return acc + item.impuestoCalculado;
+      }
+      if (item.porcentajeImpuesto !== undefined) {
+        return acc + (item.subtotal * (item.porcentajeImpuesto / 100));
+      }
+      return acc;
+    }, 0);
+    this.iva = this.subtotal > 0 ? this.impuestoTotal / this.subtotal : 0;
+    this.total = this.subtotal + this.impuestoTotal - this.descuento;
   }
   onFileSelect(event: any) {
-    if (event.files && event.files.length > 0) {
-      this.uploadedFile = event.files[0];
-      this.toastr.success('Archivo seleccionado correctamente', 'Éxito');
+    try {
+      if (event.files && event.files.length > 0) {
+        this.uploadedFile = event.files[0];
+        if (this.isEditMode) {
+          if (this.existingFileInfo) {
+            this.toastr.info('Esta factura ya tiene un archivo adjunto. Elimínelo primero si desea reemplazarlo', 'Información');
+            this.uploadedFile = null;
+            if (this.fileUpload) {
+              this.fileUpload.clear();
+            }
+          } else {
+            this.toastr.info('Archivo seleccionado. Haga clic en "Adjuntar archivo" para guardarlo', 'Información');
+          }
+        } else {
+          this.toastr.info('Archivo seleccionado. Se adjuntará al crear la compra', 'Información');
+        }
+      }
+    } catch (error) {
+      console.error('Error al seleccionar archivo:', error);
     }
   }
-  crearCompra() {
-    if (this.fb_adquisicion.invalid) {
-      this.toastr.error('Por favor complete todos los campos requeridos', 'Error');
-      return;
-    }
-    if (!this.fb_adquisicion.get('id_proveedor')?.value) {
-      this.toastr.error('Debe validar el proveedor antes de continuar', 'Error');
-      return;
-    }
-    if (this.detallesCompra.length === 0) {
-      this.toastr.warning('Debe agregar al menos un detalle a la compra', 'Advertencia');
-      return;
-    }
-    const solicitud: SolicitudCrearCompra = {
-      idProveedor: this.fb_adquisicion.get('id_proveedor')?.value,
-      numeroFactura: this.fb_adquisicion.get('codigo')?.value,
-      archivo: this.uploadedFile
-    };
-    this.toastr.info('Procesando su solicitud...', 'Creando Compra');
-    this.compraService.crearCompra(solicitud).subscribe({
-      next: (respuestaCompra) => {
-        console.log('Compra creada:', respuestaCompra);
-        if (respuestaCompra && respuestaCompra.idCompra) {
-          const idCompra = respuestaCompra.idCompra;
-          this.detallesCompraPeticion.forEach(detalle => {
-            detalle.idCompra = idCompra;
-          });
-          console.log('Detalles de compra a guardar:', this.detallesCompraPeticion);
-          this.detalleCompraService.createUpdateDetalleCompra(this.detallesCompraPeticion).subscribe({
-            next: (respuestaDetalles) => {
-              console.log('Detalles de compra guardados:', respuestaDetalles);
-              this.toastr.success('Compra y sus detalles creados exitosamente', 'Éxito');
-              this.limpiarFormulario();
-            },
-            error: (errorDetalles) => {
-              console.error('Error al crear los detalles de la compra', errorDetalles);
-              this.toastr.error(errorDetalles.error?.mensaje || 'Error al guardar los detalles', 'Error');
-            }
-          });
-        } else {
-          this.toastr.warning('La compra se creó pero no se pudo obtener su ID', 'Advertencia');
-        }
-      },
-      error: (errorCompra) => {
-        console.error('Error al crear la compra', errorCompra);
-        this.toastr.error(errorCompra.error?.mensaje || 'Error al crear la compra', 'Error');
+crearCompra() {
+  if (this.fb_adquisicion.invalid) {
+    this.toastr.error('Por favor complete todos los campos requeridos', 'Error');
+    return;
+  }
+  
+  if (!this.fb_adquisicion.get('id_proveedor')?.value) {
+    this.toastr.error('Debe validar el proveedor antes de continuar', 'Error');
+    return;
+  }
+  
+  if (this.detallesCompra.length === 0) {
+    this.toastr.warning('Debe agregar al menos un detalle a la compra', 'Advertencia');
+    return;
+  }
+  if (this.isEditMode) {
+    this.actualizarCompra();
+  } 
+  else {
+    this.crearNuevaCompra();
+  }
+}
+procesarCompra() {
+  if (this.isEditMode) {
+    console.log('Modo edición detectado, actualizando compra...');
+    this.actualizarCompra();
+  } else {
+    console.log('Modo creación detectado, creando nueva compra...');
+    this.crearNuevaCompra();
+  }
+}
+private crearNuevaCompra() {
+  const solicitud: SolicitudCrearCompra = {
+    idProveedor: this.fb_adquisicion.get('id_proveedor')?.value,
+    numeroFactura: this.fb_adquisicion.get('codigo')?.value,
+    archivo: this.uploadedFile
+  };
+  this.toastr.info('Procesando su solicitud...', 'Creando Compra');
+  this.compraService.crearCompra(solicitud).subscribe({
+    next: (respuestaCompra) => {
+      console.log('Compra creada:', respuestaCompra);
+      if (respuestaCompra && respuestaCompra.idCompra) {
+        const idCompra = respuestaCompra.idCompra;
+        this.detallesCompraPeticion.forEach(detalle => {
+          detalle.idCompra = idCompra;
+        });
+        console.log('Detalles de compra a guardar:', this.detallesCompraPeticion);
+        this.detalleCompraService.createUpdateDetalleCompra(this.detallesCompraPeticion).subscribe({
+          next: (respuestaDetalles) => {
+            console.log('Detalles de compra guardados:', respuestaDetalles);
+            this.toastr.success('Compra y sus detalles creados exitosamente', 'Éxito');
+            this.limpiarFormulario();
+          },
+          error: (errorDetalles) => {
+            console.error('Error al crear los detalles de la compra', errorDetalles);
+            this.toastr.error(errorDetalles.error?.mensaje || 'Error al guardar los detalles', 'Error');
+          }
+        });
+      } else {
+        this.toastr.warning('La compra se creó pero no se pudo obtener su ID', 'Advertencia');
       }
-    });
-  }  
+    },
+    error: (errorCompra) => {
+      console.error('Error al crear la compra', errorCompra);
+      this.toastr.error(errorCompra.error?.mensaje || 'Error al crear la compra', 'Error');
+    }
+  });
+}
+private actualizarCompra() {
+  console.log('=====================================');
+  console.log('INICIANDO ACTUALIZACIÓN DE COMPRA');
+  
+  let idCompra: number | undefined;
+  
+  // Primero, verificamos si hay detalles existentes para obtener el idCompra
+  if (this.detallesCompraPeticion && this.detallesCompraPeticion.length > 0) {
+    const detalleConId = this.detallesCompraPeticion.find(d => d.idCompra);
+    idCompra = detalleConId?.idCompra;
+  }
+  
+  if (!idCompra) {
+    const idFromUrl = this.route.snapshot.paramMap.get('factura');
+    if (!idFromUrl) {
+      this.toastr.error('No se pudo identificar la compra actual', 'Error');
+      return;
+    }
+    console.log('Obteniendo idCompra de la URL:', idFromUrl);
+    idCompra = parseInt(idFromUrl);
+  }
+  
+  // Asegurar que todos los detalles tengan un idCompra y un idImpuesto válido
+  this.detallesCompraPeticion = this.detallesCompraPeticion.map(detalle => {
+    if (!detalle.idImpuesto) {
+      detalle.idImpuesto = this.impuestoSeleccionado?.idImpuesto || 4;
+    }
+    detalle.idCompra = idCompra;
+    return detalle;
+  });
+  
+  // FILTRAR SOLO NUEVOS DETALLES (idDetalleCompra === null)
+  const soloNuevosDetalles = this.detallesCompraPeticion.filter(detalle => detalle.idDetalleCompra === null);
+  
+  console.log('Solo nuevos detalles a enviar:', soloNuevosDetalles);
+  
+  if (soloNuevosDetalles.length === 0) {
+    this.toastr.info('No hay nuevos detalles para agregar a la compra', 'Información');
+    return;
+  }
+  
+  this.toastr.info('Procesando su solicitud...', 'Agregando nuevos detalles');
+  
+  // Llamar al servicio solo con los nuevos detalles
+  this.detalleCompraService.createUpdateDetalleCompra(soloNuevosDetalles).subscribe({
+    next: (respuesta) => {
+      console.log('Nuevos detalles agregados con éxito:', respuesta);
+      this.toastr.success('Nuevos detalles agregados exitosamente', 'Éxito');
+      
+      // Recargar la compra completa para actualizar la interfaz
+      this.compraService.getCompraDetallada(idCompra.toString()).subscribe({
+        next: (compraActualizada) => {
+          console.log('Compra recargada después de actualizar:', compraActualizada);
+          this.actualizarDetallesEnInterfaz(compraActualizada);
+        },
+        error: (errorRecarga) => {
+          console.error('Error al recargar la compra:', errorRecarga);
+          this.toastr.error('No se pudieron recargar los detalles actualizados', 'Error');
+        }
+      });
+    },
+    error: (error) => {
+      console.error('Error al agregar nuevos detalles:', error);
+      
+      // Intentar obtener más información sobre el error
+      let mensajeError = 'Error al agregar nuevos detalles';
+      if (error.error && typeof error.error === 'object') {
+        console.log('Detalles del error:', JSON.stringify(error.error));
+        mensajeError = error.error.mensaje || mensajeError;
+      }
+      
+      this.toastr.error(mensajeError, 'Error');
+    }
+  });
+}
+private actualizarDetallesEnInterfaz(compraActualizada: any) {
+  this.detallesCompra = compraActualizada.detallesCompra.map((detalle: any) => {
+    return {
+      idDetalleCompra: detalle.idDetalleCompra,
+      codigo: detalle.codigo,
+      description: detalle.nombre + ' - ' + detalle.descripcion,
+      magnitud: detalle.magnitud || 'N/A',
+      cantidad: detalle.cantidad,
+      cantidadConvertida: '',
+      cantidadBase: detalle.cantidad,
+      valorUnitario: detalle.valorUnitario,
+      subtotal: detalle.subtotal || (detalle.cantidad * detalle.valorUnitario),
+      idImpuesto: detalle.idImpuesto
+    };
+  });
+  
+  this.detallesCompraPeticion = compraActualizada.detallesCompra.map((detalle: any) => ({
+    idDetalleCompra: detalle.idDetalleCompra,
+    idCompra: compraActualizada.idCompra,
+    idItem: detalle.idItem,
+    idMagnitud: detalle.idMagnitud,
+    cantidad: detalle.cantidad,
+    cantidadBase: detalle.cantidad,
+    valorUnitario: detalle.valorUnitario,
+    idImpuesto: detalle.idImpuesto
+  }));
+  
+  this.subtotal = this.detallesCompra.reduce((acc, item) => acc + item.subtotal, 0);
+  this.calcularImpuestosPorDetalle(this.detallesCompra);
+}  
   limpiarFormulario() {
     this.fb_adquisicion.reset();
     this.fb_detalleAdquisicion.reset();
@@ -550,53 +766,275 @@ this.compraService.getCompraDetallada(id).subscribe({
     }
     this.detalleCompraHandler();
   }
-// Agrega este método
-calcularImpuestosPorDetalle(detalles: any[]) {
-  // Si no hay detalles, salir
-  if (!detalles || detalles.length === 0) {
+  calcularImpuestosPorDetalle(detalles: any[]) {
+    if (!detalles || detalles.length === 0) {
+      return;
+    }
+    detalles.forEach(detalle => {
+      if (!detalle.idImpuesto) {
+        detalle.idImpuesto = 4; 
+      }
+    });
+    const peticionesImpuestos = detalles.map(detalle => {
+      return this.impuestoService.getPorcentajeImpuesto(detalle.idImpuesto).pipe(
+        map(respuesta => {
+          return {
+            detalle,
+            porcentaje: respuesta.porcentaje  
+          };
+        }),
+        catchError(error => {
+          console.error(`Error al obtener porcentaje para detalle ${detalle.codigo}:`, error);
+          return [{ detalle, porcentaje: 15 }]; 
+        })
+      );
+    });
+    forkJoin(peticionesImpuestos).subscribe({
+      next: (resultados) => {
+        this.impuestoTotal = 0; 
+        resultados.forEach(resultado => {
+          const { detalle, porcentaje } = resultado;
+          const porcentajeDecimal = porcentaje / 100;
+          detalle.porcentajeImpuesto = porcentaje;
+          detalle.impuestoCalculado = detalle.subtotal * porcentajeDecimal;
+          this.impuestoTotal += detalle.impuestoCalculado;
+        });
+        this.iva = this.subtotal > 0 ? this.impuestoTotal / this.subtotal : 0;
+        this.total = this.subtotal + this.impuestoTotal - this.descuento;
+      },
+      error: (err) => {
+        console.error('Error al procesar impuestos:', err);
+        this.toastr.error('No se pudieron calcular los impuestos correctamente', 'Error');
+        this.impuestoTotal = this.subtotal * 0.15; // Asumir 15%
+        this.total = this.subtotal + this.impuestoTotal - this.descuento;
+      }
+    });
+  }
+  cargarArchivo(fileName: string) {
+  this.archivosService.getArchivo(fileName).subscribe({
+    next: (blob: Blob) => {
+      const mimeType = blob.type;
+
+      if (mimeType.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          this.archivoUrl = this.sanitizer.bypassSecurityTrustUrl(reader.result as string);
+          this.tipoArchivo = 'imagen';
+          this.displayImage = true; // Mostrar el diálogo automáticamente
+        };
+        reader.readAsDataURL(blob);
+      } else if (mimeType === 'application/pdf') {
+        const url = URL.createObjectURL(blob);
+        this.archivoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+        this.tipoArchivo = 'pdf';
+        this.displayImage = true;
+      } else if (mimeType === 'application/msword' || mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        this.archivoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(URL.createObjectURL(blob));
+        this.tipoArchivo = 'word';
+        this.displayImage = true;
+      } else if (mimeType === 'application/vnd.ms-excel' || mimeType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+        this.archivoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(URL.createObjectURL(blob));
+        this.tipoArchivo = 'excel';
+        this.displayImage = true;
+      } else {
+        this.tipoArchivo = 'desconocido';
+        this.toastr.warning('Tipo de archivo no soportado para visualización', 'Advertencia');
+      }
+    },
+    error: (error: any) => {
+      console.error('Error al cargar el archivo:', error);
+      this.toastr.error('No se pudo cargar el archivo para visualización', 'Error');
+    }
+  });
+}
+mostrarAdjunto() {
+  if (!this.existingFileInfo || !this.existingFileInfo.ruta) {
+    this.toastr.warning('No hay archivo para mostrar', 'Advertencia');
     return;
   }
-
-  // Array para almacenar las peticiones de impuestos
-  const peticionesImpuestos = detalles.map(detalle => {
-    return this.impuestoService.getPorcentajeImpuesto(detalle.idImpuesto).pipe(
-      map(respuesta => {
-        return {
-          detalle,
-          porcentaje: respuesta.porcentaje  
+  const fileName = this.existingFileInfo.ruta.split('/').pop() || '';
+  this.toastr.info('Cargando archivo...', 'Un momento');
+  this.archivosService.getArchivo(fileName).subscribe({
+    next: (blob: Blob) => {
+      const mimeType = blob.type;
+      if (mimeType.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          this.archivoUrl = this.sanitizer.bypassSecurityTrustUrl(reader.result as string);
+          this.tipoArchivo = 'imagen';
+          this.displayImage = true; // Mostrar el diálogo
         };
-        console.log('Porcentaje de impuesto:', respuesta.porcentaje);
-      }),
-      catchError(error => {
-        console.error(`Error al obtener porcentaje para detalle ${detalle.codigo}:`, error);
-        return [{ detalle, porcentaje: 0 }]; // Valor por defecto en caso de error
-      })
-    );
-  });
-
-  // Combinar todas las peticiones
-  forkJoin(peticionesImpuestos).subscribe({
-    next: (resultados) => {
-      let impuestoTotal = 0;
-      
-      resultados.forEach(resultado => {
-        const { detalle, porcentaje } = resultado;
-        const porcentajeDecimal = porcentaje / 100;
-        const impuestoDetalle = detalle.subtotal * porcentajeDecimal;
-        
-        // Guardar el impuesto calculado en el detalle
-        detalle.impuestoCalculado = impuestoDetalle;
-        impuestoTotal += impuestoDetalle;
-      });
-      
-      // Actualizar el IVA total (la suma de todos los impuestos)
-      this.iva = impuestoTotal / this.subtotal;
-      // Recalcular el total
-      this.detalleCompraHandler();
+        reader.readAsDataURL(blob);
+      } else if (mimeType === 'application/pdf') {
+        const url = URL.createObjectURL(blob);
+        this.archivoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+        this.tipoArchivo = 'pdf';
+        this.displayImage = true;
+      } else if (mimeType === 'application/msword' || mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        this.archivoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(URL.createObjectURL(blob));
+        this.tipoArchivo = 'word';
+        this.displayImage = true;
+      } else if (mimeType === 'application/vnd.ms-excel' || mimeType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+        this.archivoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(URL.createObjectURL(blob));
+        this.tipoArchivo = 'excel';
+        this.displayImage = true;
+      } else {
+        this.tipoArchivo = 'desconocido';
+        this.toastr.warning('Tipo de archivo no soportado para visualización', 'Advertencia');
+      }
     },
-    error: (err) => {
-      console.error('Error al procesar impuestos:', err);
-      this.toastr.error('No se pudieron calcular los impuestos correctamente', 'Error');
+    error: (error: any) => {
+      console.error('Error al cargar el archivo:', error);
+      
+      if (error.status === 401 || error.status === 403) {
+        this.toastr.error('Sesión expirada. Por favor inicia sesión de nuevo.', 'Error de autenticación');
+      } else {
+        this.toastr.error('No se pudo cargar el archivo para visualización', 'Error');
+      }
+    }
+  });
+}
+eliminarArchivo() {
+  if (!this.existingFileInfo || !this.existingFileInfo.idAdjunto) {
+    this.toastr.warning('No hay archivo para eliminar', 'Advertencia');
+    return;
+  }
+  
+  this.confirmationService.confirm({
+    message: '¿Está seguro que desea eliminar este archivo?',
+    header: 'Confirmación de eliminación',
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: 'Sí, eliminar',
+    rejectLabel: 'Cancelar',
+    accept: () => {
+      const idAdjunto = this.existingFileInfo.idAdjunto;
+      this.adjuntoService.eliminarAdjuntoCompleto(idAdjunto).subscribe({
+        next: (_response) => {
+          this.toastr.success('Archivo eliminado completamente', 'Éxito');
+          this.existingFileInfo = null;
+          this.existingFileUrl = null;
+          this.uploadedFile = null;
+          this.uploadedFiles = [];
+          if (this.fileUpload) {
+            this.fileUpload.clear();
+          }
+        },
+        error: (error) => {
+          this.toastr.error('Error al eliminar el archivo: ' + (error.error || error.message), 'Error');
+        }
+      });
+    }
+  });
+}
+adjuntarArchivoACompra(): void {
+  if (!this.isEditMode) {
+    this.toastr.warning('Esta función solo está disponible en modo edición', 'Advertencia');
+    return;
+  }
+  if (!this.uploadedFile) {
+    this.toastr.warning('No hay ningún archivo seleccionado para adjuntar', 'Advertencia');
+    return;
+  }
+  if (this.existingFileInfo) {
+    this.toastr.warning('Esta compra ya tiene un archivo adjunto. Elimine el actual antes de agregar uno nuevo', 'Advertencia');
+    return;
+  }
+  let idCompra: number;
+  if (this.detallesCompraPeticion && this.detallesCompraPeticion.length > 0) {
+    idCompra = this.detallesCompraPeticion[0].idCompra;
+  } else {
+    const idFromUrl = this.route.snapshot.paramMap.get('factura');
+    if (!idFromUrl) {
+      this.toastr.error('No se pudo identificar la compra actual', 'Error');
+      return;
+    }
+    idCompra = parseInt(idFromUrl);
+  }
+  this.toastr.info('Procesando su solicitud...', 'Adjuntando archivo');
+  this.compraService.agregarAdjuntoCompra(idCompra, this.uploadedFile).subscribe({
+    next: (response) => {
+      this.toastr.success('Archivo adjuntado correctamente a la compra', 'Éxito');
+      if (response && response.adjunto) {
+        this.existingFileInfo = response.adjunto;
+        this.obtenerYMostrarArchivo(response.adjunto.ruta);
+      } else {
+        const idFactura = this.route.snapshot.paramMap.get('factura');
+        if (idFactura) {
+          this.compraService.getCompraDetallada(idFactura).subscribe({
+            next: (compraActualizada) => {
+              if (compraActualizada.adjunto) {
+                this.existingFileInfo = compraActualizada.adjunto;
+                this.obtenerYMostrarArchivo(compraActualizada.adjunto.ruta);
+              }
+            },
+            error: (errorRecarga) => {
+              console.error('Error al recargar la información de la compra:', errorRecarga);
+            }
+          });
+        }
+      }
+      if (this.fileUpload) {
+        this.fileUpload.clear();
+      }
+    },
+    error: (error) => {
+      console.error('Error al adjuntar el archivo a la compra:', error);
+      if (error.status === 400) {
+        this.toastr.error('Petición incorrecta. Verifique el formato del archivo', 'Error');
+      } else if (error.status === 401 || error.status === 403) {
+        this.toastr.error('No tiene permisos para realizar esta acción', 'Error de autorización');
+      } else if (error.status === 500) {
+        this.toastr.error('Error interno del servidor al procesar el archivo', 'Error');
+      } else {
+        this.toastr.error('No se pudo adjuntar el archivo a la compra', 'Error');
+      }
+    }
+  });
+}
+cerrarCompra(): void {
+  if (!this.isEditMode) {
+    this.toastr.warning('Esta función solo está disponible en modo edición', 'Advertencia');
+    return;
+  }
+  
+  let idCompra: number;
+  if (this.detallesCompraPeticion && this.detallesCompraPeticion.length > 0) {
+    idCompra = this.detallesCompraPeticion[0].idCompra;
+  } else {
+    const idFromUrl = this.route.snapshot.paramMap.get('factura');
+    if (!idFromUrl) {
+      this.toastr.error('No se pudo identificar la compra actual', 'Error');
+      return;
+    }
+    idCompra = parseInt(idFromUrl);
+  }
+  
+  this.confirmationService.confirm({
+    message: 'Esta acción no se puede deshacer. ¿Desea continuar?',
+    header: 'Confirmación para cerrar compra',
+    icon: 'pi pi-exclamation-circle',
+    acceptLabel: 'Sí, cerrar compra',
+    rejectLabel: 'Cancelar',
+    accept: () => {
+      this.toastr.info('Procesando su solicitud...', 'Cerrando compra');
+      this.compraService.cerrarCompra(idCompra).subscribe({
+        next: (response) => {
+          this.toastr.success('La compra ha sido cerrada exitosamente', 'Éxito');
+          this.router.navigate(['/panel/Adquisiciones']);
+        },
+        error: (error) => {
+          console.error('Error al cerrar la compra:', error);
+          if (error.status === 400) {
+            this.toastr.error('No se puede cerrar esta compra. Verifique que cumpla con los requisitos', 'Error');
+          } else if (error.status === 401 || error.status === 403) {
+            this.toastr.error('No tiene permisos para realizar esta acción', 'Error de autorización');
+          } else if (error.status === 404) {
+            this.toastr.error('No se encontró la compra especificada', 'Error');
+          } else {
+            this.toastr.error('Error al cerrar la compra: ' + (error.error?.mensaje || error.message), 'Error');
+          }
+        }
+      });
     }
   });
 }
