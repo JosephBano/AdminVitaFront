@@ -13,6 +13,7 @@ import { UsuarioComponent } from './views/dashboard/persona/usuario.component';
 import { MecanicoComponent } from './views/dashboard/persona/mecanico.component';
 import { ProveedorComponent } from './views/dashboard/persona/proveedor.component';
 import { StartComponent } from './views/start/start.component';
+import { AgregarOrdenTrabajoMecanicoComponent } from './views/dashboard-mecanica/OrdenTrabajoMecanico/agregar-orden-trabajo-mecanico/agregar-orden-trabajo-mecanico.component';
 
 export const appRoutes: Routes = [
     {   path: '', component: StartComponent },
@@ -32,8 +33,12 @@ export const appRoutes: Routes = [
             {path: 'persons/Usuario', component: UsuarioComponent},
             {path: 'persons/Mecanico', component: MecanicoComponent},
             {path: 'persons/Proveedor', component: ProveedorComponent},
+
+            {path: 'mecanica', children: [
+                { path: '', component: DashboardMecanicaComponent },
+                { path: 'agregar-orden', component: AgregarOrdenTrabajoMecanicoComponent }
+            ]}
         ]},
-    {   path: 'panel-mecanica', component: DashboardMecanicaComponent},
     {   path: 'notFound404', component: NotfoundComponent}, 
     {   path: '**', redirectTo: 'notFound404', pathMatch: 'full'},
 ];
