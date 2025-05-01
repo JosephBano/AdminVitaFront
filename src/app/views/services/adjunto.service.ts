@@ -77,14 +77,13 @@ export class AdjuntoService {
   eliminarAdjuntoCompleto(idAdjunto: number): Observable<boolean> {
     return this.http.delete<boolean>(`${this.apiUrl}/DeleteAdjuntoAndUpdateCompra/${idAdjunto}`);
   }
-createAdjunto(file: File, idVehiculo?: number): Observable<any> {
-  const headers = this.auth.getAuthHeaders();
-  const formData = new FormData();
-  formData.append('file', file, file.name);
-  if (idVehiculo !== undefined && idVehiculo !== null) {
-    formData.append('idVehiculo', idVehiculo.toString());
+  createAdjunto(file: File, idVehiculo: number): Observable<any> {
+    const formData = new FormData();
+    formData.append('File', file, file.name);
+    formData.append('IdVehiculo', idVehiculo.toString());
+
+    // No es necesario establecer el Content-Type en los headers cuando se usa FormData
+    // Angular/HttpClient lo establecerá automáticamente como multipart/form-data con el boundary correcto
+    return this.http.post<any>(`${this.apiUrl}/CreateAdjunto`, formData);
   }
-  headers.delete('Content-Type');
-  return this.http.post<any>(`${this.apiUrl}/CreateAdjunto`, formData, { headers });
-}
 }

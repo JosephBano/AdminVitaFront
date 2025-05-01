@@ -18,3 +18,16 @@ export interface ActualizarOrdenRequest {
     fechaProgramada: Date;
     observacion: string;
 }
+export interface AgendarOrdenMecanicoRequest {
+    idUsuario: number;
+    idCliente: number;
+    idVehiculo: number;
+    idMecanico: number;
+    detalle: string;
+    prioridad: number;
+    estado: number;
+    kilometraje: number;
+    observacion: string;
+    fechaProgramada: string;
+    fechaCreacion: string;
+  }

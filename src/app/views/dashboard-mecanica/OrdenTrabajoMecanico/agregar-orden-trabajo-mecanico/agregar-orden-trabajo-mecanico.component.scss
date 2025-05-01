@@ -504,3 +504,613 @@
       width: 100%;
     }
   }
+  /* CSS para los subtítulos de sección */
+.section-subtitle {
+  color: #1f295b; /* Color azul oscuro que coincide con tu tema */
+  font-size: 1.1rem;
+  font-weight: 600; /* Un poco más de peso para mejorar la visibilidad */
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e0e6f5; /* Línea sutil para separar el título de la sección */
+  text-align: left;
+}
+
+/* Asegurarnos que el contraste sea adecuado incluso en modo oscuro o fondos con colores */
+.service-container .section-subtitle {
+  color: #1f295b;
+  background-color: transparent; /* Eliminar cualquier fondo que pueda estar causando problemas */
+  text-shadow: none; /* Eliminar cualquier sombra de texto que dificulte la lectura */
+}
+
+/* Añadir un pequeño icono para mejorar la visibilidad */
+.section-subtitle::before {
+  content: "▪";
+  color: #0078d4; /* Azul más brillante para el marcador */
+  margin-right: 8px;
+  font-size: 1.2rem;
+  vertical-align: middle;
+}
+
+/* Asegurar que el título es visible en diferentes resoluciones */
+@media (max-width: 768px) {
+  .section-subtitle {
+    font-size: 1rem;
+    margin-bottom: 0.8rem;
+  }
+}
+// Estilos para los botones de acción en los selectores de imágenes
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    width: 100%;
+  }
+}
+
+.browse-button, .camera-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    margin-bottom: 5px;
+  }
+}
+
+.browse-button {
+  background-color: #f0f0f0;
+  color: #333;
+  border: 1px solid #d1d5db;
+  
+  &:hover {
+    background-color: #e0e0e0;
+  }
+}
+
+.camera-button {
+  background-color: #1f295b; // Color principal
+  color: white;
+  border: none;
+  
+  &:hover {
+    background-color: #293775; // Color principal un poco más oscuro para hover
+  }
+}
+
+// Estilos para el contenedor de acciones principales (botones de cancelar y crear)
+.actions-container {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 30px;
+  padding-bottom: 20px;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+.cancel-btn, .create-btn {
+  padding: 12px 20px;
+  border-radius: 5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 140px;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    min-width: auto;
+  }
+  
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+}
+
+.cancel-btn {
+  background-color: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #e5e7eb;
+  
+  &:hover:not(:disabled) {
+    background-color: #e5e7eb;
+  }
+}
+
+.create-btn {
+  background-color: #1f295b; // Color principal
+  color: white;
+  border: none;
+  
+  &:hover:not(:disabled) {
+    background-color: #293775; // Color principal un poco más oscuro para hover
+  }
+  
+  .spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s infinite linear;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// Estilos específicos para las cajas de carga de imágenes
+.image-upload-box {
+  border: 2px dashed #d1d5db;
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  
+  h4 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    color: #1f295b; // Color principal para los títulos
+    font-size: 1rem;
+    font-weight: 500;
+  }
+  
+  &:hover {
+    border-color: #1f295b; // Color principal
+    background-color: rgba(31, 41, 91, 0.03);
+  }
+  
+  &.dragover {
+    border-color: #1f295b; // Color principal
+    background-color: rgba(31, 41, 91, 0.08);
+    transform: scale(1.02);
+  }
+  
+  &.with-image {
+    border-style: solid;
+    border-color: #1f295b; // Color principal
+    background-color: rgba(31, 41, 91, 0.03);
+    padding: 8px;
+    
+    h4 {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      margin: 0;
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      z-index: 1;
+    }
+  }
+}
+
+// Estilo para la vista previa de imágenes
+.image-preview {
+  width: 100%;
+  height: 140px;
+  position: relative;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 6px;
+  }
+  
+  .remove-image {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background-color: #fff;
+      transform: scale(1.1);
+    }
+    
+    .delete-icon {
+      font-size: 18px;
+      color: #e53935;
+      font-weight: bold;
+      font-style: normal;
+    }
+  }
+}
+
+// Mejoras para la cuadrícula de imágenes
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+  
+  @media (max-width: 992px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @media (max-width: 576px) {
+    grid-template-columns: 1fr;
+  }
+}
+// Optimización del modal/popup para evitar scroll
+.modal-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1001;
+  padding: 20px;
+}
+
+.modal-content {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 800px; // Aumentamos el ancho máximo
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  animation: modalFadeIn 0.3s forwards;
+}
+
+.popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px; // Reducimos un poco el padding
+  background-color: #1f295b;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  flex-shrink: 0; // Evita que el encabezado se encoja
+  
+  .popup-title {
+    margin: 0;
+    color: #fff;
+    font-size: 1.1rem; // Ligeramente más pequeño
+    font-weight: 500;
+  }
+  .close-button {
+    background: none;
+    border: none;
+    color: #ffffff; // Color blanco para el símbolo X
+    font-size: 18px;
+    font-weight: 300; // Un poco más ligero para que se vea elegante
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    padding: 0; // Elimina el padding para mejor centrado
+    
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.2); // Un sutil efecto hover
+      transform: scale(1.1); // Ligero efecto de expansión al pasar el cursor
+    }
+    
+    &:focus {
+      outline: none; // Elimina el contorno de enfoque predeterminado
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4); // Añade un sutil resplandor al enfocar
+    }
+  }
+}
+
+.popup-content {
+  padding: 15px 20px;
+  overflow-y: auto; // Solo esta sección tendrá scroll si es necesario
+  
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; // Reducimos el espacio entre elementos
+  }
+  
+  .tipo-cliente {
+    margin-bottom: 10px; // Reducimos el margen
+  }
+  
+  // Optimización de grupos de formularios
+  .form-group {
+    margin-bottom: 10px;
+    
+    .form-label {
+      display: block;
+      margin-bottom: 4px; // Reducimos el margen
+      font-size: 0.85rem; // Texto más pequeño
+    }
+    
+    .form-input {
+      padding: 6px 10px; // Input más compacto
+      font-size: 0.9rem;
+    }
+  }
+
+  // Diseño optimizado para múltiples columnas
+  .form-row {
+    display: flex;
+    gap: 15px;
+    
+    .form-group {
+      flex: 1;
+      min-width: 0; // Evita desbordamiento
+    }
+  }
+  
+  // Tabs para organizar la información
+  .tabs {
+    display: flex;
+    border-bottom: 1px solid #e1e4e8;
+    margin-bottom: 15px;
+    
+    .tab {
+      padding: 8px 15px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      color: #6b7280;
+      
+      &.active {
+        color: #1f295b;
+        border-bottom: 2px solid #1f295b;
+        font-weight: 500;
+      }
+      
+      &:hover:not(.active) {
+        color: #4b5563;
+        background-color: #f9fafb;
+      }
+    }
+  }
+  
+  .tab-content {
+    display: none;
+    
+    &.active {
+      display: block;
+    }
+  }
+  
+  // Campos obligatorios marcados de forma sutil
+  .required .form-label::after {
+    content: "*";
+    color: #e53935;
+    margin-left: 3px;
+  }
+}
+
+// Botones de acción más compactos
+.buttons-container {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 15px;
+  padding: 10px 20px;
+  background-color: #f8f9fa;
+  border-top: 1px solid #e1e4e8;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  flex-shrink: 0; // Evita que la sección de botones se encoja
+}
+// Estilos mejorados para los selectores de tipo de cliente y documento
+.selector-group {
+  background-color: #f8f9fa;
+  border: 1px solid #e1e4e8;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  overflow: hidden;
+  
+  .selector-header {
+    background-color: #eaedf1;
+    padding: 8px 12px;
+    border-bottom: 1px solid #e1e4e8;
+    
+    .selector-title {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #1f295b;
+      display: block;
+    }
+  }
+  
+  .selector-options {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 10px 12px;
+    
+    .selector-option {
+      display: flex;
+      align-items: center;
+      margin-right: 20px;
+      margin-bottom: 5px;
+      
+      input[type="radio"] {
+        margin-right: 6px;
+        accent-color: #1f295b;
+        cursor: pointer;
+        width: 16px;
+        height: 16px;
+      }
+      
+      .selector-label {
+        font-size: 0.9rem;
+        color: #444;
+        cursor: pointer;
+      }
+    }
+  }
+  
+  &:hover {
+    border-color: #d0d7de;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+}
+
+// Estilo especial para la opción seleccionada
+input[type="radio"]:checked + .selector-label {
+  color: #1f295b;
+  font-weight: 500;
+}
+// Estilos para personalizar el p-dialog
+:host ::ng-deep .custom-dialog {
+  // Eliminamos bordes y padding internos del p-dialog
+  .p-dialog {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    
+    .p-dialog-content {
+      padding: 0;
+      margin: 0;
+      overflow-y: hidden; // Evitamos doble scroll
+      border-bottom-left-radius: 8px;
+      border-bottom-right-radius: 8px;
+    }
+    
+    .p-dialog-footer {
+      display: none; // Ocultamos el footer por defecto
+    }
+    
+    // Añadimos fondo oscuro al modal backdrop
+    &-mask {
+      background-color: rgba(0, 0, 0, 0.4);
+    }
+  }
+}
+
+// Estilos ya adaptados para el contenido del diálogo
+.popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background-color: #1f295b;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  
+  .popup-title {
+    margin: 0;
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
+  
+  .close-button {
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 300;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    padding: 0;
+    
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+      transform: scale(1.1);
+    }
+    
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4);
+    }
+  }
+}
+
+.popup-content {
+  padding: 15px 20px;
+  max-height: calc(90vh - 130px); // Altura máxima para evitar scroll completo
+  overflow-y: auto; // Solo esta sección tendrá scroll si es necesario
+  
+  // Los demás estilos permanecen igual
+}
+
+// Botones de acción
+.buttons-container {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 10px 20px;
+  background-color: #f8f9fa;
+  border-top: 1px solid #e1e4e8;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  
+  .btn {
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+  
+  .btn-cancel {
+    background-color: #f0f0f0;
+    border: 1px solid #d9d9d9;
+    color: #333;
+    
+    &:hover {
+      background-color: #e0e0e0;
+    }
+  }
+  
+  .btn-submit {
+    background-color: #1f295b;
+    border: none;
+    color: white;
+    
+    &:hover {
+      background-color: #293775;
+    }
+  }
+}
+:host ::ng-deep .p-dialog-mask {
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(2px); // Opcional: añade un poco de desenfoque para un efecto más moderno
+}
