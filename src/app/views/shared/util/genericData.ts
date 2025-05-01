@@ -24,3 +24,10 @@ export const EstadosVehiculo = [
     {name: 'Mantenimineto', code: 1},
     {name: 'Baja', code: 2}
 ];
+
+export const EstadoTarea = [
+    {name: 'Activa', code: 0},
+    {name: 'Espera', code: 1},
+    {name: 'Finalizada', code: 2},
+    {name: 'Cancelada', code: 3},
+]

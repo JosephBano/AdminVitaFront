@@ -140,3 +140,15 @@ export const HeadersTablesPersons = {
     { field: 'actions', header: 'Acciones'}
   ],
 }
+export const HeadersTablesMecanico = {
+  Tareas: [
+    { field: 'detalle', header: 'Detalle', sort: true},
+    { field: 'duracion', header: 'Duración', sort: true},
+    { field: 'estado', header: 'Estado',},
+    { field: 'mecanicos', header: 'Mecanicos', sort: true},
+    { field: 'trab_externo', header: 'Trabajo Externo'},
+    { field: 'req_repuesto', header: 'Requiere Repuesto'},
+    { field: 'observaciones', header: 'Observaciones',sort: true},
+    { field: 'actions', header: 'Acciones'}
+  ],
+}

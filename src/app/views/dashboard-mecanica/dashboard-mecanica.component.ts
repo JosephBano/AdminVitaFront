@@ -159,6 +159,10 @@ export class DashboardMecanicaComponent implements OnInit {
   clear(table: Table) {
     table.clear();
   }
+  redirectToOTHandler(codigo:any){
+    const url = `mecanica/${codigo}`;
+    window.open(url, '_blank');
+  }
   GetEstado(id: number)  {
     const item = this.estado.find(x => x.code === id);  
     return item?.name;
