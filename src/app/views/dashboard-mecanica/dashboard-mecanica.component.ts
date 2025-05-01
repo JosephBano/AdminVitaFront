@@ -13,7 +13,6 @@ import { FormsModule } from '@angular/forms';
 import { MecanicoService } from '../services/mecanico.service';
 import { PickListModule } from 'primeng/picklist';
 import { OrdenMecanicoService } from '../services/ordenMecanico.service';
-import { AppTopbarMec } from "../../layout/component/app.topbarMec";
 import { IconField } from 'primeng/iconfield';
 import { InputIcon } from 'primeng/inputicon';
 import { DividerModule } from 'primeng/divider';
@@ -43,7 +42,6 @@ interface Mecanico {
     DropdownModule,
     FormsModule,
     PickListModule,
-    AppTopbarMec,
     IconField,
     InputIcon,
     DividerModule
