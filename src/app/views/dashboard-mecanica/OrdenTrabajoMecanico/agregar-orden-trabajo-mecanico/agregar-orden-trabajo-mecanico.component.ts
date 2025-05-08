@@ -125,6 +125,14 @@ datosEmpresa = {
   mensajeExito: string = '';
   mensajeError: string = '';
   cargando: boolean = false;
+  // En el componente .ts, agrega esta propiedad
+  dialogStyle = {
+    width: '680px', 
+    maxWidth: '95vw',
+    padding: 0,
+    margin: 0,
+    overflow: 'visible'
+  };
   constructor(
     private router: Router,
     private validacionService: ValidacionService,
@@ -583,46 +591,58 @@ datosEmpresa = {
     this.mensajeError = '';
   }
   
-  // Preparar objeto Cliente para enviar al backend
   prepararDatosCliente(): Cliente {
-    let cliente: Cliente;
+    const fechaActual = new Date().toISOString();
     
     if (this.isPersonaNatural) {
-      cliente = {
+      // Para persona natural
+      return {
         nombre: this.datosPersonaNatural.nombres,
-        tipoPersona: 'N', // Natural
-        tipoDocumento: this.tipoDocumento === 'cedula' ? 'C' : 'P', // C: Cédula, P: Pasaporte
+        tipoPersona: 'N',
+        tipoDocumento: this.tipoDocumento === 'cedula' ? 'C' : 'P',
         documento: this.datosPersonaNatural.documento,
         email: this.datosPersonaNatural.email,
-        celular: this.datosPersonaNatural.celular,
-        telefono: this.datosPersonaNatural.telefono,
+        celular: this.datosPersonaNatural.celular || '',
+        telefono: this.datosPersonaNatural.telefono || '',
         direccion: this.datosPersonaNatural.direccion,
         apellidos: this.datosPersonaNatural.apellidos,
-        fechaNacimiento: this.datosPersonaNatural.fechaNacimiento || undefined,
+        // Importante: Manejar correctamente el tipo de fechaNacimiento
+        fechaNacimiento: this.datosPersonaNatural.fechaNacimiento ? 
+          (typeof this.datosPersonaNatural.fechaNacimiento === 'string' ? 
+           this.datosPersonaNatural.fechaNacimiento : 
+           this.datosPersonaNatural.fechaNacimiento.toISOString()) : undefined,
         genero: this.datosPersonaNatural.genero === 'masculino' ? 'M' : 
-                this.datosPersonaNatural.genero === 'femenino' ? 'F' : '',
+          this.datosPersonaNatural.genero === 'femenino' ? 'F' : '',
+        // Campos de empresa con valores por defecto para que no sean null/undefined
+        razonSocial: '',
+        idRepresentanteLegal: 0,
+        representanteLegalNombre: '',
+        obligadaContabilidad: false,
         esLocal: this.datosPersonaNatural.esLocal
       };
     } else {
-      cliente = {
+      // Para empresa
+      return {
         nombre: this.datosEmpresa.nombre,
-        tipoPersona: 'E', // Empresa
-        tipoDocumento: 'R', // RUC
+        tipoPersona: 'E',
+        tipoDocumento: 'R',
         documento: this.datosEmpresa.documento,
         email: this.datosEmpresa.email,
-        celular: this.datosEmpresa.celular,
-        telefono: this.datosEmpresa.telefono,
+        celular: this.datosEmpresa.celular || '',
+        telefono: this.datosEmpresa.telefono || '',
         direccion: this.datosEmpresa.direccion,
+        // Campos para cumplir con el schema (pueden ir vacíos para empresas)
+        apellidos: '',
+        fechaNacimiento: undefined,
+        genero: '',
         razonSocial: this.datosEmpresa.razonSocial,
+        idRepresentanteLegal: 0, // Ajustar si tienes este dato
         representanteLegalNombre: this.datosEmpresa.representanteLegal,
         obligadaContabilidad: this.datosEmpresa.obligadaContabilidad,
         esLocal: this.datosEmpresa.esLocal
       };
     }
-    
-    return cliente;
   }
-  
 // Validación mejorada con alertas Toast
 validarFormulario(): boolean {
   // Validaciones para persona natural
@@ -724,67 +744,63 @@ registrarPropietario(): void {
   this.mensajeExito = '';
   
   if (!this.validarFormulario()) {
-    return; // Ya se mostró la alerta específica en validarFormulario()
+    return;
   }
   
   const cliente = this.prepararDatosCliente();
   this.cargando = true;
   
+  // Depuración detallada
+  console.log('Datos del cliente a registrar (objeto completo):', JSON.stringify(cliente, null, 2));
+  
   this.clienteService.registrarCliente(cliente).subscribe({
     next: (respuesta) => {
-      this.cargando = false;
-      if (respuesta === 'Cliente registrado correctamente.') {
-        this.toastr.success('Cliente registrado correctamente', 'Operación exitosa');
-        
-        // Actualizar el campo documento en el formulario principal
-        this.documento = this.isPersonaNatural ? 
-          this.datosPersonaNatural.documento : 
-          this.datosEmpresa.documento;
-        
-        // Cerrar el modal inmediatamente
-        this.visible = false; // Cerrar el p-dialog
-        this.mostrarPopupPropietario = false; // Asegurar que también se actualiza esta variable
-        
-        // Un pequeño retraso antes de validar el cliente para asegurar que la UI se actualiza correctamente
-        setTimeout(() => {
-          this.validarCliente(); // Cargar el cliente recién registrado
-        }, 500);
-      } else {
-        this.toastr.warning(respuesta, 'Advertencia');
-      }
-    },
-    error: (error) => {
+      console.log('Respuesta del servidor:', respuesta);
       this.cargando = false;
       
-      // Si es un error 400 pero sospechamos que el cliente fue creado
-      if (error.status === 400 && error.error?.includes('ya existe')) {
+      if (respuesta === 'Cliente registrado correctamente.' || 
+          (typeof respuesta === 'object' && respuesta.success)) {
         this.toastr.success('Cliente registrado correctamente', 'Operación exitosa');
         
         // Actualizar documento y cerrar popup
-        this.documento = this.isPersonaNatural ? 
-          this.datosPersonaNatural.documento : 
-          this.datosEmpresa.documento;
-        
+        this.documento = cliente.documento;
         this.visible = false;
-        this.mostrarPopupPropietario = false;
         
+        // Cargar cliente después
         setTimeout(() => {
           this.validarCliente();
         }, 500);
-        return;
+      } else {
+        this.toastr.warning(typeof respuesta === 'string' ? respuesta : 'Respuesta inesperada del servidor', 'Advertencia');
       }
+    },
+    error: (error) => {
+      console.error('Error completo al registrar cliente:', error);
+      this.cargando = false;
       
-      // Manejo de otros errores como antes
+      // Analizar la respuesta para obtener más detalles
       let mensaje = 'Error al registrar el cliente';
       let titulo = 'Error';
       
-      if (error.status === 409) {
+      if (error.status === 400) {
+        if (error.error && error.error.includes('ya existe')) {
+          this.toastr.info('Este documento ya está registrado', 'Cliente existente');
+          this.documento = cliente.documento;
+          this.visible = false;
+          setTimeout(() => this.validarCliente(), 500);
+          return;
+        }
+        
+        // Intentar extraer mensaje específico del error
+        if (typeof error.error === 'object') {
+          mensaje = JSON.stringify(error.error);
+        } else if (typeof error.error === 'string') {
+          mensaje = error.error;
+        }
+        titulo = 'Datos inválidos';
+      } else if (error.status === 409) {
         mensaje = 'Ya existe un cliente con ese documento';
         titulo = 'Cliente duplicado';
-      } else if (error.error && typeof error.error === 'string') {
-        mensaje = error.error;
-      } else if (error.message) {
-        mensaje = error.message;
       }
       
       this.toastr.error(mensaje, titulo);
@@ -828,16 +844,9 @@ validarCampo(tipo: string, campo: string, valor: any): void {
       break;
   }
 }
-  showDialog(event?: Event) {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-    setTimeout(() => {
-      this.visible = true;
-    }, 10);
-    return false;
-  }
+showDialog() {
+  this.visible = true;
+}
   mostrarPopupVehiculo(): void {
     this.visibleVehiculo = true;
   }
